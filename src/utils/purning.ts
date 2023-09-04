@@ -1,0 +1,13 @@
+import { Message } from "discord.js";
+import { config } from "../config";
+
+export async function purning(msg: Message, long?: boolean) {
+
+  if (!config.PRUNING) return;
+  let time = long ? 120 : 15;
+
+  setTimeout(() => {
+    msg.delete().catch(() => null);
+  }, time * 1000);
+
+}

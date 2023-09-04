@@ -1,0 +1,40 @@
+{
+  "name": "pilzic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/index.ts",
+  "scripts": {
+    "start": "ts-node ./src/index.ts",
+    "run": "node ./dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/voice": "^0.16.0",
+    "array-move": "3.0.1",
+    "axios": "^1.4.0",
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.3.1",
+    "ffmpeg-static": "^5.2.0",
+    "i18n": "^0.15.1",
+    "isomorphic-unfetch": "^4.0.2",
+    "lyrics-finder": "^21.7.0",
+    "music-metadata": "7.13.4",
+    "play-dl": "^1.9.6",
+    "spotify-url-info": "^3.2.6",
+    "string-progressbar": "^1.0.4",
+    "systeminformation": "^5.20.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2",
+    "youtube-sr": "^4.3.4"
+  },
+  "devDependencies": {
+    "@types/i18n": "^0.13.6"
+  },
+  "optionalDependencies": {
+    "@discordjs/opus": "^0.9.0",
+    "libsodium-wrappers": "^0.7.11",
+    "sodium-native": "^4.0.4",
+    "tweetnacl": "^1.0.3"
+  }
+}
