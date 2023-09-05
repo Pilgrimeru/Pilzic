@@ -83,6 +83,13 @@
 		"chooseSong": "Choisissez le morceau à jouer.",
 		"finished": "Recherche terminée."
 	},
+  "seek": {
+    "description": "Permet de sauter à un moment précis dans la musique en cours.",
+    "usageReply": "Utilisation : {prefix}seek <Nombre de secondes ou temps au format (ex: 02:30)>",
+    "errorSource": "Cette commande ne fonctionne pas avec les liens SoundCloud ni les fichiers audio.",
+    "errorNotValid": "Le nombre de secondes doit être compris entre 0 et la durée de la piste ({duration}).",
+    "result": "La musique a été repositionnée à : `{time}`"
+  },
 	"shuffle": {
 		"description": "Mélange la file d'attente.",
 		"result": "La file d'attente a été mélangée. 🔀"

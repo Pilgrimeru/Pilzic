@@ -81,19 +81,33 @@ export class Song {
     });
   }
 
-  public async makeResource(): Promise<AudioResource<Song>> {
+  public async makeResource(seek? : number): Promise<AudioResource<Song>> {
     let stream;
     let type;
 
-    if (this.url.startsWith("https") && (yt_validate(this.url) === "video" || await so_validate(this.url) === "track")) {
+    if (seek) {
+      if (yt_validate(this.url) ==! "video")
+        throw new Error("Seeking is only supported for YouTube sources.");
+
       const response = await getStream(this.url, {
-        discordPlayerCompatibility: true,
         htmldata: false,
         precache: 30,
-        quality: config.AUDIO_QUALITY
+        seek: seek
+      });
+
+      stream = response.stream;
+      type = response.type;
+
+    } else if (this.url.startsWith("https") && (yt_validate(this.url) === "video" || await so_validate(this.url) === "track")) {
+      
+      const response = await getStream(this.url, {
+        htmldata: false,
+        precache: 30,
+        quality : config.AUDIO_QUALITY
       });
       stream = response.stream;
       type = response.type;
+
     } else {
 
       const response = await axios.get(this.url, {

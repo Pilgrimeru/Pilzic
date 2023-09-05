@@ -95,6 +95,13 @@ export class Player {
     newCurrent ? this.process(newCurrent) : this.stop();
   }
 
+  public async seek(time : number) : Promise<void> {
+    this.nowPlayingMsg?.stop();
+    this.pause();
+    const current = this.queue.currentSong;
+    current ? await this.process(current, time) : this.stop();
+  }
+
   public pause() : boolean {
     return this.audioPlayer.pause();
   }
@@ -161,10 +168,11 @@ export class Player {
   }
   
 
-  private async process(song : Song): Promise<void> {
+  private async process(song : Song, seek? : number): Promise<void> {
     try {
       this.loadingMsg = await this.textChannel.send(i18n.__("common.loading"));
-      this.resource = await song.makeResource();
+      this.resource = await song.makeResource(seek);
+      this.resource.playbackDuration += (seek ?? 0) * 1000;
       this.resource.volume?.setVolumeLogarithmic(this._volume / 100);
       this.loadingMsg?.delete().catch(() => null);
       this.audioPlayer.play(this.resource);

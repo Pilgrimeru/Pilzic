@@ -83,6 +83,13 @@
 		"chooseSong": "Choose the song to play.",
 		"finished": "Search finished."
 	},
+  "seek": {
+    "description": "Allows you to jump to a specific moment in the current music.",
+    "usageReply": "Usage: {prefix}seek <Number of seconds or time formatted as (02:30)>",
+    "errorSource": "This command doesn't work with SoundCloud links or audio files.",
+    "errorNotValid": "The number of seconds must be between 0 and the duration of the track ({duration}).",
+    "result": "The music has been resumed at : `{time}`"
+  },  
 	"shuffle": {
 		"description": "Shuffle the queue.",
 		"result": "Queue has been shuffled. 🔀"
