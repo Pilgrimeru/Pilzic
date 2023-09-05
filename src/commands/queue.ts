@@ -89,6 +89,18 @@ export default {
 function generateQueueEmbed(message: Message, songs: Song[]) {
   let embeds: EmbedBuilder[] = [];
 
+  if (songs.length === 1) {
+    const embed = new EmbedBuilder()
+      .setTitle(i18n.__("queue.embedTitle"))
+      .setThumbnail(message.guild?.iconURL()!)
+      .setColor("#69adc7")
+      .setDescription(
+        i18n.__mf("queue.embedCurrentSong", { title: songs[0].title, url: songs[0].url, info: i18n.__mf("errors.notQueue") })
+      )
+      .setTimestamp();
+    embeds.push(embed);
+  }
+
   for (let i = 1; i < songs.length; i += 10) {
     const current = songs.slice(i, i + 10);
     let j = i;
