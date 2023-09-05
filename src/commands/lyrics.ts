@@ -17,12 +17,12 @@ export default {
     const player = bot.players.get(message.guild!.id)!;
     
     let lyrics = null;
-    const title = player.queue.songs[player.queue.index].title;
+    const title = player.queue.currentSong!.title;
     
     const loadingReply = await message.reply(i18n.__mf("common.loading"));
 
     try {
-      lyrics = await lyricsFinder(player.queue.songs[0].title, "");
+      lyrics = await lyricsFinder(title, "");
       if (!lyrics) lyrics = i18n.__mf("lyrics.lyricsNotFound", { title: title });
     } catch (error) {
       lyrics = i18n.__mf("lyrics.lyricsNotFound", { title: title });
