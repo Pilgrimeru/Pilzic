@@ -126,6 +126,7 @@ export class Player {
   }
 
   public leave() : void {
+    this.stop();
     this.connection.removeAllListeners();
     this.audioPlayer.removeAllListeners();
     if (this.connection.state.status != VoiceConnectionStatus.Destroyed) {
