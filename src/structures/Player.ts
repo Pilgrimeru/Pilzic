@@ -21,7 +21,7 @@ import { Song } from "./Song";
 
 type skipCallback = () => any;
 type previousCallback = () => any;
-type skipToCallback = (id : number) => any;
+type jumpCallback = (songId : number) => any;
 
 
 export class Player {
@@ -39,7 +39,7 @@ export class Player {
 
   private skipCallbacks: skipCallback[] = [];
   private previousCallbacks: previousCallback[] = [];
-  private skipToCallbacks: skipToCallback[] = [];
+  private jumpCallbacks: jumpCallback[] = [];
   
   
   public constructor(options: PlayerOptions) {
@@ -75,12 +75,12 @@ export class Player {
     newCurrent ? this.process(newCurrent) : this.stop();
   }
 
-  public skipTo(id: number) : void {
+  public jumpTo(songId: number) : void {
     if (this._stopped) return;
     this.audioPlayer.pause();
     this.nowPlayingMsg?.stop();
-    // Send the "skipTo" request to the queue.
-    this.skipToCallbacks.forEach(callback => callback(id));
+    // Send the "jump" request to the queue.
+    this.jumpCallbacks.forEach(callback => callback(songId));
     const newCurrent = this.queue.currentSong;
     newCurrent ? this.process(newCurrent) : this.stop();
   }
@@ -140,8 +140,8 @@ export class Player {
     this.skipCallbacks.push(callback);
   }
 
-  public onSkipTo(callback: skipToCallback) {
-    this.skipToCallbacks.push(callback);
+  public onJump(callback: jumpCallback) {
+    this.jumpCallbacks.push(callback);
   }
 
   public onPrevious(callback: previousCallback) {

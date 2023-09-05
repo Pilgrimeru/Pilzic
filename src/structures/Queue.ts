@@ -115,11 +115,11 @@ export class Queue {
       }
     });
 
-    this.player.onSkipTo(id => {
+    this.player.onJump(songId => {
       if (this.loop === "track") this.loop = false;
-      if (id >= this._songs.length) id = this._songs.length -1;
-      else if (id < 0) id = 0;
-      this._index = id;
+      if (songId >= this._songs.length) songId = this._songs.length -1;
+      else if (songId < 0) songId = 0;
+      this._index = songId;
     })
 
     this.player.onPrevious(() => {
