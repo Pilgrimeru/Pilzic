@@ -13,9 +13,14 @@ export default {
   async execute(message: Message, args: Array<any>) {
     if (!queueExists(message)) return;
     const player = bot.players.get(message.guild!.id)!;
-    const embeds = generateQueueEmbed(message, player.queue.songs.slice(player.queue.index));
+    player.queue.songs.slice(player.queue.index)
 
-    let currentPage = 0;
+    const followingSongs = player.queue.songs.slice(player.queue.index);
+    const previousSongs = player.queue.songs.slice(0, player.queue.index);
+
+    const embeds = generateQueueEmbed(message, followingSongs, previousSongs);
+
+    let currentPage = Math.ceil(previousSongs.length / 10);
     if (!isNaN(args[0]) && args[0] > 0 && args[0] <= embeds.length) {
       currentPage = args[0] - 1;
     }
@@ -86,23 +91,42 @@ export default {
   }
 };
 
-function generateQueueEmbed(message: Message, songs: Song[]) {
+function generateQueueEmbed(message: Message, followingSongs: Song[], previousSongs: Song[]) : EmbedBuilder[] {
   let embeds: EmbedBuilder[] = [];
 
-  if (songs.length === 1) {
+  previousSongs.reverse();
+  for (let i = 0; i < previousSongs.length; i += 10) {
+    const current = previousSongs.slice(i, i + 10);
+    let j = -i - 1;
+
+    const info = current.map((track) => `${j--} - [${track.title}](${track.url})`).join("\n");
+
     const embed = new EmbedBuilder()
       .setTitle(i18n.__("queue.embedTitle"))
       .setThumbnail(message.guild?.iconURL()!)
       .setColor("#69adc7")
       .setDescription(
-        i18n.__mf("queue.embedCurrentSong", { title: songs[0].title, url: songs[0].url, info: i18n.__mf("errors.notQueue") })
+        i18n.__mf("queue.embedCurrentSong", { title: followingSongs[0].title, url: followingSongs[0].url, info: info })
+      )
+      .setTimestamp();
+    embeds.push(embed);
+  }
+  embeds.reverse();
+
+  if (followingSongs.length === 1) {
+    const embed = new EmbedBuilder()
+      .setTitle(i18n.__("queue.embedTitle"))
+      .setThumbnail(message.guild?.iconURL()!)
+      .setColor("#69adc7")
+      .setDescription(
+        i18n.__mf("queue.embedCurrentSong", { title: followingSongs[0].title, url: followingSongs[0].url, info: i18n.__mf("queue.nothingMore") })
       )
       .setTimestamp();
     embeds.push(embed);
   }
 
-  for (let i = 1; i < songs.length; i += 10) {
-    const current = songs.slice(i, i + 10);
+  for (let i = 1; i < followingSongs.length; i += 10) {
+    const current = followingSongs.slice(i, i + 10);
     let j = i;
 
     const info = current.map((track) => `${j++} - [${track.title}](${track.url})`).join("\n");
@@ -112,7 +136,7 @@ function generateQueueEmbed(message: Message, songs: Song[]) {
       .setThumbnail(message.guild?.iconURL()!)
       .setColor("#69adc7")
       .setDescription(
-        i18n.__mf("queue.embedCurrentSong", { title: songs[0].title, url: songs[0].url, info: info })
+        i18n.__mf("queue.embedCurrentSong", { title: followingSongs[0].title, url: followingSongs[0].url, info: info })
       )
       .setTimestamp();
     embeds.push(embed);

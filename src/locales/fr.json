@@ -64,7 +64,8 @@
 		"description": "Affiche la file d'attente et la musique en cours de lecture.",
 		"currentPage": "Page actuelle - ",
 		"embedTitle": "File d'attente du serveur :\n",
-		"embedCurrentSong": "**Morceau en cours - [{title}]({url})**\n\n{info}"
+		"embedCurrentSong": "**Musique actuelle - [{title}]({url})**\n\n{info}",
+		"nothingMore": "Il n'y a plus rien ensuite."
 	},
 	"remove": {
 		"description": "Retire une chanson de la file d'attente.",

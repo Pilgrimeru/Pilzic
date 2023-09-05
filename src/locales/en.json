@@ -62,9 +62,10 @@
 	},
 	"queue": {
 		"description": "Display the queue and the currently playing song.",
-		"currentPage": "Current page - ",
+    "currentPage": "Current Page - ",
 		"embedTitle": "Server Queue:\n",
-		"embedCurrentSong": "**Current Track - [{title}]({url})**\n\n{info}"
+    "embedCurrentSong": "**Current Track - [{title}]({url})**\n\n{info}",
+    "nothingMore": "There's nothing more after this."
 	},
 	"remove": {
 		"description": "Remove a song from the queue.",
