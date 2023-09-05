@@ -6,17 +6,16 @@ export default {
   event: "voiceStateUpdate",
   run(voice: VoiceState) {
     setTimeout(() => {
-      let voiceChannel = voice.channel;
-      let botChannel = voice.guild.members.me!.voice.channelId;
-      if (voiceChannel?.id === botChannel) {
-        let nbUser = voiceChannel?.members.filter(
+      const clientChannel = voice.guild.members.me!.voice.channelId;
+      if (voice.channel?.id === clientChannel) {
+        let nbUser = voice.channel.members.filter(
           (member) => !member.user.bot
         );
         if (nbUser?.size === 0) {
           const player = bot.players.get(voice.guild.id);
-          player?.stop();
+          player?.leave();
         }
       }
-    }, config.STAY_TIME);
+    }, config.STAY_TIME * 1000);
   }
 };
