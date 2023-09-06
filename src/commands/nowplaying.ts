@@ -2,19 +2,20 @@ import { EmbedBuilder, Message } from "discord.js";
 import { splitBar } from "string-progressbar";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { queueExists } from "../utils/canExecute";
 import { formatTime } from "../utils/formatTime";
 import { purning } from "../utils/purning";
+import { CommandConditions } from "../interfaces/Command";
 
 export default {
   name: "nowplaying",
   aliases: ["np"],
   cooldown: 10,
   description: i18n.__("nowplaying.description"),
+  conditions: [
+    CommandConditions.QUEUE_EXISTS
+  ],
   execute(message: Message) {
     
-    if (!queueExists(message)) return;
-
     const player = bot.players.get(message.guild!.id)!;
 
     const song = player.queue.currentSong!;

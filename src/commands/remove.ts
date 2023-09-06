@@ -1,8 +1,8 @@
 import { Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { canModifyQueue, queueExists } from "../utils/canExecute";
 import { purning } from "../utils/purning";
+import { CommandConditions } from "../interfaces/Command";
 
 const pattern = /^[1-9][0-9]{0,2}(\s*,\s*[1-9][0-9]{0,2})*$/;
 
@@ -10,10 +10,12 @@ export default {
   name: "remove",
   aliases: ["rm"],
   description: i18n.__("remove.description"),
+  conditions: [
+    CommandConditions.QUEUE_EXISTS,
+    CommandConditions.IS_IN_SAME_CHANNEL
+  ],
   execute(message: Message, args: any[]) {
     
-    if (!queueExists(message) || !canModifyQueue(message)) return;
-
     if (!args.length) return message.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
     
     const player = bot.players.get(message.guild!.id)!;

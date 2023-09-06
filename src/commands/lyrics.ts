@@ -3,17 +3,19 @@ import { i18n } from "../i18n.config";
 import { bot } from "../index";
 // @ts-ignore
 import lyricsFinder from "lyrics-finder";
-import { queueExists } from "../utils/canExecute";
 import { purning } from "../utils/purning";
+import { CommandConditions } from "../interfaces/Command";
 
 export default {
   name: "lyrics",
   aliases: ["ly"],
   description: i18n.__("lyrics.description"),
+  conditions: [
+    CommandConditions.QUEUE_EXISTS,
+    CommandConditions.IS_IN_SAME_CHANNEL
+  ],
   async execute(message: Message) {
     
-    if (!queueExists(message)) return;
-
     const player = bot.players.get(message.guild!.id)!;
     
     let lyrics = null;

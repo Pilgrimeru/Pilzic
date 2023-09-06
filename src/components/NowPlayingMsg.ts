@@ -9,7 +9,6 @@ import {
 } from "discord.js";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
-import { canModifyQueueI } from "../utils/canExecute";
 import { purning } from "../utils/purning";
 import { Player } from "./Player";
 import { Song } from "./Song";
@@ -99,7 +98,7 @@ export class nowPlayingMsg {
       const interactUser = await channel.guild.members.fetch(b.user);
       const canWrite = channel.permissionsFor(interactUser).has(PermissionsBitField.Flags.SendMessages, true);
 
-      if (canModifyQueueI(interactUser)) {
+      if (interactUser.voice.channelId === interactUser.guild.members.me!.voice.channelId) {
         if (b.customId === "stop" && canWrite) {
           this.player.stop();
           channel.send(i18n.__("stop.result")).then(purning);

@@ -3,15 +3,18 @@ import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Song } from "../components/Song";
-import { queueExists } from "../utils/canExecute";
+import { CommandConditions } from "../interfaces/Command";
 
 export default {
   name: "queue",
   cooldown: 5,
   aliases: ["q"],
   description: i18n.__("queue.description"),
+  conditions: [
+    CommandConditions.QUEUE_EXISTS
+  ],
   async execute(message: Message, args: Array<any>) {
-    if (!queueExists(message)) return;
+
     const player = bot.players.get(message.guild!.id)!;
     player.queue.songs.slice(player.queue.index)
 

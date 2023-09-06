@@ -6,9 +6,9 @@ import { bot } from "../index";
 import { Player } from "../components/Player";
 import { Playlist } from "../components/Playlist";
 import { Song } from "../components/Song";
-import { canModifyQueue, queueExists } from "../utils/canExecute";
 import { purning } from "../utils/purning";
 import { validate } from "../utils/validate";
+import { CommandConditions } from "../interfaces/Command";
 
 
 export default {
@@ -19,9 +19,11 @@ export default {
     PermissionsBitField.Flags.Connect,
     PermissionsBitField.Flags.Speak
   ],
+  conditions: [
+    CommandConditions.QUEUE_EXISTS,
+    CommandConditions.IS_IN_SAME_CHANNEL
+  ],
   async execute(message: Message, args: string[]) {
-
-    if (!queueExists(message) || !canModifyQueue(message)) return;
 
     if (!args.length && !message.attachments.size)
       return message.reply(i18n.__mf("insert.usageReply", { prefix: bot.prefix })).then(purning);

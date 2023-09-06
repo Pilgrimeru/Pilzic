@@ -1,24 +1,26 @@
 import { Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { canModifyQueue, queueExists } from "../utils/canExecute";
 import { purning } from "../utils/purning";
 import { yt_validate } from "play-dl";
 import { formatTime } from "../utils/formatTime";
+import { CommandConditions } from "../interfaces/Command";
 
 const timeRegEx = /^(?:[0-9]|[0-5]\d):[0-5]\d(:[0-5]\d)?$/;
 
 export default {
   name: "seek",
   description: i18n.__("seek.description"),
+  conditions: [
+    CommandConditions.QUEUE_EXISTS,
+    CommandConditions.IS_IN_SAME_CHANNEL
+  ],
   async execute(message: Message, args: Array<any>) {
 
     if (!args.length || isNaN(args[0] && !args[0].match(timeRegEx)))
       return message
         .reply(i18n.__mf("seek.usageReply", { prefix: bot.prefix}))
         .then(purning);
-
-    if (!queueExists(message) || !canModifyQueue(message)) return;
     
     const player = bot.players.get(message.guild!.id)!;
     

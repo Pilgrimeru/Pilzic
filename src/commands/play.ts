@@ -6,9 +6,9 @@ import { bot } from "../index";
 import { Player } from "../components/Player";
 import { Playlist } from "../components/Playlist";
 import { Song } from "../components/Song";
-import { canBotConnectToChannel, canBotSpeak, isConnectedToChannel } from "../utils/canExecute";
 import { purning } from "../utils/purning";
 import { validate } from "../utils/validate";
+import { CommandConditions } from "../interfaces/Command";
 
 export default {
   name: "play",
@@ -19,10 +19,11 @@ export default {
     PermissionsBitField.Flags.Connect,
     PermissionsBitField.Flags.Speak
   ],
+  conditions:[
+    CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL,
+    CommandConditions.CAN_BOT_SPEAK
+  ],
   async execute(message: Message, args: string[]) : Promise<void> {
-    
-    if (!isConnectedToChannel(message) || !canBotConnectToChannel(message) || !canBotSpeak(message))
-      return;
 
     if (!args.length && !message.attachments.size)
       return message.reply(i18n.__mf("play.usageReply", { prefix: bot.prefix })).then(purning);

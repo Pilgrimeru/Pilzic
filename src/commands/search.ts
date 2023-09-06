@@ -3,21 +3,23 @@ import youtube, { Video } from "youtube-sr";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { canBotConnectToChannel, canBotSpeak, isConnectedToChannel } from "../utils/canExecute";
 import { purning } from "../utils/purning";
+import { CommandConditions } from "../interfaces/Command";
 
 export default {
   name: "search",
   aliases: ["sh"],
   description: i18n.__("search.description"),
+  conditions: [
+    CommandConditions.QUEUE_EXISTS,
+    CommandConditions.IS_IN_SAME_CHANNEL
+  ],
   async execute(message: Message, args: any[]) {
     
     if (!args.length)
       return message
         .reply(i18n.__mf("search.usageReply", { prefix: bot.prefix, name: module.exports.name }))
         .then(msg => purning(msg));
-
-    if (!isConnectedToChannel || !canBotConnectToChannel || !canBotSpeak) return;
 
     const search = args.join(" ");
 
