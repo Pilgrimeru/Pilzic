@@ -12,12 +12,12 @@
 	"invite": {
 		"description": "Envoie le lien d'invitation du bot."
 	},
-  "jumpto": {
-    "description": "Sauter à la position sélectionnée dans la file d'attente.",
-    "usageReply": "Utilisation : {prefix}jumpto <Numéro dans la file d'attente>",
-    "errorNotValid": "Ce n'est pas une position valide.",
-    "result": "Saut à la position {arg} effectué"
-  },  
+	"jumpto": {
+		"description": "Sauter à la position sélectionnée dans la file d'attente.",
+		"usageReply": "Utilisation : {prefix}jumpto <Numéro dans la file d'attente>",
+		"errorNotValid": "Ce n'est pas une position valide.",
+		"result": "Saut à la position {arg} effectué"
+	},
 	"loop": {
 		"description": "Met la musique en boucle.",
 		"chooseMode": "Choisissez le mode de boucle.",
@@ -104,7 +104,7 @@
 	"skip": {
 		"description": "Passe la musique en cours de lecture.",
 		"result": "Musique passée. ⏩"
-	},  
+	},
 	"stop": {
 		"description": "Arrête la musique.",
 		"result": "Musique arrêtée. ⏹"
