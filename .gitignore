@@ -1,5 +1,6 @@
 config.env
 dist/
+reboot.ts
 
 # Node
 node_modules/
