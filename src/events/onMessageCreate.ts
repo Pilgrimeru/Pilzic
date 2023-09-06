@@ -1,5 +1,5 @@
 import { Collection, Message, PermissionResolvable, Snowflake } from "discord.js";
-import { MissingPermissionsException } from "../exceptions/MissingPermissionsException";
+import { MissingPermissionsError } from "../errors/MissingPermissionsErrors";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command } from "../interfaces/Command";
@@ -50,10 +50,10 @@ export default {
       if (permissionsCheck.result) {
         command.execute(msg, args);
       } else {
-        throw new MissingPermissionsException(permissionsCheck.missing);
+        throw new MissingPermissionsError(permissionsCheck.missing);
       }
     } catch (error) {
-      if (error instanceof MissingPermissionsException) {
+      if (error instanceof MissingPermissionsError) {
         msg.reply(error.toString()).then(purning);
       } else {
         msg.reply(i18n.__("errors.command")).then(purning);

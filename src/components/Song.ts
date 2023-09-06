@@ -15,11 +15,11 @@ import {
 import youtube from "youtube-sr";
 import { config } from "../config";
 import {
-  InvalidURLException,
-  NoDataException,
-  NothingFoundException,
-  ServiceUnavailableException
-} from '../exceptions/ExtractionExceptions';
+  InvalidURLError,
+  NoDataError,
+  NothingFoundError,
+  ServiceUnavailableError
+} from '../errors/ExtractionErrors';
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { formatTime } from "../utils/formatTime";
@@ -56,7 +56,7 @@ export class Song {
       case "audio":
         return await Song.fromExternalLink(url);
       default : {
-        if (type === false && url.startsWith("http")) throw new InvalidURLException();
+        if (type === false && url.startsWith("http")) throw new InvalidURLError();
         return await Song.fromYoutube(url, search);
       }
     }
@@ -132,7 +132,7 @@ export class Song {
     if (url.startsWith("https") && yt_validate(url) === "video") {
       songInfo = await youtube.getVideo(url).catch(console.error);
       if (!songInfo)
-        throw new InvalidURLException();
+        throw new InvalidURLError();
 
       return new this({
         url: songInfo.url,
@@ -143,7 +143,7 @@ export class Song {
     } else {
       songInfo = await youtube.searchOne(search).catch(console.error);
       if (!songInfo)
-        throw new NothingFoundException();
+        throw new NothingFoundError();
 
       return new this({
         url: songInfo.url,
@@ -167,9 +167,9 @@ export class Song {
     
     } catch (error : any) {
       if (error.message?.includes("out of scope")) {
-        throw new InvalidURLException()
+        throw new InvalidURLError()
       } else if (error.message?.includes("Data is missing")) {
-        throw new ServiceUnavailableException();
+        throw new ServiceUnavailableError();
       }
       throw error;
     }
@@ -182,12 +182,12 @@ export class Song {
       data = await getPreview(url, {headers: {'user-agent': bot.useragent}});
     } catch (error : any) {
       if (error.message?.includes("parse")) {
-        throw new InvalidURLException();
+        throw new InvalidURLError();
       } else {
-        throw new ServiceUnavailableException();
+        throw new ServiceUnavailableError();
       }
     }
-    if (!data.type) throw new NoDataException();
+    if (!data.type) throw new NoDataError();
     const search = data.artist + " " + data.track;
     return await Song.fromYoutube("", search);
   }
@@ -198,9 +198,9 @@ export class Song {
       data = await deezer(url);
     } catch (error: any) {
       if (error.message?.includes("not a Deezer")) {
-        throw new InvalidURLException();
+        throw new InvalidURLError();
       } else if (error.message?.includes("API Error")) {
-        throw new ServiceUnavailableException();
+        throw new ServiceUnavailableError();
       }
       throw error;
     }
@@ -209,7 +209,7 @@ export class Song {
     if (data && data.type === "track") {
       track = data as DeezerTrack;
     } else {
-      throw new NoDataException();
+      throw new NoDataError();
     }
     let search = track.artist.name + " " + track.title;
     return await Song.fromYoutube("", search);
@@ -223,7 +223,7 @@ export class Song {
       const response = await axios.get(url, {
         responseType: 'stream',
       }).catch(() => null);
-      if (!response) throw new InvalidURLException();
+      if (!response) throw new InvalidURLError();
 
       let duration = (await parseStream(response.data, {
         mimeType: response.headers["content-type"],
@@ -239,6 +239,6 @@ export class Song {
         thumbnail: null,
       });
     }
-    throw new NoDataException();
+    throw new NoDataError();
   }
 };

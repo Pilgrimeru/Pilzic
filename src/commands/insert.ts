@@ -1,11 +1,11 @@
 import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
 import { BaseGuildTextChannel, Message, PermissionsBitField } from "discord.js";
-import { ExtractionException } from "../exceptions/ExtractionExceptions";
+import { ExtractionError } from "../errors/ExtractionErrors";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { Player } from "../structures/Player";
-import { Playlist } from "../structures/Playlist";
-import { Song } from "../structures/Song";
+import { Player } from "../components/Player";
+import { Playlist } from "../components/Playlist";
+import { Song } from "../components/Song";
 import { canModifyQueue, queueExists } from "../utils/canExecute";
 import { purning } from "../utils/purning";
 import { validate } from "../utils/validate";
@@ -60,7 +60,7 @@ export default {
       player.queue.insert(item);
       
     } catch (error) {
-      if (error instanceof ExtractionException) {
+      if (error instanceof ExtractionError) {
         return message.reply(i18n.__(error.i18n())).then(purning);
       }
       console.error(error);

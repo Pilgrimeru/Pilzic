@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message } f
 import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { Song } from "../structures/Song";
+import { Song } from "../components/Song";
 import { queueExists } from "../utils/canExecute";
 
 export default {
@@ -45,7 +45,7 @@ export default {
 
     } catch (error: any) {
       console.error(error);
-      message.reply(error.message).catch(console.error);
+      message.reply(error).catch(console.error);
       return;
     }
 

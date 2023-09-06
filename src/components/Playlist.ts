@@ -3,12 +3,12 @@ import { DeezerAlbum, DeezerPlaylist, SoundCloudPlaylist, SoundCloudTrack, deeze
 import youtube, { Video, Playlist as YoutubePlaylist } from "youtube-sr";
 import { config } from "../config";
 import {
-  InvalidURLException,
-  NoDataException,
-  NothingFoundException,
-  ServiceUnavailableException,
-  YoutubeMixesException
-} from '../exceptions/ExtractionExceptions';
+  InvalidURLError,
+  NoDataError,
+  NothingFoundError,
+  ServiceUnavailableError,
+  YoutubeMixesError
+} from '../errors/ExtractionErrors';
 import { bot } from '../index';
 import { Song } from "./Song";
 const { getPreview, getTracks } = require('spotify-url-info')(fetch);
@@ -42,7 +42,7 @@ export class Playlist {
       return await Playlist.fromDeezer(url);
     }
     
-    if (url.startsWith("http") && type == false) throw new InvalidURLException();
+    if (url.startsWith("http") && type == false) throw new InvalidURLError();
     
     return await Playlist.fromYoutube(url, search);
   }
@@ -51,7 +51,7 @@ export class Playlist {
   private static async fromYoutube(url: string = "", search: string = ""): Promise<Playlist> {
     const YT_LINK = /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))\/.+$/;
     const urlValid = youtube.isPlaylist(url);
-    if (url.match(YT_LINK) && !urlValid) throw new YoutubeMixesException();
+    if (url.match(YT_LINK) && !urlValid) throw new YoutubeMixesError();
 
     let playlist: YoutubePlaylist | void;
     try {
@@ -60,7 +60,7 @@ export class Playlist {
           fetchAll: true,
           limit: config.MAX_PLAYLIST_SIZE 
         });
-        if (!playlist) throw new InvalidURLException();
+        if (!playlist) throw new InvalidURLError();
         
       } else {
         const result = await youtube.searchOne(search, "playlist");
@@ -68,11 +68,11 @@ export class Playlist {
           fetchAll: true,
           limit: config.MAX_PLAYLIST_SIZE
         });
-        if (!playlist) throw new NothingFoundException();
+        if (!playlist) throw new NothingFoundError();
       }
     } catch (error : any) {
         if (error.message?.includes("Mixes")) {
-        throw new YoutubeMixesException();
+        throw new YoutubeMixesError();
       }
       throw error;
     }
@@ -86,21 +86,21 @@ export class Playlist {
     let tracks: SoundCloudTrack[] = [];
     try {
       playlist = await soundcloud(url);
-      if (!playlist) throw new NoDataException();
+      if (!playlist) throw new NoDataError();
       if (playlist.type === "playlist") {
       tracks = await (playlist as SoundCloudPlaylist).all_tracks();
       }
     } catch (error: any) {
       if (error.message?.includes("out of scope")) {
-        throw new InvalidURLException()
+        throw new InvalidURLError()
       } else if (error.message?.includes("Data is missing")) {
-        throw new ServiceUnavailableException();
+        throw new ServiceUnavailableError();
       }
       throw error;
     }
   
     const songs = Playlist.getSongsFromSoundCloud(tracks);
-    if (!songs.length) throw new NoDataException();
+    if (!songs.length) throw new NoDataError();
 
     return new this({ title: playlist.name, url: url, songs: songs });
   }
@@ -113,9 +113,9 @@ export class Playlist {
       playlistTracks = await getTracks(url, {headers: {'user-agent': bot.useragent}});
     } catch (error : any) {
       if (error.message?.includes("parse")) {
-        throw new InvalidURLException();
+        throw new InvalidURLError();
       } else {
-        throw new ServiceUnavailableException();
+        throw new ServiceUnavailableError();
       }
     }
 
@@ -123,7 +123,7 @@ export class Playlist {
       return await youtube.searchOne(track.artist + " " + track.name);
     });
     const songs = Playlist.getSongsFromYoutube(await Promise.all(infos));
-    if (!songs.length) throw new NoDataException();
+    if (!songs.length) throw new NoDataError();
 
     return new this({ title: playlistPreview.title, url: playlistPreview.link, songs: songs });
   }
@@ -135,13 +135,13 @@ export class Playlist {
       playlist = await deezer(url);
     } catch (error: any) {
       if (error.message?.includes("not a Deezer")) {
-        throw new InvalidURLException();
+        throw new InvalidURLError();
       } else if (error.message?.includes("API Error")) {
-        throw new ServiceUnavailableException();
+        throw new ServiceUnavailableError();
       }
       throw error;
     }
-    if (!playlist) throw new NoDataException();
+    if (!playlist) throw new NoDataError();
     playlist = (playlist as DeezerPlaylist | DeezerAlbum);
 
     let infos: Promise<Video>[] = playlist.tracks.map(async (track) => {
@@ -166,7 +166,7 @@ export class Playlist {
         });
       });
     if (!songs.length)
-      throw new NoDataException();
+      throw new NoDataError();
 
     return songs;
   }
@@ -184,7 +184,7 @@ export class Playlist {
         });
       });
     if (!songs.length)
-      throw new NoDataException();
+      throw new NoDataError();
 
     return songs;
   }
