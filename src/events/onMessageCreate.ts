@@ -65,7 +65,7 @@ function checkCooldownAndWarn(command: Command, message: Message) {
 
     if (now < expirationTime) {
       const timeLeft = (expirationTime - now) / 1000;
-      message.reply(i18n.__mf("common.cooldownmsg", { time: timeLeft.toFixed(1), name: command.name })).then(purning);
+      message.reply(i18n.__mf("common.cooldownMessage", { time: timeLeft.toFixed(1), name: command.name })).then(purning);
       return false;
     }
   }
