@@ -8,6 +8,7 @@ import { CommandConditions } from "../interfaces/Command";
 export default {
   name: "skip",
   aliases: ["s"],
+  cooldown: 2,
   description: i18n.__("skip.description"),
   conditions: [
     CommandConditions.QUEUE_EXISTS,

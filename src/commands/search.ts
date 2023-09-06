@@ -9,6 +9,7 @@ import { CommandConditions } from "../interfaces/Command";
 export default {
   name: "search",
   aliases: ["sh"],
+  cooldown: 6,
   description: i18n.__("search.description"),
   conditions: [
     CommandConditions.QUEUE_EXISTS,

@@ -7,6 +7,7 @@ import { CommandConditions } from "../interfaces/Command";
 export default {
   name: "jumpto",
   aliases: ["jump"],
+  cooldown: 5,
   description: i18n.__("jumpto.description"),
   conditions: [
     CommandConditions.QUEUE_EXISTS,

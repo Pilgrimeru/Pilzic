@@ -6,6 +6,7 @@ import { config } from "../config";
 export default {
   name: "help",
   aliases: ["h"],
+  cooldown: 110,
   description: i18n.__("help.description"),
   async execute(message: Message) {
     

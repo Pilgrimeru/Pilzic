@@ -6,6 +6,7 @@ import { CommandConditions } from "../interfaces/Command";
 
 export default {
   name: "shuffle",
+  cooldown: 2,
   description: i18n.__("shuffle.description"),
   conditions: [
     CommandConditions.QUEUE_EXISTS,

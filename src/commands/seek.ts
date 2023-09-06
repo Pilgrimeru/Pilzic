@@ -10,6 +10,7 @@ const timeRegEx = /^(?:[0-9]|[0-5]\d):[0-5]\d(:[0-5]\d)?$/;
 
 export default {
   name: "seek",
+  cooldown: 5,
   description: i18n.__("seek.description"),
   conditions: [
     CommandConditions.QUEUE_EXISTS,

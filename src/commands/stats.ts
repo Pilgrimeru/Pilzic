@@ -7,7 +7,7 @@ import { purning } from "../utils/purning";
 
 export default {
   name: "stats",
-  cooldown: 1,
+  cooldown: 5,
   description: "Get information about the performance of the bot.",
   async execute(message: Message) {
     let memory = await si.mem();

@@ -9,6 +9,7 @@ import { CommandConditions } from "../interfaces/Command";
 export default {
   name: "lyrics",
   aliases: ["ly"],
+  cooldown: 3,
   description: i18n.__("lyrics.description"),
   conditions: [
     CommandConditions.QUEUE_EXISTS,

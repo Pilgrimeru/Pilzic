@@ -37,6 +37,7 @@ export default {
   }
 };
 
+
 function checkPermissionsAndWarn(command: Command, message: Message): boolean {
   const member = message.member!;
   const requiredPermissions = command.permissions as PermissionResolvable[];
@@ -73,7 +74,6 @@ function checkCooldownAndWarn(command: Command, message: Message) {
   setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
   return true;
 }
-
 
 function checkConditionsAndWarn(command: Command, message: Message): boolean {
   if (!command.conditions) return true;
@@ -120,5 +120,3 @@ function checkConditionsAndWarn(command: Command, message: Message): boolean {
   }
   return true;
 }
-
-
