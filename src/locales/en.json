@@ -116,7 +116,7 @@
 		"result": "Volume set to: **{arg}%**"
 	},
 	"nowplayingMsg": {
-		"startedPlaying": "▶ **Now Playing** ♪",
+		"startedPlaying": "**Now Playing** ♪",
 		"duration": "Duration: ",
 		"live": " ◉ LIVE"
 	},

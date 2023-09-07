@@ -76,7 +76,7 @@
 	},
 	"resume": {
 		"description": "Reprend la lecture de la musique en cours.",
-		"result": "La musique reprend. ▶"
+		"result": "La musique reprend. 🔀"
 	},
 	"search": {
 		"description": "Recherche et sélectionne des vidéos à écouter.",
@@ -116,7 +116,7 @@
 		"result": "Volume réglé sur : **{arg}%**"
 	},
 	"nowplayingMsg": {
-		"startedPlaying": "▶ **Lecture en cours** ♪",
+		"startedPlaying": "**Lecture en cours** ♪",
 		"duration": "Durée : ",
 		"live": " ◉ EN DIRECT"
 	},

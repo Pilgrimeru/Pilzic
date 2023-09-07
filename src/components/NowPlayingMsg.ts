@@ -29,8 +29,9 @@ export class nowPlayingMsg {
 
   public async send(song: Song) : Promise<void> {
     this.song = song;
+    const embed = this.song.playingEmbed();
     this.msg = await this.player.textChannel.send({
-      embeds: [song.playingEmbed()],
+      embeds: [embed.setTitle(`▶  ${embed.data.title}`)],
       components: [this.buildButtons()]
     });
     await this.createCollector();
@@ -49,12 +50,17 @@ export class nowPlayingMsg {
     if (!this.msg) return;
 
     let color = 0x69adc7;
+    let emoji = "▶";
     if (this.player.status === "paused" || this.player.status === "autopaused") {
       color = 0xd13939;
+      emoji = "❚❚"
     }
-    
+
+    const embed = this.song.playingEmbed().setColor(color);
+    embed.setTitle(`${emoji}  ${embed.data.title}`);
+
     this.msg.edit({
-      embeds: [this.song.playingEmbed().setColor(color)],
+      embeds: [embed],
       components: [this.buildButtons()]
     });
   }
