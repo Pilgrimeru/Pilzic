@@ -61,11 +61,6 @@
 		"description": "Go back to the previous song in the playback queue.",
 		"result": "Successfully returned to the previous song."
 	},
-	"pruning": {
-		"description": "Option to delete bot messages.",
-		"errorWritingFile": "An error occurred while writing to the file.",
-		"result": "Pruning is {result}."
-	},
 	"queue": {
 		"description": "Display the queue and the currently playing song.",
 		"currentPage": "Current Page - ",

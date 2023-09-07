@@ -61,11 +61,6 @@
 		"description": "Revenir en arrière dans la file d'attente de lecture.",
 		"result": "Retour à la chanson précédente réussi."
 	},
-	"pruning": {
-		"description": "Possibilité de supprimer les messages du bot.",
-		"errorWritingFile": "Une erreur s'est produite lors de l'écriture dans le fichier.",
-		"result": "Le nettoyage est {result}."
-	},
 	"queue": {
 		"description": "Affiche la file d'attente et la musique en cours de lecture.",
 		"currentPage": "Page actuelle - ",
