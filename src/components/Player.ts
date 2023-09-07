@@ -233,21 +233,21 @@ export class Player {
   private async setupQueueListeners(): Promise<void> {
 
     this.queue.onSongAdded( song => {
+      this.sendSongAddedMessage(song);
       if (this._stopped) {
         this._stopped = false;
         const current = this.queue.currentSong;
         current ? this.process(current) : this.stop();
       }
-      this.sendSongAddedMessage(song);
     });
 
     this.queue.onPlaylistAdded( playlist => {
+      this.sendPlaylistAddedMessage(playlist);
       if (this._stopped) {
         this._stopped = false;
         const current = this.queue.currentSong;
         current ? this.process(current) : this.stop();
       }
-      this.sendPlaylistAddedMessage(playlist);
     });
   }
 
