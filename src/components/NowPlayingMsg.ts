@@ -138,14 +138,7 @@ export class nowPlayingMsg {
       if (config.PRUNING) {
         this.msg.delete().catch(() => null);
       } else {
-        this.msg.edit({
-          embeds: [{
-            description: this.msg.embeds[0].description!,
-            thumbnail: this.msg.embeds[0].thumbnail!,
-            color: 0x69adc7
-          }],
-          components: []
-        });
+        this.msg.edit({ components: [] });
       }
     });
   }

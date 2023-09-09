@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { config } from "../config";
@@ -37,27 +37,25 @@ export default {
       return helpEmbed;
     }
 
+    const helpMsg = await message.reply({ embeds: [createHelpPage(page)] });
+    if (totalPages === 1) return;
+
     function createHelpButtons(page : number) : ActionRowBuilder<ButtonBuilder> {
-      const row = new ActionRowBuilder<ButtonBuilder>();
-      if (totalPages > 1) {
-        row.addComponents(
-          new ButtonBuilder()
-            .setCustomId('previous')
-            .setEmoji('⬅')
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(page === 1),
-          new ButtonBuilder()
-            .setCustomId('next')
-            .setEmoji('➡')
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(page === totalPages)
-        );
-      }
-
-      return row;
+      return new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId('previous')
+          .setEmoji('⬅')
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === 1),
+        new ButtonBuilder()
+          .setCustomId('next')
+          .setEmoji('➡')
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(page === totalPages)
+      );
     }
-
-    const helpMsg = await message.reply({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
+    
+    helpMsg.edit({components: [createHelpButtons(page)]});
     
     const collector = helpMsg.createMessageComponentCollector({ time: 120000 });
 
@@ -76,11 +74,7 @@ export default {
       if (config.PRUNING) {
         helpMsg.delete().catch(() => null);
       } else {
-        helpMsg.edit({
-          content: helpMsg.content,
-          embeds: helpMsg.embeds,
-          components: []
-        });
+        helpMsg.edit({ components: [] });
       }
     });
   }
