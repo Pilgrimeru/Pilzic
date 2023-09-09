@@ -82,7 +82,7 @@ function checkConditionsAndWarn(command: Command, message: Message): boolean {
 
   for (const condition of command.conditions) {
 
-    if (CommandConditions.QUEUE_EXISTS) {
+    if (condition === CommandConditions.QUEUE_EXISTS) {
       const player = bot.players.get(message.guild!.id);
       if (!player || !player.queue.currentSong) {
         message.reply(i18n.__("errors.notQueue")).then(purning);
