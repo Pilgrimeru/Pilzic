@@ -30,8 +30,6 @@ export default {
 
     const queue = player.queue;
 
-    if (queue.loop == "track") queue.loop = false;
-
     if (args[0] < -queue.index || args[0] >= queue.songs.length - queue.index)
       return commandTrigger
         .reply(i18n.__mf("jumpto.errorNotValid"))
@@ -39,7 +37,6 @@ export default {
 
     player.jumpTo(queue.index + Number(args[0]));
     
-
     return commandTrigger
       .reply(i18n.__mf("jumpto.result", { arg: args[0] }))
       .then(purning);

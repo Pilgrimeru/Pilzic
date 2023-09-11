@@ -28,7 +28,7 @@ export default {
         .setStyle(ButtonStyle.Secondary),
 
       new ButtonBuilder()
-        .setCustomId("false")
+        .setCustomId("disabled")
         .setEmoji("🚫")
         .setStyle(ButtonStyle.Secondary)
     );
@@ -40,17 +40,12 @@ export default {
 
     try {
       await response
-      .awaitMessageComponent({
-        time: 30000
-      })
+      .awaitMessageComponent({ time: 30000 })
       .then(async (selectInteraction) => {
         if ((selectInteraction instanceof ButtonInteraction)) {
-          if (selectInteraction.customId === "queue") {
-            player.queue.loop = "queue"
-          } else if (selectInteraction.customId === "track") {
-            player.queue.loop = "track"
-          } else {
-            player.queue.loop = false;
+          const customId = selectInteraction.customId;
+          if (customId === "queue" || customId === "track" || customId === "disabled") {
+            player.queue.loop = customId;
           }
         }
         selectInteraction.update({content: i18n.__mf("loop.result", { loop: player.queue.loop}), components: []});

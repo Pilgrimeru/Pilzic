@@ -8,7 +8,7 @@ type songAddedCallback = (song : Song) => any;
 
 export class Queue {
   
-  public loop : "queue" | "track" | false = false;
+  public loop : "queue" | "track" | "disabled" = "disabled";
   
   private _index: number = 0;
   private _songs: Song[] = [];
@@ -46,7 +46,7 @@ export class Queue {
   public clear() : void {
     this._index = 0;
     this._songs.length = 0;
-    this.loop = false;
+    this.loop = "disabled";
   }
 
   public shuffle() : void {
@@ -107,7 +107,7 @@ export class Queue {
   private setupPlayerListeners() {
     
     this.player.onSkip(() => {
-      if (this.loop === "track") this.loop = false;
+      if (this.loop === "track") this.loop = "disabled";
       if (this._index !== this._songs.length - 1) {
         this._index += 1;
       } else if (this.loop === "queue") {
@@ -116,14 +116,14 @@ export class Queue {
     });
 
     this.player.onJump(songId => {
-      if (this.loop === "track") this.loop = false;
+      if (this.loop === "track") this.loop = "disabled";
       if (songId >= this._songs.length) songId = this._songs.length -1;
       else if (songId < 0) songId = 0;
       this._index = songId;
     })
 
     this.player.onPrevious(() => {
-      if (this.loop === "track") this.loop = false;
+      if (this.loop === "track") this.loop = "disabled";
       
       if (this._index <= 0 && this.loop === "queue") {
         this._index = this._songs.length - 1;
