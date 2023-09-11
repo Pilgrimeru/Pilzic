@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Message, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, CommandInteraction, Message, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
 import youtube, { Video } from "youtube-sr";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
@@ -9,32 +9,37 @@ import { CommandConditions } from "../interfaces/Command";
 export default {
   name: "search",
   aliases: ["sh"],
-  cooldown: 6,
   description: i18n.__("search.description"),
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
+  options: [
+    {
+      name: 'search',
+      description: 'your youtube search.',
+      type: ApplicationCommandOptionType.String,
+      required: true,
+    }
   ],
-  async execute(message: Message, args: any[]) {
+  conditions: [
+    CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL,
+    CommandConditions.CAN_BOT_SPEAK
+  ],
+  async execute(commandTrigger: CommandInteraction | Message, args: any[]) {
     
     if (!args.length)
-      return message
+      return commandTrigger
         .reply(i18n.__mf("search.usageReply", { prefix: bot.prefix, name: module.exports.name }))
-        .then(msg => purning(msg));
+        .then(purning);
 
     const search = args.join(" ");
 
     let results: Video[] = [];
 
-    const loadingReply = await message.reply(i18n.__mf("common.loading"));
+    const response = await commandTrigger.reply(i18n.__mf("common.loading"));
 
     try {
       results = await youtube.search(search, { limit: 10, type: "video" });
     } catch (error: any) {
       console.error(error);
-      return message.reply(i18n.__("errors.command")).then(msg => purning(msg));
-    } finally {
-      loadingReply.delete().catch(() => null);
+      return response.edit(i18n.__("errors.command")).then(msg => purning(msg));
     }
 
     const options = results
@@ -47,7 +52,7 @@ export default {
       });
 
     if (options.length === 0)
-      return message.reply(i18n.__("errors.command")).then(msg => purning(msg));
+      return response.edit(i18n.__("errors.command")).then(purning);
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()
@@ -58,22 +63,25 @@ export default {
         .addOptions(options)
     );
 
-    const resultsMessage = await message.reply({
+    await response.edit({
       content: i18n.__("search.chooseSong"),
       components: [row]
     });
-
-    resultsMessage
+    
+    try {
+      response
       .awaitMessageComponent({
         time: 30000
       })
       .then(async (selectInteraction) => {
         if ((selectInteraction instanceof StringSelectMenuInteraction)) {
-          await selectInteraction.update({ content: i18n.__("search.finished"), components: [] }).catch(console.error);
-          bot.commands.get("play")!.execute(message, [selectInteraction.values[0]]);
+          await response.edit({ content: i18n.__("search.finished"), components: [] }).catch(console.error);
+          await bot.commands.get("play")!.execute(selectInteraction, [selectInteraction.values[0]]);
+          config.PRUNING && response.delete().catch(() => null);
         }
-        config.PRUNING && resultsMessage.delete().catch(() => null);
       })
-      .catch(() => resultsMessage.delete().catch(() => null));
+    } catch (error) {
+      response.delete().catch(() => null)
+    }
   }
 };

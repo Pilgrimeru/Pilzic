@@ -1,14 +1,14 @@
-import { Message } from "discord.js";
+import { CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { purning } from "../utils/purning";
 
 export default {
   name: "ping",
   description: i18n.__("ping.description"),
-  execute(message: Message) {
+  execute(commandTrigger: CommandInteraction | Message) {
     
-    message
-      .reply(i18n.__mf("ping.result", { ping: Math.round(message.client.ws.ping) }))
+    commandTrigger
+      .reply(i18n.__mf("ping.result", { ping: Math.round(commandTrigger.client.ws.ping) }))
       .then(purning);
   }
 };

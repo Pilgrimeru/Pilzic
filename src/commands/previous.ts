@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
@@ -11,11 +11,11 @@ export default {
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  execute(message: Message) {
-    const player = bot.players.get(message.guild!.id)!;
+  execute(commandTrigger: CommandInteraction | Message) {
+    const player = bot.players.get(commandTrigger.guild!.id)!;
 
     player.previous();
   
-    player.textChannel.send(i18n.__mf("previous.result")).then(purning);
+    commandTrigger.reply(i18n.__mf("previous.result")).then(purning);
   }
 };

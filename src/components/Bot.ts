@@ -1,4 +1,4 @@
-import { Client, Collection, GatewayIntentBits, Snowflake } from "discord.js";
+import { ApplicationCommandDataResolvable, Client, Collection, GatewayIntentBits, Snowflake } from "discord.js";
 import { readdirSync } from "fs";
 import { join } from "path";
 import { getFreeClientID, setToken } from "play-dl";
@@ -12,8 +12,7 @@ export class Bot extends Client {
   public readonly prefix = config.PREFIX;
   public commands = new Collection<string, Command>();
   public cooldowns = new Collection<string, Collection<Snowflake, number>>();
-  public players = new Collection<Snowflake, Player>();
-  
+  public players = new Collection<Snowflake, Player>();  
 
   public constructor() {
     super({
@@ -44,12 +43,24 @@ export class Bot extends Client {
   }
 
   private async importCommands() : Promise<void> {
+    const slashCommands: ApplicationCommandDataResolvable[] = [];
     const commandFiles = readdirSync(join(__dirname, "..", "commands")).filter((file) => !file.endsWith(".map"));
 
     for (const file of commandFiles) {
       const command = await import(join(__dirname, "..", "commands", `${file}`));
       this.commands.set(command.default.name, command.default);
+      const slashCommand : ApplicationCommandDataResolvable = {
+        name: command.default.name,
+        description: command.default.description,
+        options: command.default.options,
+        defaultMemberPermissions: command.default.permissions,
+      }
+      slashCommands.push(slashCommand);
     }
+
+    this.on("ready" , () => {
+      this.application?.commands.set(slashCommands);
+    })
   }
 
   private async loadEvents() : Promise<void> {

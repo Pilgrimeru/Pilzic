@@ -1,7 +1,7 @@
-import { AudioPlayerStatus } from "@discordjs/voice";
 import {
   ActionRowBuilder,
   ButtonBuilder,
+  ButtonInteraction,
   ButtonStyle,
   InteractionCollector,
   Message,
@@ -9,9 +9,11 @@ import {
 } from "discord.js";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
-import { purning } from "../utils/purning";
 import { Player } from "./Player";
 import { Song } from "./Song";
+import { bot } from "../index";
+import { checkConditions } from "../utils/checkConditions";
+import { checkPermissions } from "../utils/checkPermissions";
 
 
 export class nowPlayingMsg {
@@ -66,10 +68,7 @@ export class nowPlayingMsg {
   }
 
   private buildButtons() : ActionRowBuilder<ButtonBuilder> {
-    let pauseEmoji = '⏸️';
-    if (this.player.status === "paused" || this.player.status === "autopaused") {
-      pauseEmoji = '▶️';
-    }
+    const isPaused = this.player.status === "paused" || this.player.status === "autopaused";
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
@@ -84,8 +83,8 @@ export class nowPlayingMsg {
         .setDisabled(!this.player.queue.canBack()),
 
       new ButtonBuilder()
-        .setCustomId("pause")
-        .setEmoji(pauseEmoji)
+        .setCustomId(isPaused ? "resume" : "pause")
+        .setEmoji(isPaused ? '▶️' : '⏸️')
         .setStyle(ButtonStyle.Secondary),
 
       new ButtonBuilder()
@@ -100,37 +99,23 @@ export class nowPlayingMsg {
     const channel = this.player.textChannel;
     this.collector =  this.msg.createMessageComponentCollector();
 
-    this.collector.on("collect", async (b) => {
+    this.collector.on("collect", async (b : ButtonInteraction) => {
       const interactUser = await channel.guild.members.fetch(b.user);
-      const canWrite = channel.permissionsFor(interactUser).has(PermissionsBitField.Flags.SendMessages, true);
+      const command = bot.commands.get(b.customId);
+      if (!command) return;
 
-      if (interactUser.voice.channelId === interactUser.guild.members.me!.voice.channelId) {
-        if (b.customId === "stop" && canWrite) {
-          this.player.stop();
-          channel.send(i18n.__("stop.result")).then(purning);
-        }
-        else if (b.customId === "skip" && canWrite) {
-          this.player.skip();
-        }
-        if (b.customId === "previous" && canWrite) {
-          this.player.previous();
-        }
-        if (b.customId === "pause" && canWrite) {
-          if (this.player.status == AudioPlayerStatus.Playing) {
-            this.player.pause();
-            this.edit();
-            channel.send(i18n.__mf("pause.result")).then(purning);
-          } else {
-            this.player.resume();
-            this.edit();
-            channel.send(i18n.__mf("resume.result")).then(purning);
-          }
-        }
-      } else {
-        channel.send(i18n.__("errors.notInSameChannel"))
-          .then(purning);
-      }
-      await b.deferUpdate();
+      const canWrite = channel.permissionsFor(interactUser).has(PermissionsBitField.Flags.SendMessages, true);
+      if (!canWrite) b.reply(i18n.__("nowplayingMsg.errorWritePermission"));
+      const checkConditionsResult = checkConditions(command, interactUser);
+      if (checkConditionsResult !== "passed") b.reply(checkConditionsResult);
+      const checkPermissionsResult = checkPermissions(command, interactUser);
+      if (checkPermissionsResult !== "passed")  b.reply(checkPermissionsResult);
+
+      if (b.replied) return;
+
+      command.execute(b);
+      if (b.customId === "pause" || b.customId === "resume") this.edit();
+
     });
 
     this.collector.on("end", () => {

@@ -1,7 +1,7 @@
-import { Message } from "discord.js";
+import { InteractionResponse, Message } from "discord.js";
 import { config } from "../config";
 
-export async function purning(msg: Message, long?: boolean) {
+export async function purning(msg: Message | InteractionResponse, long?: boolean) {
 
   if (!config.PRUNING) return;
   let time = long ? 120 : 15;

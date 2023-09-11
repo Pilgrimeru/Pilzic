@@ -118,7 +118,8 @@
 	"nowplayingMsg": {
 		"startedPlaying": "**Now Playing** ♪",
 		"duration": "Duration: ",
-		"live": " ◉ LIVE"
+		"live": " ◉ LIVE",
+    "errorWritePermission": "You must be able to write in this channel to interact."
 	},
 	"player": {
 		"songAdded": "✅ [**{title}**]({url}) has been added to the queue.",

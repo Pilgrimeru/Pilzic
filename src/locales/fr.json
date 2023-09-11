@@ -118,7 +118,8 @@
 	"nowplayingMsg": {
 		"startedPlaying": "**Lecture en cours** ♪",
 		"duration": "Durée : ",
-		"live": " ◉ EN DIRECT"
+		"live": " ◉ EN DIRECT",
+    "errorWritePermission": "Vous devez pouvoir écrire dans ce salon pour interagir."
 	},
 	"player": {
 		"songAdded": "✅ [**{title}**]({url}) a été ajouté à la file d'attente.",

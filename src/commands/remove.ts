@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
@@ -14,11 +14,19 @@ export default {
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  execute(message: Message, args: any[]) {
+  options: [
+    {
+      name: "position",
+      description: "You can also remove multiple songs with ',' symbole",
+      type: ApplicationCommandOptionType.String,
+      required: true,
+    }
+  ],
+  execute(commandTrigger: CommandInteraction | Message, args: any[]) {
     
-    if (!args.length) return message.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
+    if (!args.length) return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
     
-    const player = bot.players.get(message.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild!.id)!;
     
     const removeArgs = args.join("");
     
@@ -29,25 +37,25 @@ export default {
       let removed = player.queue.remove(...indexs);
 
       if (removed.length === 0) {
-        return message.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
+        return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
       } 
 
       if (removed.length === 1) {
-        return player.textChannel.send(
+        return commandTrigger.reply(
           i18n.__mf("remove.result", {
             title: removed[0].title
           })
         ).then(purning);
       }
 
-      return player.textChannel.send(
+      return commandTrigger.reply(
         i18n.__mf("remove.results", {
           titles: removed.map((song) => song.title).join(",\n")
         })
       ).then(purning);
         
     } else {
-      return message.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
+      return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
     }
   }
 };

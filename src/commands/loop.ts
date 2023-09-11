@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Message } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
@@ -12,9 +12,9 @@ export default {
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  async execute(message: Message) {
+  async execute(commandTrigger: CommandInteraction | Message) {
 
-    const player = bot.players.get(message.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild!.id)!;
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
@@ -33,12 +33,13 @@ export default {
         .setStyle(ButtonStyle.Secondary)
     );
 
-    const resultsMessage = await message.reply({
+    const response = await commandTrigger.reply({
       content: i18n.__("loop.chooseMode"),
       components: [row]
     });
 
-    await resultsMessage
+    try {
+      await response
       .awaitMessageComponent({
         time: 30000
       })
@@ -54,8 +55,10 @@ export default {
         }
         selectInteraction.update({content: i18n.__mf("loop.result", { loop: player.queue.loop}), components: []});
       })
-      .catch(() => resultsMessage.delete().catch(() => null));
+    } catch (error) {
+      response.delete().catch(() => null);
+    }
 
-    purning(resultsMessage);
+    purning(response);
   }
 };

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder, Message } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { config } from "../config";
@@ -7,7 +7,7 @@ export default {
   name: "help",
   aliases: ["h"],
   description: i18n.__("help.description"),
-  async execute(message: Message) {
+  async execute(commandTrigger: CommandInteraction | Message) {
     
     let commands = Array.from(bot.commands.values());
     const commandsPerPage = 15;
@@ -20,7 +20,7 @@ export default {
       const endIndex = startIndex + commandsPerPage;
 
       const helpEmbed = new EmbedBuilder()
-        .setTitle(i18n.__mf('help.embedTitle', { botname: message.client.user!.username }))
+        .setTitle(i18n.__mf('help.embedTitle', { botname: commandTrigger.client.user!.username }))
         .setDescription(`${i18n.__('help.embedDescription')} (${page}/${totalPages})`)
         .setColor('#69adc7');
 
@@ -36,7 +36,7 @@ export default {
       return helpEmbed;
     }
 
-    const helpMsg = await message.reply({ embeds: [createHelpPage(page)] });
+    const response = await commandTrigger.reply({ embeds: [createHelpPage(page)] });
     if (totalPages === 1) return;
 
     function createHelpButtons(page : number) : ActionRowBuilder<ButtonBuilder> {
@@ -54,9 +54,9 @@ export default {
       );
     }
     
-    helpMsg.edit({components: [createHelpButtons(page)]});
+    response.edit({components: [createHelpButtons(page)]});
     
-    const collector = helpMsg.createMessageComponentCollector({ time: 120000 });
+    const collector = response.createMessageComponentCollector({ time: 120000 });
 
     collector.on('collect', async (interaction) => {
       if (interaction.customId === 'previous' && page > 1) {
@@ -65,15 +65,15 @@ export default {
         page++;
       }
 
-      await helpMsg.edit({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
+      await response.edit({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
       interaction.deferUpdate();
     });
 
     collector.on('end', () => {
       if (config.PRUNING) {
-        helpMsg.delete().catch(() => null);
+        response.delete().catch(() => null);
       } else {
-        helpMsg.edit({ components: [] });
+        response.edit({ components: [] });
       }
     });
   }

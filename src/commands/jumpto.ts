@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
@@ -8,31 +8,40 @@ export default {
   name: "jumpto",
   aliases: ["jump"],
   description: i18n.__("jumpto.description"),
+  options: [
+    {
+      name: "position",
+      description: "the number of the song in the queue",
+      type: ApplicationCommandOptionType.Number,
+      required: true,
+    }
+  ],
   conditions: [
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  execute(message: Message, args: Array<any>) {
+  execute(commandTrigger: CommandInteraction | Message, args: Array<any>) {
     if (!args.length || isNaN(args[0]))
-      return message
+      return commandTrigger
         .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix}))
         .then(purning);
 
-    const player = bot.players.get(message.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild!.id)!;
 
     const queue = player.queue;
 
     if (queue.loop == "track") queue.loop = false;
 
     if (args[0] < -queue.index || args[0] >= queue.songs.length - queue.index)
-      return message
+      return commandTrigger
         .reply(i18n.__mf("jumpto.errorNotValid"))
         .then(purning);
 
     player.jumpTo(queue.index + Number(args[0]));
+    
 
-    player.textChannel
-      .send(i18n.__mf("jumpto.result", { arg: args[0] }))
+    return commandTrigger
+      .reply(i18n.__mf("jumpto.result", { arg: args[0] }))
       .then(purning);
   }
 };

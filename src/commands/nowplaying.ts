@@ -1,4 +1,4 @@
-import { EmbedBuilder, Message } from "discord.js";
+import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { splitBar } from "string-progressbar";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
@@ -13,9 +13,9 @@ export default {
   conditions: [
     CommandConditions.QUEUE_EXISTS
   ],
-  execute(message: Message) {
+  execute(commandTrigger: CommandInteraction | Message) {
     
-    const player = bot.players.get(message.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild!.id)!;
 
     const song = player.queue.currentSong!;
     const seek = player.playbackDuration;
@@ -47,6 +47,6 @@ export default {
       });
     }
 
-    return message.reply({ embeds: [nowPlaying] }).then(msg => purning(msg, true));
+    return commandTrigger.reply({ embeds: [nowPlaying] }).then(msg => purning(msg, true));
   }
 };

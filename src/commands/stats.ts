@@ -1,4 +1,4 @@
-import { EmbedBuilder, Message } from "discord.js";
+import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { memoryUsage, pid } from "node:process";
 import si from "systeminformation";
 import { bot } from "../index";
@@ -8,7 +8,7 @@ import { purning } from "../utils/purning";
 export default {
   name: "stats",
   description: "Get information about the performance of the bot.",
-  async execute(message: Message) {
+  async execute(commandTrigger: CommandInteraction | Message) {
     let memory = await si.mem();
     let process = (await si.processes()).list.find(p => p.pid === pid);
 
@@ -35,6 +35,6 @@ export default {
         }
       )
       .setThumbnail(bot.user ? bot.user.avatarURL() : null);
-    message.reply({ embeds: [embed] }).then(purning);
+      commandTrigger.reply({ embeds: [embed] }).then(purning);
   }
 };
