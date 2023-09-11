@@ -53,7 +53,7 @@ export class Bot extends Client {
         name: command.default.name,
         description: command.default.description,
         options: command.default.options,
-        defaultMemberPermissions: command.default.permissions,
+        defaultMemberPermissions: command.default.permissions ?? null,
       }
       slashCommands.push(slashCommand);
     }
