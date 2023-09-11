@@ -105,11 +105,12 @@ export class nowPlayingMsg {
       if (!command) return;
 
       const canWrite = channel.permissionsFor(interactUser).has(PermissionsBitField.Flags.SendMessages, true);
-      if (!canWrite) b.reply(i18n.__("nowplayingMsg.errorWritePermission"));
       const checkConditionsResult = checkConditions(command, interactUser);
-      if (checkConditionsResult !== "passed") b.reply(checkConditionsResult);
       const checkPermissionsResult = checkPermissions(command, interactUser);
-      if (checkPermissionsResult !== "passed")  b.reply(checkPermissionsResult);
+
+      if (!canWrite) b.reply(i18n.__("nowplayingMsg.errorWritePermission"));
+      else if (checkConditionsResult !== "passed") b.reply(checkConditionsResult);
+      else if (checkPermissionsResult !== "passed") b.reply(checkPermissionsResult);
 
       if (b.replied) return;
 
