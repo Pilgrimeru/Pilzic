@@ -46,10 +46,11 @@ export default {
     if (!isSlashCommand && args.length >= 2 && args[0].toLowerCase() === "playlist") {
       args = args.slice(1);
       playlistResearch = true;
-    }
-    if (isSlashCommand && args.at(-1)?.toString() === "true") {
+    } else if (isSlashCommand && args.at(-1)?.toString() === "true") {
       args.slice(args.length-1);
       playlistResearch = true;
+    } else if (isSlashCommand && args.at(-1)?.toString() === "false") {
+      args.slice(args.length-1);
     }
 
     const response = await commandTrigger.reply(i18n.__mf("common.loading"));
