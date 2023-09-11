@@ -21,7 +21,7 @@ export default {
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
   execute(commandTrigger: CommandInteraction | Message, args: string[]) {
-    if (!args.length || isNaN(args[0]))
+    if (!args.length || isNaN(Number(args[0])))
       return commandTrigger
         .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix}))
         .then(purning);
@@ -29,16 +29,17 @@ export default {
     const player = bot.players.get(commandTrigger.guild!.id)!;
 
     const queue = player.queue;
+    const position = Number(args[0]);
 
-    if (args[0] < -queue.index || args[0] >= queue.songs.length - queue.index)
+    if (position < -queue.index || position >= queue.songs.length - queue.index)
       return commandTrigger
         .reply(i18n.__mf("jumpto.errorNotValid"))
         .then(purning);
 
-    player.jumpTo(queue.index + Number(args[0]));
+    player.jumpTo(queue.index + position);
     
     return commandTrigger
-      .reply(i18n.__mf("jumpto.result", { arg: args[0] }))
+      .reply(i18n.__mf("jumpto.result", { arg: position }))
       .then(purning);
   }
 };
