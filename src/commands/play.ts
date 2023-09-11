@@ -12,7 +12,6 @@ import { CommandConditions } from "../interfaces/Command";
 
 export default {
   name: "play",
-  cooldown: 3,
   aliases: ["p"],
   description: i18n.__("play.description"),
   permissions: [

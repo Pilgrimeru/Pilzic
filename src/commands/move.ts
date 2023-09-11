@@ -7,7 +7,6 @@ import { CommandConditions } from "../interfaces/Command";
 export default {
   name: "move",
   aliases: ["mv"],
-  cooldown: 2,
   description: i18n.__("move.description"),
   conditions: [
     CommandConditions.QUEUE_EXISTS,

@@ -9,7 +9,6 @@ import { CommandConditions } from "../interfaces/Command";
 export default {
   name: "nowplaying",
   aliases: ["np"],
-  cooldown: 10,
   description: i18n.__("nowplaying.description"),
   conditions: [
     CommandConditions.QUEUE_EXISTS

@@ -7,7 +7,6 @@ import { CommandConditions } from "../interfaces/Command";
 
 export default {
   name: "queue",
-  cooldown: 5,
   aliases: ["q"],
   description: i18n.__("queue.description"),
   conditions: [

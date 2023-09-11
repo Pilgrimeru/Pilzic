@@ -13,7 +13,6 @@ import { CommandConditions } from "../interfaces/Command";
 
 export default {
   name: "insert",
-  cooldown: 3,
   description: i18n.__("insert.description"),
   permissions: [
     PermissionsBitField.Flags.Connect,
