@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Message } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
@@ -12,9 +12,29 @@ export default {
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  async execute(commandTrigger: CommandInteraction | Message) {
+  options: [
+    {
+      name: "mode",
+      description: "the loop mode",
+      type: ApplicationCommandOptionType.String,
+      required: false,
+      choices: [
+        { name: "track", value: "track" },
+        { name: "queue", value: "queue" },
+        { name: "disabled", value: "disabled" }
+      ]
+    }
+  ],
+  async execute(commandTrigger: CommandInteraction | Message, args: Array<any>) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
+
+    if (args.length >= 1) {
+      if (args[0] === "queue" || args[0] === "track" || args[0] === "disabled") {
+        player.queue.loop = args[0];
+        return commandTrigger.reply(i18n.__mf("loop.result", { loop: player.queue.loop}));
+      }
+    }
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
