@@ -25,7 +25,7 @@ export default {
       ]
     }
   ],
-  async execute(commandTrigger: CommandInteraction | Message, args: Array<any>) {
+  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
 

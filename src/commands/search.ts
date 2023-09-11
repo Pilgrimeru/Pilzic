@@ -22,7 +22,7 @@ export default {
     CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL,
     CommandConditions.CAN_BOT_SPEAK
   ],
-  async execute(commandTrigger: CommandInteraction | Message, args: any[]) {
+  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
     
     if (!args.length)
       return commandTrigger

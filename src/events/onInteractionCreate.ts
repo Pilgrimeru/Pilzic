@@ -22,7 +22,7 @@ export default {
       const command = bot.commands.get(interaction.commandName);
       if (!command) return;
       const optionsData = interaction.options.data;
-      const optionValues = optionsData.map((option) => option.value);
+      const optionValues = optionsData.map((option) => option.value?.toString()).filter((option) => option !== undefined) as string[];
 
       const user = interaction.guild!.members.cache.get(interaction.user.id)!;
 

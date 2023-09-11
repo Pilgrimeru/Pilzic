@@ -22,7 +22,7 @@ export default {
       required: true,
     }
   ],
-  execute(commandTrigger: CommandInteraction | Message, args: any[]) {
+  execute(commandTrigger: CommandInteraction | Message, args: string[]) {
     
     if (!args.length) return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
     

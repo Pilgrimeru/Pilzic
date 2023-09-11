@@ -23,9 +23,9 @@ export default {
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  async execute(commandTrigger: CommandInteraction | Message, args: Array<any>) {
+  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
-    if (!args.length || isNaN(args[0] && !args[0].match(timeRegEx)))
+    if (!args.length || (isNaN(Number(args[0])) && !args[0].match(timeRegEx)))
       return commandTrigger
         .reply(i18n.__mf("seek.usageReply", { prefix: bot.prefix}))
         .then(purning);

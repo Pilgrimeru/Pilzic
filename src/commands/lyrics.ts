@@ -22,7 +22,7 @@ export default {
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  async execute(commandTrigger: CommandInteraction | Message, args: Array<any>) {
+  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
     
     const player = bot.players.get(commandTrigger.guild!.id)!;
     

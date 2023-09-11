@@ -20,7 +20,7 @@ export default {
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  execute(commandTrigger: CommandInteraction | Message, args: Array<any>) {
+  execute(commandTrigger: CommandInteraction | Message, args: string[]) {
     if (!args.length || isNaN(args[0]))
       return commandTrigger
         .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix}))

@@ -21,20 +21,22 @@ export default {
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  execute(commandTrigger: CommandInteraction | Message, args: Array<any>) {
+  execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
-    
+
     if (!args[0])
       return commandTrigger.reply(i18n.__mf("volume.currentVolume", { volume: player.volume })).then(purning);
 
-    if (isNaN(args[0]))
+    const level = Number(args[0]);
+
+    if (isNaN(level))
       return commandTrigger.reply(i18n.__("volume.errorNotNumber")).then(purning);
 
-    if (Number(args[0]) > 100 || Number(args[0]) < 0)
+    if (level > 100 || level < 0)
       return commandTrigger.reply(i18n.__("volume.intervalError")).then(purning);
 
-    player.volume = args[0];
+    player.volume = level;
     
     return commandTrigger.reply(i18n.__mf("volume.result", { arg: args[0] })).then(purning);
   }

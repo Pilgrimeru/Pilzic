@@ -25,22 +25,24 @@ export default {
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  execute(commandTrigger: CommandInteraction | Message, args: number[]) {
+  execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
-    if (!args.length || isNaN(args[0]) || args[0] < 1)
+    if (!args.length || isNaN(Number(args[0])) || Number(args[0]) < 1)
       return commandTrigger.reply(i18n.__mf("move.usagesReply", { prefix: bot.prefix })).then(purning);
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
 
-    if (!args[1]) args[1] = player.queue.index + 1;
+    const pos1 = Number(args[0]);
+    let pos2 = !args[1] ? player.queue.index + 1 : Number(args[1]);
+    if (isNaN(pos2)) pos2 = player.queue.index + 1;
 
-    const song = player.queue.songs[args[0]];
-    player.queue.move((Number(args[0]) + player.queue.index), (Number(args[1]) + player.queue.index));
+    const song = player.queue.songs[pos1];
+    player.queue.move((pos1 + player.queue.index), (pos2 + player.queue.index));
 
     commandTrigger.reply(
       i18n.__mf("move.result", {
         title: song.title,
-        index: args[1]
+        index: pos2
       })
     ).then(purning);
   }

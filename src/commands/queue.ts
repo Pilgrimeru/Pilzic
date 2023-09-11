@@ -12,7 +12,7 @@ export default {
   conditions: [
     CommandConditions.QUEUE_EXISTS
   ],
-  async execute(commandTrigger: CommandInteraction | Message, args: Array<any>) {
+  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
     player.queue.songs.slice(player.queue.index)
@@ -23,8 +23,9 @@ export default {
     const embeds = generateQueueEmbed(commandTrigger, followingSongs, previousSongs);
 
     let currentPage = Math.ceil(previousSongs.length / 10);
-    if (!isNaN(args[0]) && args[0] > 0 && args[0] <= embeds.length) {
-      currentPage = args[0] - 1;
+    const wantedPage = Number(args[0]);
+    if (!isNaN(wantedPage) && wantedPage > 0 && wantedPage <= embeds.length) {
+      currentPage = wantedPage - 1;
     }
 
     let response: Message | InteractionResponse;
