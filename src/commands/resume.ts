@@ -1,4 +1,4 @@
-import { ButtonInteraction, ChatInputCommandInteraction, CommandInteraction, Message, RepliableInteraction } from "discord.js";
+import { ButtonInteraction, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
