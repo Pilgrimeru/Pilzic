@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
+import { ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 // @ts-ignore
@@ -10,19 +10,27 @@ export default {
   name: "lyrics",
   aliases: ["ly"],
   description: i18n.__("lyrics.description"),
+  options: [
+    {
+      name: 'name',
+      description: 'the name of the song.',
+      type: ApplicationCommandOptionType.String,
+      required: false,
+    }
+  ],
   conditions: [
     CommandConditions.QUEUE_EXISTS,
     CommandConditions.IS_IN_SAME_CHANNEL
   ],
-  async execute(commandTrigger: CommandInteraction | Message) {
+  async execute(commandTrigger: CommandInteraction | Message, args: Array<any>) {
     
     const player = bot.players.get(commandTrigger.guild!.id)!;
     
-    let lyrics = null;
-    const title = player.queue.currentSong!.title;
+    const title = args.length === 0 ? player.queue.currentSong!.title : args.join(" ");
     
     const response = await commandTrigger.reply(i18n.__mf("common.loading"));
 
+    let lyrics = null;
     try {
       lyrics = await lyricsFinder(title, "");
       if (!lyrics) lyrics = i18n.__mf("lyrics.lyricsNotFound", { title: title });
