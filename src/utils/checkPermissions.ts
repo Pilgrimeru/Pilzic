@@ -1,5 +1,5 @@
 import { GuildMember, PermissionResolvable } from "discord.js";
-import { Command } from "../interfaces/Command";
+import { Command } from "../types/Command";
 
 export function checkPermissions(command: Command, guildMember: GuildMember): string {
   const requiredPermissions = command.permissions as PermissionResolvable[];

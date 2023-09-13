@@ -123,7 +123,7 @@
 	},
 	"player": {
 		"songAdded": "✅ [**{title}**]({url}) a été ajouté à la file d'attente.",
-		"playlistAdded": "✅ La playlist [**{title}**]({url}) ({length} pistes) a été ajoutée à la file d'attente.",
+    "playlistAdded": "✅ La playlist [**{title}**]({url}) contenant {length} pistes d'une durée totale de {duration} a été ajoutée à la file d'attente.",
 		"queueEnded": "La file d'attente est terminée.",
 		"leaveChannel": "Je quitte le salon vocal.",
 		"error": "Une erreur s'est produite lors de la tentative de lecture de l'audio."

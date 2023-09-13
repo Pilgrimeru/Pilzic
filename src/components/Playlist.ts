@@ -11,6 +11,7 @@ import {
 } from '../errors/ExtractionErrors';
 import { bot } from '../index';
 import { Song } from "./Song";
+import { formatTime } from '../utils/formatTime';
 const { getPreview, getTracks } = require('spotify-url-info')(fetch);
 
 interface PlaylistData {
@@ -24,10 +25,14 @@ export class Playlist {
   public readonly title: string;
   public readonly url: string;
   public readonly songs: Song[];
+  public readonly duration: number;
 
 
   public constructor(options: PlaylistData) {
     Object.assign(this, options);
+    let total = 0;
+    options.songs.forEach((songs) => {total += songs.duration});
+    this.duration = total;
   }
 
 

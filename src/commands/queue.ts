@@ -3,15 +3,20 @@ import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Song } from "../components/Song";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
-export default {
-  name: "queue",
-  aliases: ["q"],
-  description: i18n.__("queue.description"),
-  conditions: [
-    CommandConditions.QUEUE_EXISTS
-  ],
+export default class QueueCommand extends Command {
+  constructor() {
+    super({
+      name: "queue",
+      aliases: ["q"],
+      description: i18n.__("queue.description"),
+      conditions: [
+        CommandConditions.QUEUE_EXISTS
+      ],
+    })
+  }
+  
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;

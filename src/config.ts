@@ -1,5 +1,5 @@
 import { config as dotenvConfig } from 'dotenv';
-import { Config } from "./interfaces/Config";
+import { Config } from "./types/Config";
 
 let config: Config;
 dotenvConfig({ path: 'config.env' })

@@ -4,24 +4,28 @@ import { bot } from "../index";
 // @ts-ignore
 import lyricsFinder from "lyrics-finder";
 import { purning } from "../utils/purning";
-import { CommandConditions } from "../interfaces/Command";
-
-export default {
-  name: "lyrics",
-  aliases: ["ly"],
-  description: i18n.__("lyrics.description"),
-  options: [
-    {
-      name: 'name',
-      description: 'the name of the song.',
-      type: ApplicationCommandOptionType.String,
-      required: false,
-    }
-  ],
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
-  ],
+import { Command, CommandConditions } from "../types/Command";
+export default class LyricsCommand extends Command {
+  constructor() {
+    super({
+      name: "lyrics",
+      aliases: ["ly"],
+      description: i18n.__("lyrics.description"),
+      options: [
+        {
+          name: 'name',
+          description: 'the name of the song.',
+          type: ApplicationCommandOptionType.String,
+          required: false,
+        }
+      ],
+      conditions: [
+        CommandConditions.QUEUE_EXISTS,
+        CommandConditions.IS_IN_SAME_CHANNEL
+      ],
+    })
+  }
+  
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
     
     const player = bot.players.get(commandTrigger.guild!.id)!;

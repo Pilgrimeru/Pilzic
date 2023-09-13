@@ -2,29 +2,34 @@ import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonIn
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
-export default {
-  name: "loop",
-  aliases: ["l"],
-  description: i18n.__("loop.description"),
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
-  ],
-  options: [
-    {
-      name: "mode",
-      description: "the loop mode",
-      type: ApplicationCommandOptionType.String,
-      required: false,
-      choices: [
-        { name: "track", value: "track" },
-        { name: "queue", value: "queue" },
-        { name: "disabled", value: "disabled" }
-      ]
-    }
-  ],
+export default class LoopCommand extends Command {
+  constructor() {
+    super({
+      name: "loop",
+      aliases: ["l"],
+      description: i18n.__("loop.description"),
+      conditions: [
+        CommandConditions.QUEUE_EXISTS,
+        CommandConditions.IS_IN_SAME_CHANNEL
+      ],
+      options: [
+        {
+          name: "mode",
+          description: "the loop mode",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+          choices: [
+            { name: "track", value: "track" },
+            { name: "queue", value: "queue" },
+            { name: "disabled", value: "disabled" }
+          ]
+        }
+      ],
+    })
+  }
+  
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;

@@ -2,30 +2,35 @@ import { ApplicationCommandOptionType, CommandInteraction, Message } from "disco
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
-export default {
-  name: "move",
-  aliases: ["mv"],
-  description: i18n.__("move.description"),
-  options: [
-    {
-      name: "current_position",
-      description: "the number of the song in the queue to move",
-      type: ApplicationCommandOptionType.Number,
-      required: true,
-    }, {
-      name: "new_position",
-      description: "the new position in the queue",
-      type: ApplicationCommandOptionType.Number,
-      required: false,
-    }
-  ],
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
-  ],
-  execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+export default class MoveCommand extends Command {
+  constructor() {
+    super({
+      name: "move",
+      aliases: ["l"],
+      description: i18n.__("loop.description"),
+      conditions: [
+        CommandConditions.QUEUE_EXISTS,
+        CommandConditions.IS_IN_SAME_CHANNEL
+      ],
+      options: [
+        {
+          name: "mode",
+          description: "the loop mode",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+          choices: [
+            { name: "track", value: "track" },
+            { name: "queue", value: "queue" },
+            { name: "disabled", value: "disabled" }
+          ]
+        }
+      ],
+    })
+  }
+
+  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     if (!args.length || isNaN(Number(args[0])) || Number(args[0]) < 1)
       return commandTrigger.reply(i18n.__mf("move.usagesReply", { prefix: bot.prefix })).then(purning);

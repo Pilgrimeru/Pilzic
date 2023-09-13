@@ -1,5 +1,5 @@
 import { GuildMember, PermissionsBitField } from "discord.js";
-import { Command, CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 import { i18n } from "../i18n.config";
 
 import { bot } from "../index";

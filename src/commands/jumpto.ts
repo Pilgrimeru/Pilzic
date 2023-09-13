@@ -2,25 +2,30 @@ import { ApplicationCommandOptionType, CommandInteraction, Message } from "disco
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
-export default {
-  name: "jumpto",
-  aliases: ["jump"],
-  description: i18n.__("jumpto.description"),
-  options: [
-    {
-      name: "position",
-      description: "the number of the song in the queue",
-      type: ApplicationCommandOptionType.Number,
-      required: true,
-    }
-  ],
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
-  ],
-  execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+export default class JumpCommand extends Command {
+  constructor() {
+    super({
+      name: "jumpto",
+      aliases: ["jump"],
+      description: i18n.__("jumpto.description"),
+      options: [
+        {
+          name: "position",
+          description: "the number of the song in the queue",
+          type: ApplicationCommandOptionType.Number,
+          required: true,
+        }
+      ],
+      conditions: [
+        CommandConditions.QUEUE_EXISTS,
+        CommandConditions.IS_IN_SAME_CHANNEL
+      ],
+    })
+  }
+  
+  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
     if (!args.length || isNaN(Number(args[0])))
       return commandTrigger
         .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix}))

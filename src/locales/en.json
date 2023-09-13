@@ -123,7 +123,7 @@
 	},
 	"player": {
 		"songAdded": "✅ [**{title}**]({url}) has been added to the queue.",
-		"playlistAdded": "✅ Playlist [**{title}**]({url}) ({length} tracks) has been added to the queue.",
+		"playlistAdded": "✅ Playlist [**{title}**]({url}) containing {length} tracks with a total duration of {duration} has been added to the queue.",
 		"queueEnded": "Queue has ended.",
 		"leaveChannel": "I'm leaving the voice channel.",
 		"error": "An error occurred while trying to play the audio."

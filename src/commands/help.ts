@@ -2,11 +2,20 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { config } from "../config";
+import { Command } from "../types/Command";
 
-export default {
-  name: "help",
-  aliases: ["h"],
-  description: i18n.__("help.description"),
+export default class HelpCommand extends Command {
+
+  constructor() {
+    super(
+      {
+      name: "help",
+      description: i18n.__("help.description"),
+      aliases: ["h"],
+      }
+    )
+  }
+  
   async execute(commandTrigger: CommandInteraction | Message) {
     
     let commands = Array.from(bot.commands.values());

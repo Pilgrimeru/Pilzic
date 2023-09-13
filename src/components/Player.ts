@@ -12,12 +12,13 @@ import { BaseGuildTextChannel, Message } from "discord.js";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { PlayerOptions } from "../interfaces/PlayerOptions";
+import { PlayerOptions } from "../types/PlayerOptions";
 import { purning } from "../utils/purning";
 import { nowPlayingMsg } from "./NowPlayingMsg";
 import { Playlist } from "./Playlist";
 import { Queue } from "./Queue";
 import { Song } from "./Song";
+import { formatTime } from "../utils/formatTime";
 
 type skipCallback = () => any;
 type previousCallback = () => any;
@@ -61,7 +62,7 @@ export class Player {
   }
   
 
-  public skip() : void {
+  public async skip() : Promise<void> {
     if (this._stopped) return;
     if (!this.queue.canNext()) {
       this.textChannel.send(i18n.__("player.queueEnded")).then(purning);
@@ -75,7 +76,7 @@ export class Player {
     newCurrent ? this.process(newCurrent) : this.stop();
   }
 
-  public jumpTo(songId: number) : void {
+  public async jumpTo(songId: number) : Promise<void> {
     if (this._stopped) return;
     this.audioPlayer.pause();
     this.nowPlayingMsg?.stop();
@@ -85,7 +86,7 @@ export class Player {
     newCurrent ? this.process(newCurrent) : this.stop();
   }
 
-  public previous() : void {
+  public async previous() : Promise<void> {
     if (!this.queue.canBack()) return;
     this.audioPlayer.pause();
     this.nowPlayingMsg?.stop();
@@ -267,7 +268,8 @@ export class Player {
       description: i18n.__mf("player.playlistAdded", {
         title: playlist.title,
         url: playlist.url,
-        length: playlist.songs.length
+        length: playlist.songs.length,
+        duration: formatTime(playlist.duration)
       }),
       color: 0x69adc7
     };

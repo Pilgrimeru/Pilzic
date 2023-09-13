@@ -8,34 +8,39 @@ import { Playlist } from "../components/Playlist";
 import { Song } from "../components/Song";
 import { purning } from "../utils/purning";
 import { validate } from "../utils/validate";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
-export default {
-  name: "play",
-  aliases: ["p"],
-  description: i18n.__("play.description"),
-  options: [
-    {
-      name: "query",
-      description: "url or search.",
-      type: ApplicationCommandOptionType.String,
-      required: true,
-    },
-    {
-      name: "playlist",
-      description: "true if it's a playlist search.",
-      type: ApplicationCommandOptionType.Boolean,
-      required: false,
-    },
-  ],
-  permissions: [
-    PermissionsBitField.Flags.Connect,
-    PermissionsBitField.Flags.Speak
-  ],
-  conditions:[
-    CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL,
-    CommandConditions.CAN_BOT_SPEAK
-  ],
+export default class PlayCommand extends Command {
+  constructor() {
+    super({
+      name: "play",
+      aliases: ["p"],
+      description: i18n.__("play.description"),
+      options: [
+        {
+          name: "query",
+          description: "url or search.",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+        {
+          name: "playlist",
+          description: "true if it's a playlist search.",
+          type: ApplicationCommandOptionType.Boolean,
+          required: false,
+        },
+      ],
+      permissions: [
+        PermissionsBitField.Flags.Connect,
+        PermissionsBitField.Flags.Speak
+      ],
+      conditions:[
+        CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL,
+        CommandConditions.CAN_BOT_SPEAK
+      ],
+    })
+  }
+  
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) : Promise<void> {
 
     const isSlashCommand = (commandTrigger instanceof CommandInteraction);

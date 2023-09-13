@@ -8,33 +8,37 @@ import { Playlist } from "../components/Playlist";
 import { Song } from "../components/Song";
 import { purning } from "../utils/purning";
 import { validate } from "../utils/validate";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
-export default {
-  name: "insert",
-  description: i18n.__("insert.description"),
-  options: [
-    {
-      name: "query",
-      description: "url or search.",
-      type: ApplicationCommandOptionType.String,
-      required: true,
-    },
-    {
-      name: "playlist",
-      description: "if is a playlist search",
-      type: ApplicationCommandOptionType.Boolean,
-      required: false,
-    },
-  ],
-  permissions: [
-    PermissionsBitField.Flags.Connect,
-    PermissionsBitField.Flags.Speak
-  ],
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
-  ],
+export default class InsertCommand extends Command {
+  constructor() {
+    super({
+      name: "insert",
+      description: i18n.__("insert.description"),
+      options: [
+        {
+          name: "query",
+          description: "url or search.",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+        {
+          name: "playlist",
+          description: "if is a playlist search",
+          type: ApplicationCommandOptionType.Boolean,
+          required: false,
+        },
+      ],
+      permissions: [
+        PermissionsBitField.Flags.Connect,
+        PermissionsBitField.Flags.Speak
+      ],
+      conditions: [
+        CommandConditions.QUEUE_EXISTS,
+        CommandConditions.IS_IN_SAME_CHANNEL
+      ],
+    })
+  }
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const isSlashCommand = (commandTrigger instanceof CommandInteraction);
