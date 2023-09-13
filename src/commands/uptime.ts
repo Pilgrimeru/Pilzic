@@ -1,13 +1,18 @@
 import { CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
+import { Command } from "../types/Command";
 
-
-export default {
-  name: "uptime",
-  aliases: ["up"],
-  description: i18n.__("uptime.description"),
-  execute(commandTrigger: CommandInteraction | Message) {
+export default class UptimeCommand extends Command {
+  constructor() {
+    super({
+      name: "uptime",
+      aliases: ["up"],
+      description: i18n.__("uptime.description"),
+    })
+  }
+  
+  async execute(commandTrigger: CommandInteraction | Message) {
     let seconds = Math.floor(bot.uptime! / 1000);
     let minutes = Math.floor(seconds / 60);
     let hours = Math.floor(minutes / 60);

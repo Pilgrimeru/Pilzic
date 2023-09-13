@@ -4,25 +4,30 @@ import { bot } from "../index";
 import { purning } from "../utils/purning";
 import { yt_validate } from "play-dl";
 import { formatTime } from "../utils/formatTime";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
 const timeRegEx = /^(?:[0-9]|[0-5]\d):[0-5]\d(:[0-5]\d)?$/;
 
-export default {
-  name: "seek",
-  description: i18n.__("seek.description"),
-  options: [
-    {
-      name: "time",
-      description: "number of seconds to skip or a time code like hh:mm:ss.",
-      type: ApplicationCommandOptionType.String,
-      required: true,
-    }
-  ],
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
-  ],
+export default class SeekCommand extends Command {
+  constructor() {
+    super({
+      name: "seek",
+      description: i18n.__("seek.description"),
+      options: [
+        {
+          name: "time",
+          description: "number of seconds to skip or a time code like hh:mm:ss.",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        }
+      ],
+      conditions: [
+        CommandConditions.QUEUE_EXISTS,
+        CommandConditions.IS_IN_SAME_CHANNEL
+      ],
+    })
+  }
+  
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     if (!args.length || (isNaN(Number(args[0])) && !args[0].match(timeRegEx)))

@@ -2,26 +2,30 @@ import { ApplicationCommandOptionType, CommandInteraction, Message } from "disco
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
-
-export default {
-  name: "volume",
-  aliases: ["v"],
-  description: i18n.__("volume.description"),
-  options: [
-    {
-      name: "level",
-      description: "volume level of the player [0;100].",
-      type: ApplicationCommandOptionType.String,
-      required: true,
-    }
-  ],
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
-  ],
-  execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+export default class VolumeCommand extends Command {
+  constructor() {
+    super({
+      name: "volume",
+      aliases: ["v"],
+      description: i18n.__("volume.description"),
+      options: [
+        {
+          name: "level",
+          description: "volume level of the player [0;100].",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        }
+      ],
+      conditions: [
+        CommandConditions.QUEUE_EXISTS,
+        CommandConditions.IS_IN_SAME_CHANNEL
+      ],
+    })
+  }
+  
+  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
 

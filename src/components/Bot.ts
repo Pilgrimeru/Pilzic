@@ -3,7 +3,7 @@ import { readdirSync } from "fs";
 import { join } from "path";
 import { getFreeClientID, setToken } from "play-dl";
 import { config } from "../config";
-import { Command } from "../interfaces/Command";
+import { Command } from "../types/Command";
 import { Player } from "./Player";
 
 export class Bot extends Client {
@@ -47,13 +47,14 @@ export class Bot extends Client {
     const commandFiles = readdirSync(join(__dirname, "..", "commands")).filter((file) => !file.endsWith(".map"));
 
     for (const file of commandFiles) {
-      const command = await import(join(__dirname, "..", "commands", `${file}`));
-      this.commands.set(command.default.name, command.default);
+      const CommandClass = (await import(join(__dirname, ".." , "commands", file))).default;
+      const commandInstance = new CommandClass() as Command;
+      this.commands.set(commandInstance.name, commandInstance);
       const slashCommand : ApplicationCommandDataResolvable = {
-        name: command.default.name,
-        description: command.default.description,
-        options: command.default.options,
-        defaultMemberPermissions: command.default.permissions ?? null,
+        name: commandInstance.name,
+        description: commandInstance.description,
+        options: commandInstance.options,
+        defaultMemberPermissions: commandInstance.permissions ?? null,
       }
       slashCommands.push(slashCommand);
     }
