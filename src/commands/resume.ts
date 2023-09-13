@@ -17,7 +17,7 @@ export default {
     
     const player = bot.players.get(commandTrigger.guild!.id)!;
 
-    player.resume()
+    player.resume();
 
     if (commandTrigger instanceof ButtonInteraction) {
       commandTrigger.deferUpdate();

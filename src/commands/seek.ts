@@ -47,7 +47,7 @@ export default {
 
       seekTime = Number(seconds);
       seekTime += Number(minutes) * 60;
-      seekTime += Number(hours ?? 0)  * 60 * 60;
+      seekTime += Number(hours ?? 0)  * 3600;
     } else {
       seekTime = Number(args[0]) + Math.floor(player.playbackDuration / 1000);
     }

@@ -29,7 +29,6 @@ export default {
     const player = bot.players.get(commandTrigger.guild!.id)!;
     
     const removeArgs = args.join("");
-    
 
     if (pattern.test(removeArgs)) {
 
