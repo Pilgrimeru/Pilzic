@@ -1,9 +1,9 @@
 import { Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { checkConditions } from "../utils/checkConditions";
 import { checkPermissions } from "../utils/checkPermissions";
+import { purning } from "../utils/purning";
 
 export default {
   event: "messageCreate",
@@ -25,9 +25,9 @@ export default {
 
     try {
       const checkConditionsResult = checkConditions(command, msg.member!);
-      if (checkConditionsResult !== "passed") return msg.reply(checkConditionsResult);
+      if (checkConditionsResult !== "passed") return msg.reply(checkConditionsResult).then(purning);
       const checkPermissionsResult = checkPermissions(command, msg.member!);
-      if (checkPermissionsResult !== "passed") return msg.reply(checkPermissionsResult);
+      if (checkPermissionsResult !== "passed") return msg.reply(checkPermissionsResult).then(purning);
 
       command.execute(msg, args);
     } catch (error) {
