@@ -115,12 +115,13 @@
 		"intervalError": "Please use a number between 0 and 100.",
 		"result": "Volume set to: **{arg}%**"
 	},
-	"nowplayingMsg": {
-		"startedPlaying": "**Now Playing** ♪",
-		"duration": "Duration: ",
-		"live": " ◉ LIVE",
-    "errorWritePermission": "You must be able to write in this channel to interact."
-	},
+  "nowplayingMsg": {
+    "startedPlaying": "**Now Playing** ♪",
+    "duration": "Duration: `{duration}`",
+    "live": " ◉ LIVE",
+    "requestedBy": "Requested by {name}.",
+    "errorWritePermission": "You must have write permission in this channel to interact."
+  },  
 	"player": {
 		"songAdded": "✅ [**{title}**]({url}) has been added to the queue.",
 		"playlistAdded": "✅ Playlist [**{title}**]({url}) containing {length} tracks with a total duration of {duration} has been added to the queue.",
