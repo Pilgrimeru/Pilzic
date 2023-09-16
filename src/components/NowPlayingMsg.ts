@@ -9,11 +9,11 @@ import {
 } from "discord.js";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
-import { Player } from "./Player";
-import { Song } from "./Song";
 import { bot } from "../index";
 import { checkConditions } from "../utils/checkConditions";
 import { checkPermissions } from "../utils/checkPermissions";
+import { Player } from "./Player";
+import { Song } from "./Song";
 
 
 export class nowPlayingMsg {
@@ -22,6 +22,7 @@ export class nowPlayingMsg {
   private song : Song;
   private collector : InteractionCollector<any>;
   private player : Player;
+  private state : "play" | "pause" = "play";
 
 
   constructor(player : Player) {
@@ -39,7 +40,7 @@ export class nowPlayingMsg {
     await this.createCollector();
   }
 
-  public stop() : void {
+  public async stop() : Promise<void> {
     try {
       this.collector.stop();
     } catch (error) {
@@ -48,15 +49,17 @@ export class nowPlayingMsg {
   }
 
 
-  private edit() {
+  public edit() : void {
     if (!this.msg) return;
+    const playerPaused = this.player.status === "paused" || this.player.status === "autopaused";
+    
+    if (!playerPaused && this.player.status !== "playing") return;
+    if (this.state === "pause" && playerPaused) return;
+    if (this.state === "play" && !playerPaused) return;
 
-    let color = 0x69adc7;
-    let emoji = "▶";
-    if (this.player.status === "paused" || this.player.status === "autopaused") {
-      color = 0xd13939;
-      emoji = "❚❚"
-    }
+    const color = playerPaused ? 0xd13939 : 0x69adc7;
+    const emoji = playerPaused ? "❚❚" : "▶";
+    this.state = playerPaused ? "pause" : "play";
 
     const embed = this.song.playingEmbed().setColor(color);
     embed.setTitle(`${emoji}  ${embed.data.title}`);
@@ -115,8 +118,6 @@ export class nowPlayingMsg {
       if (b.replied) return;
 
       command.execute(b);
-      if (b.customId === "pause" || b.customId === "resume") this.edit();
-
     });
 
     this.collector.on("end", () => {
