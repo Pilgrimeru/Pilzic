@@ -115,12 +115,13 @@
 		"intervalError": "Veuillez utiliser un nombre entre 0 et 100.",
 		"result": "Volume réglé sur : **{arg}%**"
 	},
-	"nowplayingMsg": {
+  "nowplayingMsg": {
 		"startedPlaying": "**Lecture en cours** ♪",
-		"duration": "Durée : ",
+		"duration": "Durée : `{duration}`",
 		"live": " ◉ EN DIRECT",
-    "errorWritePermission": "Vous devez pouvoir écrire dans ce salon pour interagir."
-	},
+		"requestedBy": "Demandé par {name}.",
+		"errorWritePermission": "Vous devez pouvoir écrire dans ce salon pour interagir."
+  },
 	"player": {
 		"songAdded": "✅ [**{title}**]({url}) a été ajouté à la file d'attente.",
     "playlistAdded": "✅ La playlist [**{title}**]({url}) contenant {length} pistes d'une durée totale de {duration} a été ajoutée à la file d'attente.",

@@ -1,14 +1,14 @@
 import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
-import { ApplicationCommandOptionType, BaseGuildTextChannel, CommandInteraction, Message, PermissionsBitField } from "discord.js";
-import { ExtractionError } from "../errors/ExtractionErrors";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
+import { ApplicationCommandOptionType, BaseGuildTextChannel, CommandInteraction, Message, PermissionsBitField, User } from "discord.js";
 import { Player } from "../components/Player";
 import { Playlist } from "../components/Playlist";
 import { Song } from "../components/Song";
-import { purning } from "../utils/purning";
-import { validate } from "../utils/validate";
+import { ExtractionError } from "../errors/ExtractionErrors";
+import { i18n } from "../i18n.config";
+import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
+import { purning } from "../utils/purning";
+import { UrlType, validate } from "../utils/validate";
 
 export default class PlayCommand extends Command {
   constructor() {
@@ -61,18 +61,18 @@ export default class PlayCommand extends Command {
 
     const response = await commandTrigger.reply(i18n.__mf("common.loading"));
 
-    const url = (!isSlashCommand && !args.length) ? commandTrigger!.attachments.first()?.url! : args[0];
-    const type: string | false = await validate(url);
-    const search = args.join(" ");
+    const search = (!isSlashCommand && !args.length) ? commandTrigger!.attachments.first()?.url! : args.join(" ");
+    const type: UrlType = await validate(search);
+    const requester : User = !isSlashCommand ? commandTrigger.author : commandTrigger.user;
 
     try {
       let item : Song | Playlist;
       if (type.toString().match(/playlist|album|artist/) || (type === false && playlistResearch)) {
         response.edit(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
-        item = (await Playlist.from(url, search, type))
+        item = (await Playlist.from(search, requester, type))
         
       } else {
-        item = (await Song.from(url, search, type));
+        item = (await Song.from(search, requester, type));
       }
       const guildMember = isSlashCommand ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id): commandTrigger.member;
       const { channel } = guildMember!.voice;

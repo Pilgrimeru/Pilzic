@@ -1,16 +1,16 @@
 import { AudioResource, StreamType, createAudioResource } from "@discordjs/voice";
 import axios from 'axios';
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, User } from "discord.js";
 import fetch from 'isomorphic-unfetch';
 import { parseStream } from 'music-metadata';
 import {
   DeezerTrack,
   SoundCloudTrack,
   deezer,
-  soundcloud,
+  stream as getStream,
   so_validate,
-  yt_validate,
-  stream as getStream
+  soundcloud,
+  yt_validate
 } from "play-dl";
 import youtube from "youtube-sr";
 import { config } from "../config";
@@ -23,6 +23,7 @@ import {
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { formatTime } from "../utils/formatTime";
+import { UrlType } from "../utils/validate";
 const { getPreview } = require('spotify-url-info')(fetch);
 
 interface SongData {
@@ -38,28 +39,33 @@ export class Song {
   public readonly title: string | undefined;
   public readonly duration: number;
   public readonly thumbnail: string;
+  public readonly requester: User;
 
 
-  public constructor(options: SongData) {
+  public constructor(options: SongData, requester: User) {
     Object.assign(this, options);
+    this.requester = requester;
   }
 
 
-  public static async from(url: string, search: string, type: string | false): Promise<Song> {
+  public static async from(search: string, requester: User ,type: UrlType): Promise<Song> {
+    const url = search.split(" ").at(0);
+    let songData : SongData;
     switch (type) {
       case "sp_track":
-        return await Song.fromSpotify(url);
+        songData = await Song.fromSpotify(url);
       case "so_track":
-        return await Song.fromSoundCloud(url);
+        songData = await Song.fromSoundCloud(url);
       case "dz_track":
-        return await Song.fromDeezer(url);
+        songData = await Song.fromDeezer(url);
       case "audio":
-        return await Song.fromExternalLink(url);
+        songData = await Song.fromExternalLink(url);
       default : {
-        if (type === false && url.startsWith("http")) throw new InvalidURLError();
-        return await Song.fromYoutube(url, search);
+        if (type === false && url?.startsWith("http")) throw new InvalidURLError();
+        songData = await Song.fromYoutube(url, search);
       }
     }
+    return new Song(songData, requester);
   }
 
   public formatedTime() : string {
@@ -73,11 +79,15 @@ export class Song {
     return new EmbedBuilder({
       title: i18n.__mf("nowplayingMsg.startedPlaying"),
       description: `[${this.title}](${this.url})
-      ${i18n.__mf("nowplayingMsg.duration", " ")}\`${this.formatedTime()}\``,
+      ${i18n.__mf("nowplayingMsg.duration", {duration: this.formatedTime()})}`,
       thumbnail: {
         url: this.thumbnail
       },
-      color: 0x69adc7
+      color: 0x69adc7,
+      footer: {
+        text : i18n.__mf("nowplayingMsg.requestedBy", { name: this.requester.displayName }),
+        icon_url: this.requester.avatarURL() ?? undefined
+      }
     });
   }
 
@@ -127,43 +137,43 @@ export class Song {
   }
   
 
-  private static async fromYoutube(url: string = "", search: string = ""): Promise<Song> {
+  private static async fromYoutube(url: string = "", search: string = ""): Promise<SongData> {
     let songInfo;
     if (url.startsWith("https") && yt_validate(url) === "video") {
       songInfo = await youtube.getVideo(url).catch(console.error);
       if (!songInfo)
         throw new InvalidURLError();
 
-      return new this({
+      return {
         url: songInfo.url,
         title: songInfo.title,
         duration: songInfo.duration,
         thumbnail: songInfo.thumbnail?.url!,
-      });
+      };
     } else {
       songInfo = await youtube.searchOne(search).catch(console.error);
       if (!songInfo)
         throw new NothingFoundError();
 
-      return new this({
+      return {
         url: songInfo.url,
         title: songInfo.title,
         duration: songInfo.duration,
         thumbnail: songInfo.thumbnail?.url!,
-      });
+      };
     }
   }
 
-  private static async fromSoundCloud(url: string = ""): Promise<Song> {
+  private static async fromSoundCloud(url: string = ""): Promise<SongData> {
     try {
       let songInfo = (await soundcloud(url) as SoundCloudTrack);
 
-      return new this({
+      return {
         url: songInfo.url,
         title: songInfo.name,
         duration: songInfo.durationInMs,
         thumbnail: songInfo.thumbnail,
-      });
+      };
     
     } catch (error : any) {
       if (error.message?.includes("out of scope")) {
@@ -175,7 +185,7 @@ export class Song {
     }
   }
 
-  private static async fromSpotify(url: string = ""): Promise<Song> {
+  private static async fromSpotify(url: string = ""): Promise<SongData> {
 
     let data;
     try {
@@ -192,7 +202,7 @@ export class Song {
     return await Song.fromYoutube("", search);
   }
 
-  private static async fromDeezer(url: string = ""): Promise<Song> {
+  private static async fromDeezer(url: string = ""): Promise<SongData> {
     let data;
     try {
       data = await deezer(url);
@@ -215,7 +225,7 @@ export class Song {
     return await Song.fromYoutube("", search);
   }
 
-  private static async fromExternalLink(url: string = ""): Promise<Song> {
+  private static async fromExternalLink(url: string = ""): Promise<SongData> {
     if (url.startsWith("http") && /\.(mp3|wav|flac|ogg)$/i.test(url)) {
 
       const name = url.substring(url.lastIndexOf("/") + 1);
@@ -232,12 +242,12 @@ export class Song {
 
       duration = duration ? Math.floor(duration) * 1000 : 1;
 
-      return new this({
+      return {
         url: url,
         title: name,
         duration: duration,
         thumbnail: null,
-      });
+      };
     }
     throw new NoDataError();
   }
