@@ -59,7 +59,7 @@ export class Bot extends Client {
       slashCommands.push(slashCommand);
     }
 
-    this.on("ready" , () => {
+    this.once("ready" , () => {
       this.application?.commands.set(slashCommands);
     })
   }
