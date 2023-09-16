@@ -3,9 +3,9 @@
 import { Interaction, PermissionsBitField } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { checkConditions } from "../utils/checkConditions";
 import { checkPermissions } from "../utils/checkPermissions";
+import { purning } from "../utils/purning";
 
 export default {
   event: "interactionCreate",
@@ -28,9 +28,9 @@ export default {
 
       try {
         const checkConditionsResult = checkConditions(command, user);
-        if (checkConditionsResult !== "passed") return interaction.reply(checkConditionsResult);
+        if (checkConditionsResult !== "passed") return interaction.reply(checkConditionsResult).then(purning);
         const checkPermissionsResult = checkPermissions(command, user);
-        if (checkPermissionsResult !== "passed") return interaction.reply(checkPermissionsResult);
+        if (checkPermissionsResult !== "passed") return interaction.reply(checkPermissionsResult).then(purning);
 
         command.execute(interaction, optionValues);
       } catch (error) {
