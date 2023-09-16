@@ -13,12 +13,12 @@ import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { PlayerOptions } from "../types/PlayerOptions";
+import { formatTime } from "../utils/formatTime";
 import { purning } from "../utils/purning";
 import { nowPlayingMsg } from "./NowPlayingMsg";
 import { Playlist } from "./Playlist";
 import { Queue } from "./Queue";
 import { Song } from "./Song";
-import { formatTime } from "../utils/formatTime";
 
 type skipCallback = () => any;
 type previousCallback = () => any;
@@ -213,6 +213,7 @@ export class Player {
 
     this.audioPlayer.on(AudioPlayerStatus.AutoPaused, async () => {
       try {
+        this.nowPlayingMsg?.edit();
         if (!this._stopped) {
           this.connection.configureNetworking();
         }
@@ -223,6 +224,14 @@ export class Player {
         console.error(error);
         this.skip();
       }
+    });
+
+    this.audioPlayer.on(AudioPlayerStatus.Paused, async () => {
+      this.nowPlayingMsg?.edit();
+    });
+
+    this.audioPlayer.on(AudioPlayerStatus.Playing, async () => {
+      this.nowPlayingMsg?.edit();
     });
 
     this.audioPlayer.on("error", (error) => {
