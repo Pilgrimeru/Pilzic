@@ -1,153 +1,156 @@
 {
-	"help": {
-		"description": "Affiche toutes les commandes et leurs descriptions.",
-		"embedTitle": "Aide {botname}",
-		"embedDescription": "Liste de toutes les commandes."
-	},
-	"insert": {
-		"description": "Ajoute une chanson au début de la file d'attente.",
-		"usageReply": "Utilisation : {prefix}insert <URL de la vidéo ou de l'audio | Nom de la vidéo>",
-		"fetchingPlaylist": "⌛ Récupère la playlist..."
-	},
-	"invite": {
-		"description": "Envoie le lien d'invitation du bot."
-	},
-	"jumpto": {
-		"description": "Sauter à la position sélectionnée dans la file d'attente.",
-		"usageReply": "Utilisation : {prefix}jumpto <Numéro dans la file d'attente>",
-		"errorNotValid": "Ce n'est pas une position valide.",
-		"result": "Saut à la position {arg} effectué"
-	},
-	"loop": {
-		"description": "Met la musique en boucle.",
-		"chooseMode": "Choisissez le mode de boucle.",
-		"result": "Le mode de boucle est maintenant réglé sur : `{loop}`."
-	},
-	"lyrics": {
-		"description": "Obtient les paroles de la chanson en cours de lecture.",
-		"lyricsNotFound": "Aucune parole trouvée pour {title}.",
-		"embedTitle": "Paroles de {title}"
-	},
-	"move": {
-		"description": "Déplace les chansons dans la file d'attente.",
-		"usagesReply": "Utilisation : {prefix}move <De numéro dans la file d'attente> <Vers numéro dans la file d'attente>.",
-		"result": "Le morceau **\"{title}\"** a été déplacé vers la position {index} dans la file d'attente."
-	},
-	"nowplaying": {
-		"description": "Affiche la chanson en cours de lecture.",
-		"embedTitle": "Lecture en cours ♪",
-		"live": " ◉ EN DIRECT",
-		"timeRemaining": "Temps restant : {time}"
-	},
-	"pause": {
-		"description": "Met en pause la musique en cours de lecture.",
-		"result": "La musique a été mise en pause. ⏸"
-	},
-	"ping": {
-		"description": "Affiche le ping du bot.",
-		"result": "📈 Ping vers l'API : {ping} ms."
-	},
-	"play": {
-		"description": "Écoute de la musique depuis YouTube et d'autres sources.",
-		"usageReply": "Utilisation : {prefix}play <URL de la vidéo ou de l'audio | Nom de la vidéo>",
-		"fetchingPlaylist": "⌛ Récupère la playlist..."
-	},
-	"playlist": {
-		"description": "Écoute une playlist depuis YouTube.",
-		"usagesReply": "Utilisation : {prefix}playlist <URL de la playlist | Nom de la playlist>.",
-		"fetchingPlaylist": "⌛ Récupère la playlist..."
-	},
-	"previous": {
-		"description": "Revenir en arrière dans la file d'attente de lecture.",
-		"result": "Retour à la chanson précédente réussi."
-	},
-	"queue": {
-		"description": "Affiche la file d'attente et la musique en cours de lecture.",
-		"currentPage": "Page actuelle - ",
-		"embedTitle": "File d'attente du serveur :\n",
-		"embedCurrentSong": "**Musique actuelle - [{title}]({url})**\n\n{info}",
-		"nothingMore": "Il n'y a plus rien ensuite."
-	},
-	"remove": {
-		"description": "Retire une chanson de la file d'attente.",
-		"usageReply": "Utilisation : {prefix}remove <Numéro dans la file d'attente>",
-		"result": "**{title}** a été retiré de la file d'attente.",
-		"results": "**{titles}** ont été retirées de la file d'attente."
-	},
-	"resume": {
-		"description": "Reprend la lecture de la musique en cours.",
-		"result": "La musique reprend. ▶"
-	},
-	"search": {
-		"description": "Recherche et sélectionne des vidéos à écouter.",
-		"usageReply": "Utilisation : {prefix}{name} <Nom de la vidéo>",
-		"menuNothing": "Rien de sélectionné",
-		"chooseSong": "Choisissez le morceau à jouer.",
-		"finished": "Recherche terminée."
-	},
-	"seek": {
-		"description": "Permet de sauter à un moment précis dans la musique en cours.",
-		"usageReply": "Utilisation : {prefix}seek <Nombre de secondes ou temps au format (ex: 02:30)>",
-		"errorSource": "Cette commande ne fonctionne pas avec les liens SoundCloud ni les fichiers audio.",
-		"errorNotValid": "Le nombre de secondes doit être compris entre 0 et la durée de la piste ({duration}).",
-		"result": "La musique a été repositionnée à : `{time}`"
-	},
-	"shuffle": {
-		"description": "Mélange la file d'attente.",
-		"result": "La file d'attente a été mélangée. 🔀"
-	},
-	"skip": {
-		"description": "Passe la musique en cours de lecture.",
-		"result": "Musique passée. ⏩"
-	},
-	"stop": {
-		"description": "Arrête la musique.",
-		"result": "Musique arrêtée. ⏹"
-	},
-	"uptime": {
-		"description": "Vérifie le temps de fonctionnement du bot.",
-		"result": "Temps de fonctionnement : `{days} jour(s), {hours} heures, {minutes} minutes, {seconds} secondes`"
-	},
-	"volume": {
-		"description": "Change le volume de la musique en cours de lecture.",
-		"currentVolume": "🔊 Le volume actuel est de : **{volume}%**",
-		"errorNotNumber": "Veuillez utiliser un nombre pour régler le volume.",
-		"intervalError": "Veuillez utiliser un nombre entre 0 et 100.",
-		"result": "Volume réglé sur : **{arg}%**"
-	},
-  "nowplayingMsg": {
-		"startedPlaying": "**Lecture en cours** ♪",
-		"duration": "Durée : `{duration}`",
-		"live": " ◉ EN DIRECT",
-		"requestedBy": "Demandé par {name}.",
-		"errorWritePermission": "Vous devez pouvoir écrire dans ce salon pour interagir."
+  "help": {
+    "description": "Affiche toutes les commandes et leurs descriptions.",
+    "embedTitle": "Aide {botname}",
+    "embedDescription": "Liste de toutes les commandes."
   },
-	"player": {
-		"songAdded": "✅ [**{title}**]({url}) a été ajouté à la file d'attente.",
+  "insert": {
+    "description": "Ajoute une chanson au début de la file d'attente.",
+    "usageReply": "Utilisation : {prefix}insert <URL de la vidéo ou de l'audio | Nom de la vidéo>",
+    "fetchingPlaylist": "⌛ Récupère la playlist..."
+  },
+  "invite": {
+    "description": "Envoie le lien d'invitation du bot."
+  },
+  "jumpto": {
+    "description": "Sauter à la position sélectionnée dans la file d'attente.",
+    "usageReply": "Utilisation : {prefix}jumpto <Numéro dans la file d'attente>",
+    "errorNotValid": "Ce n'est pas une position valide.",
+    "result": "Saut à la position {arg} effectué"
+  },
+  "loop": {
+    "description": "Met la musique en boucle.",
+    "chooseMode": "Choisissez le mode de boucle.",
+    "result": "Le mode de boucle est maintenant réglé sur : `{loop}`."
+  },
+  "lyrics": {
+    "description": "Obtient les paroles de la chanson en cours de lecture.",
+    "lyricsNotFound": "Aucune parole trouvée pour {title}.",
+    "embedTitle": "Paroles de {title}"
+  },
+  "move": {
+    "description": "Déplace les chansons dans la file d'attente.",
+    "usagesReply": "Utilisation : {prefix}move <De numéro dans la file d'attente> <Vers numéro dans la file d'attente>.",
+    "result": "Le morceau **\"{title}\"** a été déplacé vers la position {index} dans la file d'attente."
+  },
+  "nowplaying": {
+    "description": "Affiche la chanson en cours de lecture.",
+    "embedTitle": "Lecture en cours ♪",
+    "live": " ◉ EN DIRECT",
+    "timeRemaining": "Temps restant : {time}"
+  },
+  "pause": {
+    "description": "Met en pause la musique en cours de lecture.",
+    "result": "La musique a été mise en pause. ⏸",
+    "error": "La musique est déjà en pause."
+  },
+  "ping": {
+    "description": "Affiche le ping du bot.",
+    "result": "📈 Ping vers l'API : {ping} ms."
+  },
+  "play": {
+    "description": "Écoute de la musique depuis YouTube et d'autres sources.",
+    "usageReply": "Utilisation : {prefix}play <URL de la vidéo ou de l'audio | Nom de la vidéo>",
+    "fetchingPlaylist": "⌛ Récupère la playlist..."
+  },
+  "playlist": {
+    "description": "Écoute une playlist depuis YouTube.",
+    "usagesReply": "Utilisation : {prefix}playlist <URL de la playlist | Nom de la playlist>.",
+    "fetchingPlaylist": "⌛ Récupère la playlist..."
+  },
+  "previous": {
+    "description": "Revenir en arrière dans la file d'attente de lecture.",
+    "result": "Retour à la chanson précédente réussi.",
+    "error": "Impossible de revenir en arrière, il n'y a pas de musique précédente."
+  },
+  "queue": {
+    "description": "Affiche la file d'attente et la musique en cours de lecture.",
+    "currentPage": "Page actuelle - ",
+    "embedTitle": "File d'attente du serveur :\n",
+    "embedCurrentSong": "**Musique actuelle - [{title}]({url})**\n\n{info}",
+    "nothingMore": "Il n'y a plus rien ensuite."
+  },
+  "remove": {
+    "description": "Retire une chanson de la file d'attente.",
+    "usageReply": "Utilisation : {prefix}remove <Numéro dans la file d'attente>",
+    "result": "**{title}** a été retiré de la file d'attente.",
+    "results": "**{titles}** ont été retirées de la file d'attente."
+  },
+  "resume": {
+    "description": "Reprend la lecture de la musique en cours.",
+    "result": "La musique reprend. ▶",
+    "error": "La musique est déjà en train de jouer."
+  },
+  "search": {
+    "description": "Recherche et sélectionne des vidéos à écouter.",
+    "usageReply": "Utilisation : {prefix}{name} <Nom de la vidéo>",
+    "menuNothing": "Rien de sélectionné",
+    "chooseSong": "Choisissez le morceau à jouer.",
+    "finished": "Recherche terminée."
+  },
+  "seek": {
+    "description": "Permet de sauter à un moment précis dans la musique en cours.",
+    "usageReply": "Utilisation : {prefix}seek <Nombre de secondes ou temps au format (ex: 02:30)>",
+    "errorSource": "Cette commande ne fonctionne pas avec les liens SoundCloud ni les fichiers audio.",
+    "errorNotValid": "Le nombre de secondes doit être compris entre 0 et la durée de la piste ({duration}).",
+    "result": "La musique a été repositionnée à : `{time}`"
+  },
+  "shuffle": {
+    "description": "Mélange la file d'attente.",
+    "result": "La file d'attente a été mélangée. 🔀"
+  },
+  "skip": {
+    "description": "Passe la musique en cours de lecture.",
+    "result": "Musique passée. ⏩"
+  },
+  "stop": {
+    "description": "Arrête la musique.",
+    "result": "Musique arrêtée. ⏹"
+  },
+  "uptime": {
+    "description": "Vérifie le temps de fonctionnement du bot.",
+    "result": "Temps de fonctionnement : `{days} jour(s), {hours} heures, {minutes} minutes, {seconds} secondes`"
+  },
+  "volume": {
+    "description": "Change le volume de la musique en cours de lecture.",
+    "currentVolume": "🔊 Le volume actuel est de : **{volume}%**",
+    "errorNotNumber": "Veuillez utiliser un nombre pour régler le volume.",
+    "intervalError": "Veuillez utiliser un nombre entre 0 et 100.",
+    "result": "Volume réglé sur : **{arg}%**"
+  },
+  "nowplayingMsg": {
+    "startedPlaying": "**Lecture en cours** ♪",
+    "duration": "Durée : `{duration}`",
+    "live": " ◉ EN DIRECT",
+    "requestedBy": "Demandé par {name}.",
+    "errorWritePermission": "Vous devez pouvoir écrire dans ce salon pour interagir."
+  },
+  "player": {
+    "songAdded": "✅ [**{title}**]({url}) a été ajouté à la file d'attente.",
     "playlistAdded": "✅ La playlist [**{title}**]({url}) contenant {length} pistes d'une durée totale de {duration} a été ajoutée à la file d'attente.",
-		"queueEnded": "La file d'attente est terminée.",
-		"leaveChannel": "Je quitte le salon vocal.",
-		"error": "Une erreur s'est produite lors de la tentative de lecture de l'audio."
-	},
-	"common": {
-		"on": "**activé**",
-		"off": "**désactivé**",
-		"enabled": "**activé**",
-		"disabled": "**désactivé**",
-		"loading": "⏳ Chargement...",
-		"cooldownMessage": "Veuillez patienter {time} seconde(s) avant de réutiliser la commande `{name}`."
-	},
-	"errors": {
-		"notQueue": "La file d'attente est vide.",
-		"notChannel": "Vous devez d'abord rejoindre un salon vocal !",
-		"command": "Une erreur s'est produite lors de l'exécution de cette commande.",
-		"notInSameChannel": "Vous devez être dans le même salon que moi.",
-		"missingPermissionConnect": "Impossible de se connecter au salon vocal, autorisations manquantes.",
-		"missingPermissionSpeak": "Je ne peux pas parler dans ce salon vocal, assurez-vous que j'ai les autorisations.",
-		"youtubeMixes": "Les mixs YouTube ne sont pas pris en charge.",
-		"invalidURL": "Le lien fourni est incorrect, indisponible ou non pris en charge.",
-		"serviceUnavailable": "La connexion au serveur source a échoué. Veuillez réessayer ultérieurement.",
-		"nothingFound": "Aucun résultat n'a été trouvé.",
-		"noData": "Aucune donnée n'a pu être extraite."
-	}
+    "queueEnded": "La file d'attente est terminée.",
+    "leaveChannel": "Je quitte le salon vocal.",
+    "error": "Une erreur s'est produite lors de la tentative de lecture de l'audio."
+  },
+  "common": {
+    "on": "**activé**",
+    "off": "**désactivé**",
+    "enabled": "**activé**",
+    "disabled": "**désactivé**",
+    "loading": "⏳ Chargement...",
+    "cooldownMessage": "Veuillez patienter {time} seconde(s) avant de réutiliser la commande `{name}`."
+  },
+  "errors": {
+    "notQueue": "La file d'attente est vide.",
+    "notChannel": "Vous devez d'abord rejoindre un salon vocal !",
+    "command": "Une erreur s'est produite lors de l'exécution de cette commande.",
+    "notInSameChannel": "Vous devez être dans le même salon que moi.",
+    "missingPermissionConnect": "Impossible de se connecter au salon vocal, autorisations manquantes.",
+    "missingPermissionSpeak": "Je ne peux pas parler dans ce salon vocal, assurez-vous que j'ai les autorisations.",
+    "youtubeMixes": "Les mixs YouTube ne sont pas pris en charge.",
+    "invalidURL": "Le lien fourni est incorrect, indisponible ou non pris en charge.",
+    "serviceUnavailable": "La connexion au serveur source a échoué. Veuillez réessayer ultérieurement.",
+    "nothingFound": "Aucun résultat n'a été trouvé.",
+    "noData": "Aucune donnée n'a pu être extraite."
+  }
 }

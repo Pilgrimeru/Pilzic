@@ -1,8 +1,8 @@
 import { ButtonInteraction, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { purning } from "../utils/purning";
 
 export default class ResumeCommand extends Command {
   constructor() {
@@ -20,8 +20,14 @@ export default class ResumeCommand extends Command {
   async execute(commandTrigger: ButtonInteraction | CommandInteraction | Message) {
     
     const player = bot.players.get(commandTrigger.guild!.id)!;
+    if (player.status !== "autopaused" && player.status !== "paused") {
+      if (commandTrigger instanceof ButtonInteraction) {
+        return commandTrigger.reply(i18n.__mf("resume.error")).then(purning); 
+      }
+      return commandTrigger.reply(i18n.__mf("resume.error")).then(purning); 
+    }
 
-    player.resume()
+    player.resume();
 
     if (commandTrigger instanceof ButtonInteraction) {
       commandTrigger.deferUpdate();
