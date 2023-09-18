@@ -5,7 +5,7 @@ import { so_validate, sp_validate, yt_validate } from "play-dl";
 export type UrlType = "yt_video"| "yt_playlist" | "so_track"| 
   "so_playlist" | "sp_track" | "sp_playlist" | "sp_album" |
   "sp_artist" | "dz_track" | "dz_album" | "dz_playlist" |
-  "audio" | "search" | false;
+  "audio" | "yt_search" | false;
 
 
 
@@ -16,11 +16,11 @@ export async function validate(url: string): Promise<UrlType> {
   const DZ_LINK = /^https?:\/\/(?:www\.)?(?:deezer\.com|deezer\.page\.link)\/?.+/;
   const AUDIO_LINK = /^https?:\/\/.+\.(mp3|wav|flac|ogg)$/;
 
-  if (!url.startsWith("http")) return "search";
+  if (!url.startsWith("http")) return "yt_search";
   let check;
   if (url.match(YT_LINK)) {
     check = yt_validate(url);
-    return check !== false ? ('yt_' + check) as "yt_playlist" | "yt_video" | "search": false;
+    return check !== false ? ('yt_' + check) as "yt_playlist" | "yt_video" | "yt_search": false;
   }
   if (url.match(SO_LINK)) {
     check = await so_validate(url);
