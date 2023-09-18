@@ -79,7 +79,7 @@ export default class InsertCommand extends Command {
         connection: joinVoiceChannel({
           channelId: channel.id,
           guildId: channel.guild.id,
-          adapterCreator: channel.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator
+          adapterCreator: channel.guild.voiceAdapterCreator,
         })
       })
       player.queue.insert(item);
