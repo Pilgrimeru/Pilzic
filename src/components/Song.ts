@@ -54,15 +54,20 @@ export class Song {
     switch (type) {
       case "sp_track":
         songData = await Song.fromSpotify(url);
+        break;
       case "so_track":
         songData = await Song.fromSoundCloud(url);
+        break;
       case "dz_track":
         songData = await Song.fromDeezer(url);
+        break;
       case "audio":
         songData = await Song.fromExternalLink(url);
+        break;
       default : {
         if (type === false && url?.startsWith("http")) throw new InvalidURLError();
         songData = await Song.fromYoutube(url, search);
+        break;
       }
     }
     return new Song(songData, requester);
