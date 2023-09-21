@@ -144,8 +144,8 @@ export class Song {
 
   private static async fromYoutube(url: string = "", search: string = ""): Promise<SongData> {
     let songInfo;
-    if (url.startsWith("https") && yt_validate(url) === "video") {
-      songInfo = await youtube.getVideo(url);
+    if (url.match(/^https?:\/\/\S+$/) && yt_validate(url) === "video") {
+      songInfo = await youtube.getVideo(url).catch(console.error);
       if (!songInfo)
         throw new InvalidURLError();
 
