@@ -31,16 +31,22 @@ export class Bot extends Client {
     this.loadEvents();
     this.importCommands();
     this.soundcloudApiConnect();
+    setToken({ useragent: [this.useragent] });
   }
   
-  private async soundcloudApiConnect() : Promise<void> {
-    getFreeClientID().then((clientID) => setToken({
-      useragent: [this.useragent],
-      soundcloud: {
-        client_id: clientID
-      }
-    }));
+  private async soundcloudApiConnect(): Promise<void> {
+    try {
+      const clientID = await getFreeClientID();
+      setToken({
+        soundcloud: {
+          client_id: clientID
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
+  
 
   private async importCommands() : Promise<void> {
     const slashCommands: ApplicationCommandDataResolvable[] = [];
