@@ -16,9 +16,9 @@ import { Player } from "./Player";
 import { Song } from "./Song";
 
 
-export class nowPlayingMsg {
+export class NowPlayingMsgManager {
 
-  private msg : Message;
+  private msg : Message | undefined;
   private song : Song;
   private collector : InteractionCollector<any>;
   private player : Player;
@@ -31,6 +31,7 @@ export class nowPlayingMsg {
 
 
   public async send(song: Song) : Promise<void> {
+    if (this.msg) await this.delete();
     this.song = song;
     const embed = this.song.playingEmbed();
     this.msg = await this.player.textChannel.send({
@@ -40,17 +41,19 @@ export class nowPlayingMsg {
     await this.createCollector();
   }
 
-  public async stop() : Promise<void> {
+  public async delete() : Promise<void> {
+    if (!this.msg) return;
     try {
       this.collector.stop();
     } catch (error) {
       console.error(error);
+    } finally {
+      this.msg = undefined;
     }
   }
 
-
   public edit() : void {
-    if (!this.msg) return;
+    if (!this.msg || !this.msg.editable) return;
     const playerPaused = this.player.status === "paused" || this.player.status === "autopaused";
     
     if (!playerPaused && this.player.status !== "playing") return;
@@ -69,6 +72,7 @@ export class nowPlayingMsg {
       components: [this.buildButtons()]
     });
   }
+
 
   private buildButtons() : ActionRowBuilder<ButtonBuilder> {
     const isPaused = this.player.status === "paused" || this.player.status === "autopaused";
@@ -99,6 +103,7 @@ export class nowPlayingMsg {
   }
 
   private async createCollector() : Promise<void>{
+    if (!this.msg) return;
     const channel = this.player.textChannel;
     this.collector =  this.msg.createMessageComponentCollector();
 
@@ -111,9 +116,9 @@ export class nowPlayingMsg {
       const checkConditionsResult = checkConditions(command, interactUser);
       const checkPermissionsResult = checkPermissions(command, interactUser);
 
-      if (!canWrite) b.reply(i18n.__("nowplayingMsg.errorWritePermission"));
-      else if (checkConditionsResult !== "passed") b.reply(checkConditionsResult);
-      else if (checkPermissionsResult !== "passed") b.reply(checkPermissionsResult);
+      if (!canWrite) await b.reply(i18n.__("nowplayingMsg.errorWritePermission"));
+      else if (checkConditionsResult !== "passed") await b.reply(checkConditionsResult);
+      else if (checkPermissionsResult !== "passed") await b.reply(checkPermissionsResult);
 
       if (b.replied) return;
 
@@ -123,9 +128,9 @@ export class nowPlayingMsg {
     this.collector.on("end", () => {
 
       if (config.PRUNING) {
-        this.msg.delete().catch(() => null);
+        this.msg?.delete().catch(() => null);
       } else {
-        this.msg.edit({ components: [] });
+        this.msg?.edit({ components: [] });
       }
     });
   }

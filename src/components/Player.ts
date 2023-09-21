@@ -15,7 +15,7 @@ import { bot } from "../index";
 import { PlayerOptions } from "../types/PlayerOptions";
 import { formatTime } from "../utils/formatTime";
 import { purning } from "../utils/purning";
-import { nowPlayingMsg } from "./NowPlayingMsg";
+import { NowPlayingMsgManager } from "./NowPlayingMsgManager";
 import { Playlist } from "./Playlist";
 import { Queue } from "./Queue";
 import { Song } from "./Song";
@@ -32,9 +32,10 @@ export class Player {
 
   private readonly connection: VoiceConnection;
   private readonly audioPlayer: AudioPlayer;
+  private readonly nowPlayingMsgManager: NowPlayingMsgManager;
   private resource: AudioResource;
   private loadingMsg : Message;
-  private nowPlayingMsg: nowPlayingMsg | undefined = undefined;
+
   private _volume = config.DEFAULT_VOLUME;
   private _stopped = true;
 
@@ -48,6 +49,8 @@ export class Player {
     bot.players.set(this.textChannel.guildId, this);
 
     this.queue = new Queue(this);
+    this.nowPlayingMsgManager = new NowPlayingMsgManager(this);
+
     this.audioPlayer = createAudioPlayer({
       behaviors: {
         maxMissedFrames: 45,
@@ -68,8 +71,12 @@ export class Player {
       this.textChannel.send(i18n.__("player.queueEnded")).then(purning);
       return this.stop();
     }
-    this.audioPlayer.pause();
-    this.nowPlayingMsg?.stop();
+    if (this.audioPlayer.state.status === "playing") {
+      this.audioPlayer.stop();
+      return;
+    }
+
+    this.nowPlayingMsgManager?.delete();
     // Send the "skip" request to the queue.
     this.skipCallbacks.forEach(callback => callback());
     const newCurrent = this.queue.currentSong;
@@ -78,8 +85,8 @@ export class Player {
 
   public async jumpTo(songId: number) : Promise<void> {
     if (this._stopped) return;
-    this.audioPlayer.pause();
-    this.nowPlayingMsg?.stop();
+    this.audioPlayer.pause(true);
+    this.nowPlayingMsgManager?.delete();
     // Send the "jump" request to the queue.
     this.jumpCallbacks.forEach(callback => callback(songId));
     const newCurrent = this.queue.currentSong;
@@ -88,8 +95,8 @@ export class Player {
 
   public async previous() : Promise<void> {
     if (!this.queue.canBack()) return;
-    this.audioPlayer.pause();
-    this.nowPlayingMsg?.stop();
+    this.audioPlayer.pause(true);
+    this.nowPlayingMsgManager?.delete();
     // Send the "previous" request to the queue.
     this.previousCallbacks.forEach(callback => callback());
     const newCurrent = this.queue.currentSong;
@@ -97,14 +104,16 @@ export class Player {
   }
 
   public async seek(time : number) : Promise<void> {
-    this.nowPlayingMsg?.stop();
-    this.pause();
+    this.nowPlayingMsgManager?.delete();
+    this.audioPlayer.pause(true);
     const current = this.queue.currentSong;
     current ? await this.process(current, time) : this.stop();
   }
 
   public pause() : boolean {
-    return this.audioPlayer.pause();
+    const result = this.audioPlayer.pause();
+    this.nowPlayingMsgManager?.edit();
+    return result;
   }
 
   public resume() : boolean {
@@ -115,7 +124,7 @@ export class Player {
     if (this._stopped) return;
     this._stopped = true;
     this.queue.clear();
-    this.nowPlayingMsg?.stop();
+    this.nowPlayingMsgManager?.delete();
     this.audioPlayer.stop();
     this.resource?.playStream?.destroy();
 
@@ -174,12 +183,12 @@ export class Player {
     try {
       this.loadingMsg = await this.textChannel.send(i18n.__("common.loading"));
       this.resource = await song.makeResource(seek);
+      if (!this.resource.readable) throw new Error("Resource not readable.");
       this.resource.playbackDuration += (seek ?? 0) * 1000;
       this.resource.volume?.setVolumeLogarithmic(this._volume / 100);
       this.loadingMsg?.delete().catch(() => null);
       this.audioPlayer.play(this.resource);
-      this.nowPlayingMsg = new nowPlayingMsg(this);
-      this.nowPlayingMsg.send(song);
+      await this.nowPlayingMsgManager.send(song);
     } catch (error) {
       console.error(error);
       this.loadingMsg?.delete().catch(() => null);
@@ -213,7 +222,7 @@ export class Player {
 
     this.audioPlayer.on(AudioPlayerStatus.AutoPaused, async () => {
       try {
-        this.nowPlayingMsg?.edit();
+        this.nowPlayingMsgManager?.edit();
         if (!this._stopped) {
           this.connection.configureNetworking();
         }
@@ -226,12 +235,8 @@ export class Player {
       }
     });
 
-    this.audioPlayer.on(AudioPlayerStatus.Paused, async () => {
-      this.nowPlayingMsg?.edit();
-    });
-
     this.audioPlayer.on(AudioPlayerStatus.Playing, async () => {
-      this.nowPlayingMsg?.edit();
+      this.nowPlayingMsgManager?.edit();
     });
 
     this.audioPlayer.on("error", (error) => {
