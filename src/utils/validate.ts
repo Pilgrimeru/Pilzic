@@ -16,7 +16,8 @@ export async function validate(url: string): Promise<UrlType> {
   const DZ_LINK = /^https?:\/\/(?:www\.)?(?:deezer\.com|deezer\.page\.link)\/?.+/;
   const AUDIO_LINK = /^https?:\/\/.+\.(mp3|wav|flac|ogg)$/;
 
-  if (!url.match(/^https?:\/\/\S+$/)) return "yt_search";
+  try {
+    if (!url.match(/^https?:\/\/\S+$/)) return "yt_search";
   let check;
   if (url.match(YT_LINK)) {
     check = yt_validate(url);
@@ -48,5 +49,9 @@ export async function validate(url: string): Promise<UrlType> {
   if (url.match(AUDIO_LINK)) {
     return "audio";
   }
+  } catch (error) {
+    console.error(error);
+  }
+
   return false;
 }
