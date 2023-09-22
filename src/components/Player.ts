@@ -34,7 +34,6 @@ export class Player {
   private readonly audioPlayer: AudioPlayer;
   private readonly nowPlayingMsgManager: NowPlayingMsgManager;
   private resource: AudioResource;
-  private loadingMsg : Message;
 
   private _volume = config.DEFAULT_VOLUME;
   private _stopped = true;
@@ -180,18 +179,18 @@ export class Player {
   
 
   private async process(song : Song, seek? : number): Promise<void> {
+    const loadingMsg = await this.textChannel.send(i18n.__("common.loading"));
     try {
-      this.loadingMsg = await this.textChannel.send(i18n.__("common.loading"));
       this.resource = await song.makeResource(seek);
       if (!this.resource.readable) throw new Error("Resource not readable.");
       this.resource.playbackDuration += (seek ?? 0) * 1000;
       this.resource.volume?.setVolumeLogarithmic(this._volume / 100);
-      this.loadingMsg?.delete().catch(() => null);
+      loadingMsg.delete().catch(() => null);
       this.audioPlayer.play(this.resource);
       await this.nowPlayingMsgManager.send(song);
     } catch (error) {
       console.error(error);
-      this.loadingMsg?.delete().catch(() => null);
+      loadingMsg?.delete().catch(() => null);
       this.textChannel.send(i18n.__("player.error")).then(purning);
       this.skip();
     }
