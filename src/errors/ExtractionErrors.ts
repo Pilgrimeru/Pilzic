@@ -30,6 +30,13 @@ export class ServiceUnavailableError  extends ExtractionError {
   }
 }
 
+export class AgeRestrictedError extends ExtractionError {
+  
+  public i18n() {
+    return "errors.ageRestricted";
+  }
+}
+
 export class YoutubeMixesError extends ExtractionError {
 
   public i18n() {

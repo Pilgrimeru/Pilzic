@@ -148,6 +148,7 @@
     "missingPermissionConnect": "Unable to connect to the voice channel, missing permissions.",
     "missingPermissionSpeak": "I can't speak in this voice channel, make sure I have the permissions.",
     "youtubeMixes": "Youtube mixes are not supported.",
+    "ageRestricted": "This video is subject to an age restriction and therefore cannot be played.",
     "invalidURL": "The provided link is either misspelled, unavailable, or not supported.",
     "serviceUnavailable": "Failed to connect to the source server. Please try again later.",
     "nothingFound": "No results were found.",

@@ -124,8 +124,9 @@ export class Playlist {
       }
     }
 
-    let infos: Promise<Video>[] = playlistTracks.map(async (track: any) => {
-      return await youtube.searchOne(track.artist + " " + track.name);
+    const infos: Promise<Video>[] = playlistTracks.map((track: any) => {
+      const search = track.artist + " " + track.name;
+      return youtube.searchOne(search, "video", true);
     });
     const songs = Playlist.getSongsFromYoutube(await Promise.all(infos), requester);
     if (!songs.length) throw new NoDataError();
@@ -149,8 +150,9 @@ export class Playlist {
     if (!playlist) throw new NoDataError();
     playlist = (playlist as DeezerPlaylist | DeezerAlbum);
 
-    let infos: Promise<Video>[] = playlist.tracks.map(async (track) => {
-      return await youtube.searchOne(track.artist.name + " " + track.title);
+    const infos: Promise<Video>[] = playlist.tracks.map((track) => {
+      const search = track.artist.name + " " + track.title;
+      return youtube.searchOne(search, "video", true);
     });
     const songs = Playlist.getSongsFromYoutube(await Promise.all(infos), requester);
 
@@ -160,7 +162,7 @@ export class Playlist {
   private static getSongsFromYoutube(playlist: Video[], requester: User): Song[] {
 
     let songs = playlist
-      .filter((video) => (video.title ?? "") !== "" && video.title != "Private video" && video.title != "Deleted video")
+      .filter((video) => (video.title ?? "") !== "" && video.title != "Private video" && video.title != "Deleted video" && !video.nsfw)
       .slice(0, config.MAX_PLAYLIST_SIZE - 1)
       .map((video) => {
         return new Song({
