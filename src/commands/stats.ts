@@ -3,11 +3,17 @@ import { memoryUsage, pid } from "node:process";
 import si from "systeminformation";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
+import { Command } from "../types/Command";
 
 
-export default {
-  name: "stats",
-  description: "Get information about the performance of the bot.",
+export default class StatsCommand extends Command {
+  constructor() {
+    super({
+      name: "stats",
+      description: "Get information about the performance of the bot.",
+    })
+  }
+
   async execute(commandTrigger: CommandInteraction | Message) {
     let memory = await si.mem();
     let process = (await si.processes()).list.find(p => p.pid === pid);

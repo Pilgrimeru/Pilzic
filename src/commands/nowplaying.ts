@@ -4,16 +4,21 @@ import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { formatTime } from "../utils/formatTime";
 import { purning } from "../utils/purning";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
-export default {
-  name: "nowplaying",
-  aliases: ["np"],
-  description: i18n.__("nowplaying.description"),
-  conditions: [
-    CommandConditions.QUEUE_EXISTS
-  ],
-  execute(commandTrigger: CommandInteraction | Message) {
+export default class NowPlayingCommand extends Command {
+  constructor() {
+    super({
+      name: "nowplaying",
+      aliases: ["np"],
+      description: i18n.__("nowplaying.description"),
+      conditions: [
+        CommandConditions.QUEUE_EXISTS
+      ],
+    })
+  }
+  
+  async execute(commandTrigger: CommandInteraction | Message) {
     
     const player = bot.players.get(commandTrigger.guild!.id)!;
 

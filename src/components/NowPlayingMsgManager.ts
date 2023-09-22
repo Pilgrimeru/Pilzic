@@ -9,19 +9,20 @@ import {
 } from "discord.js";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
-import { Player } from "./Player";
-import { Song } from "./Song";
 import { bot } from "../index";
 import { checkConditions } from "../utils/checkConditions";
 import { checkPermissions } from "../utils/checkPermissions";
+import { Player } from "./Player";
+import { Song } from "./Song";
 
 
-export class nowPlayingMsg {
+export class NowPlayingMsgManager {
 
-  private msg : Message;
+  private msg : Message | undefined;
   private song : Song;
   private collector : InteractionCollector<any>;
   private player : Player;
+  private state : "play" | "pause" = "play";
 
 
   constructor(player : Player) {
@@ -30,6 +31,7 @@ export class nowPlayingMsg {
 
 
   public async send(song: Song) : Promise<void> {
+    if (this.msg) await this.delete();
     this.song = song;
     const embed = this.song.playingEmbed();
     this.msg = await this.player.textChannel.send({
@@ -39,24 +41,28 @@ export class nowPlayingMsg {
     await this.createCollector();
   }
 
-  public stop() : void {
+  public async delete() : Promise<void> {
+    if (!this.msg) return;
     try {
       this.collector.stop();
     } catch (error) {
       console.error(error);
+    } finally {
+      this.msg = undefined;
     }
   }
 
+  public edit() : void {
+    if (!this.msg || !this.msg.editable) return;
+    const playerPaused = this.player.status === "paused" || this.player.status === "autopaused";
+    
+    if (!playerPaused && this.player.status !== "playing") return;
+    if (this.state === "pause" && playerPaused) return;
+    if (this.state === "play" && !playerPaused) return;
 
-  private edit() {
-    if (!this.msg) return;
-
-    let color = 0x69adc7;
-    let emoji = "▶";
-    if (this.player.status === "paused" || this.player.status === "autopaused") {
-      color = 0xd13939;
-      emoji = "❚❚"
-    }
+    const color = playerPaused ? 0xd13939 : 0x69adc7;
+    const emoji = playerPaused ? "❚❚" : "▶";
+    this.state = playerPaused ? "pause" : "play";
 
     const embed = this.song.playingEmbed().setColor(color);
     embed.setTitle(`${emoji}  ${embed.data.title}`);
@@ -66,6 +72,7 @@ export class nowPlayingMsg {
       components: [this.buildButtons()]
     });
   }
+
 
   private buildButtons() : ActionRowBuilder<ButtonBuilder> {
     const isPaused = this.player.status === "paused" || this.player.status === "autopaused";
@@ -96,6 +103,7 @@ export class nowPlayingMsg {
   }
 
   private async createCollector() : Promise<void>{
+    if (!this.msg) return;
     const channel = this.player.textChannel;
     this.collector =  this.msg.createMessageComponentCollector();
 
@@ -108,23 +116,21 @@ export class nowPlayingMsg {
       const checkConditionsResult = checkConditions(command, interactUser);
       const checkPermissionsResult = checkPermissions(command, interactUser);
 
-      if (!canWrite) b.reply(i18n.__("nowplayingMsg.errorWritePermission"));
-      else if (checkConditionsResult !== "passed") b.reply(checkConditionsResult);
-      else if (checkPermissionsResult !== "passed") b.reply(checkPermissionsResult);
+      if (!canWrite) await b.reply(i18n.__("nowplayingMsg.errorWritePermission"));
+      else if (checkConditionsResult !== "passed") await b.reply(checkConditionsResult);
+      else if (checkPermissionsResult !== "passed") await b.reply(checkPermissionsResult);
 
       if (b.replied) return;
 
       command.execute(b);
-      if (b.customId === "pause" || b.customId === "resume") this.edit();
-
     });
 
     this.collector.on("end", () => {
 
       if (config.PRUNING) {
-        this.msg.delete().catch(() => null);
+        this.msg?.delete().catch(() => null);
       } else {
-        this.msg.edit({ components: [] });
+        this.msg?.edit({ components: [] });
       }
     });
   }

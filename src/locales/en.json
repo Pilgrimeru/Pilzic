@@ -1,152 +1,157 @@
 {
-	"help": {
-		"description": "Display all commands and their descriptions.",
-		"embedTitle": "{botname} Help",
-		"embedDescription": "List of all commands."
-	},
-	"insert": {
-		"description": "Add a song to the beginning of the queue.",
-		"usageReply": "Usage: {prefix}insert <Video or audio URL | Video name>",
-		"fetchingPlaylist": "⌛ Fetching playlist..."
-	},
-	"invite": {
-		"description": "Send the bot's invitation link."
-	},
-	"jumpto": {
-		"description": "Jump to the selected queue number.",
-		"usageReply": "Usage: {prefix}jumpto <Queue number>",
-		"errorNotValid": "This is not a valid position.",
-		"result": "Jump to queue position {arg} completed"
-	},
-	"loop": {
-		"description": "Loop the music.",
-		"chooseMode": "Choose loop mode.",
-		"result": "The loop mode is now set to: `{loop}`."
-	},
-	"lyrics": {
-		"description": "Get the lyrics of the currently playing song.",
-		"lyricsNotFound": "No lyrics found for {title}.",
-		"embedTitle": "{title} - Lyrics"
-	},
-	"move": {
-		"description": "Move songs in the queue.",
-		"usagesReply": "Usage: {prefix}move <From queue index> <To queue index>.",
-		"result": "The track **\"{title}\"** has been moved to position {index} in the queue."
-	},
-	"nowplaying": {
-		"description": "Display the currently playing song.",
-		"embedTitle": "**Now Playing** ♪",
-		"live": " ◉ LIVE",
-		"timeRemaining": "Time remaining: {time}"
-	},
-	"pause": {
-		"description": "Pause the currently playing music.",
-		"result": "Music has been paused. ⏸"
-	},
-	"ping": {
-		"description": "Display the bot's ping.",
-		"result": "📈 API Ping: {ping} ms."
-	},
-	"play": {
-		"description": "Listen to music from YouTube and other sources.",
-		"usageReply": "Usage: {prefix}play <Video or audio URL | Video name>",
-		"fetchingPlaylist": "⌛ Fetching playlist..."
-	},
-	"playlist": {
-		"description": "Listen to a playlist from YouTube.",
-		"usagesReply": "Usage: {prefix}playlist <Playlist URL | Playlist name>.",
-		"fetchingPlaylist": "⌛ Fetching playlist..."
-	},
-	"previous": {
-		"description": "Go back to the previous song in the playback queue.",
-		"result": "Successfully returned to the previous song."
-	},
-	"queue": {
-		"description": "Display the queue and the currently playing song.",
-		"currentPage": "Current Page - ",
-		"embedTitle": "Server Queue:\n",
-		"embedCurrentSong": "**Current Track - [{title}]({url})**\n\n{info}",
-		"nothingMore": "There's nothing more after this."
-	},
-	"remove": {
-		"description": "Remove a song from the queue.",
-		"usageReply": "Usage: {prefix}remove <Number in the queue>",
-		"result": "**{title}** has been removed from the queue.",
-		"results": "**{titles}** have been removed from the queue."
-	},
-	"resume": {
-		"description": "Resume playback of the paused music.",
-		"result": "Music resumes. ▶"
-	},
-	"search": {
-		"description": "Search and select videos to listen to.",
-		"usageReply": "Usage: {prefix}{name} <Video name>",
-		"menuNothing": "Nothing selected",
-		"chooseSong": "Choose the song to play.",
-		"finished": "Search finished."
-	},
-	"seek": {
-		"description": "Allows you to jump to a specific moment in the current music.",
-		"usageReply": "Usage: {prefix}seek <Number of seconds or time formatted as (02:30)>",
-		"errorSource": "This command doesn't work with SoundCloud links or audio files.",
-		"errorNotValid": "The number of seconds must be between 0 and the duration of the track ({duration}).",
-		"result": "The music has been resumed at : `{time}`"
-	},
-	"shuffle": {
-		"description": "Shuffle the queue.",
-		"result": "Queue has been shuffled. 🔀"
-	},
-	"skip": {
-		"description": "Skip the currently playing song.",
-		"result": "Skipped the song. ⏩"
-	},
-	"stop": {
-		"description": "Stop the music.",
-		"result": "Music stopped. ⏹"
-	},
-	"uptime": {
-		"description": "Check the bot's uptime.",
-		"result": "Uptime: `{days} day(s), {hours} hours, {minutes} minutes, {seconds} seconds`"
-	},
-	"volume": {
-		"description": "Change the currently playing music's volume.",
-		"currentVolume": "🔊 Current volume is: **{volume}%**",
-		"errorNotNumber": "Please use a number to set the volume.",
-		"intervalError": "Please use a number between 0 and 100.",
-		"result": "Volume set to: **{arg}%**"
-	},
-	"nowplayingMsg": {
-		"startedPlaying": "**Now Playing** ♪",
-		"duration": "Duration: ",
-		"live": " ◉ LIVE",
-    "errorWritePermission": "You must be able to write in this channel to interact."
-	},
-	"player": {
-		"songAdded": "✅ [**{title}**]({url}) has been added to the queue.",
-		"playlistAdded": "✅ Playlist [**{title}**]({url}) ({length} tracks) has been added to the queue.",
-		"queueEnded": "Queue has ended.",
-		"leaveChannel": "I'm leaving the voice channel.",
-		"error": "An error occurred while trying to play the audio."
-	},
-	"common": {
-		"on": "**on**",
-		"off": "**off**",
-		"enabled": "**enabled**",
-		"disabled": "**disabled**",
-		"loading": "⏳ Loading...",
-		"cooldownMessage": "Please wait {time} second(s) before using the `{name}` command again."
-	},
-	"errors": {
-		"notQueue": "The queue is empty.",
-		"notChannel": "You must first join a voice channel!",
-		"command": "An error occurred while executing this command.",
-		"notInSameChannel": "You need to be in the same channel as me.",
-		"missingPermissionConnect": "Unable to connect to the voice channel, missing permissions.",
-		"missingPermissionSpeak": "I can't speak in this voice channel, make sure I have the permissions.",
-		"youtubeMixes": "Youtube mixes are not supported.",
-		"invalidURL": "The provided link is either misspelled, unavailable, or not supported.",
-		"serviceUnavailable": "Failed to connect to the source server. Please try again later.",
-		"nothingFound": "No results were found.",
-		"noData": "No data could be extracted."
-	}
+  "help": {
+    "description": "Display all commands and their descriptions.",
+    "embedTitle": "{botname} Help",
+    "embedDescription": "List of all commands."
+  },
+  "insert": {
+    "description": "Add a song to the beginning of the queue.",
+    "usageReply": "Usage: {prefix}insert <Video or audio URL | Video name>",
+    "fetchingPlaylist": "⌛ Fetching playlist..."
+  },
+  "invite": {
+    "description": "Send the bot's invitation link."
+  },
+  "jumpto": {
+    "description": "Jump to the selected queue number.",
+    "usageReply": "Usage: {prefix}jumpto <Queue number>",
+    "errorNotValid": "This is not a valid position.",
+    "result": "Jump to queue position {arg} completed"
+  },
+  "loop": {
+    "description": "Loop the music.",
+    "chooseMode": "Choose loop mode.",
+    "result": "The loop mode is now set to: `{loop}`."
+  },
+  "lyrics": {
+    "description": "Get the lyrics of the currently playing song.",
+    "lyricsNotFound": "No lyrics found for {title}.",
+    "embedTitle": "{title} - Lyrics"
+  },
+  "move": {
+    "description": "Move songs in the queue.",
+    "usagesReply": "Usage: {prefix}move <From queue index> <To queue index>.",
+    "result": "The track **\"{title}\"** has been moved to position {index} in the queue."
+  },
+  "nowplaying": {
+    "description": "Display the currently playing song.",
+    "embedTitle": "**Now Playing** ♪",
+    "live": " ◉ LIVE",
+    "timeRemaining": "Time remaining: {time}"
+  },
+  "pause": {
+    "description": "Pause the currently playing music.",
+    "result": "Music has been paused. ⏸",
+    "error": "The music is already paused."
+  },
+  "ping": {
+    "description": "Display the bot's ping.",
+    "result": "📈 API Ping: {ping} ms."
+  },
+  "play": {
+    "description": "Listen to music from YouTube and other sources.",
+    "usageReply": "Usage: {prefix}play <Video or audio URL | Video name>",
+    "fetchingPlaylist": "⌛ Fetching playlist..."
+  },
+  "playlist": {
+    "description": "Listen to a playlist from YouTube.",
+    "usagesReply": "Usage: {prefix}playlist <Playlist URL | Playlist name>.",
+    "fetchingPlaylist": "⌛ Fetching playlist..."
+  },
+  "previous": {
+    "description": "Go back to the previous song in the playback queue.",
+    "result": "Successfully returned to the previous song.",
+    "error": "Unable to go back, there is no previous music."
+  },
+  "queue": {
+    "description": "Display the queue and the currently playing song.",
+    "currentPage": "Current Page - ",
+    "embedTitle": "Server Queue:\n",
+    "embedCurrentSong": "**Current Track - [{title}]({url})**\n\n{info}",
+    "nothingMore": "There's nothing more after this."
+  },
+  "remove": {
+    "description": "Remove a song from the queue.",
+    "usageReply": "Usage: {prefix}remove <Number in the queue>",
+    "result": "**{title}** has been removed from the queue.",
+    "results": "**{titles}** have been removed from the queue."
+  },
+  "resume": {
+    "description": "Resume playback of the paused music.",
+    "result": "Music resumes. ▶",
+    "error": "The music is already playing."
+  },
+  "search": {
+    "description": "Search and select videos to listen to.",
+    "usageReply": "Usage: {prefix}{name} <Video name>",
+    "menuNothing": "Nothing selected",
+    "chooseSong": "Choose the song to play.",
+    "finished": "Search finished."
+  },
+  "seek": {
+    "description": "Allows you to jump to a specific moment in the current music.",
+    "usageReply": "Usage: {prefix}seek <Number of seconds or time formatted as (02:30)>",
+    "errorSource": "This command doesn't work with SoundCloud links or audio files.",
+    "errorNotValid": "The number of seconds must be between 0 and the duration of the track ({duration}).",
+    "result": "The music has been resumed at : `{time}`"
+  },
+  "shuffle": {
+    "description": "Shuffle the queue.",
+    "result": "Queue has been shuffled. 🔀"
+  },
+  "skip": {
+    "description": "Skip the currently playing song.",
+    "result": "Skipped the song. ⏩"
+  },
+  "stop": {
+    "description": "Stop the music.",
+    "result": "Music stopped. ⏹"
+  },
+  "uptime": {
+    "description": "Check the bot's uptime.",
+    "result": "Uptime: `{days} day(s), {hours} hours, {minutes} minutes, {seconds} seconds`"
+  },
+  "volume": {
+    "description": "Change the currently playing music's volume.",
+    "currentVolume": "🔊 Current volume is: **{volume}%**",
+    "errorNotNumber": "Please use a number to set the volume.",
+    "intervalError": "Please use a number between 0 and 100.",
+    "result": "Volume set to: **{arg}%**"
+  },
+  "nowplayingMsg": {
+    "startedPlaying": "**Now Playing** ♪",
+    "duration": "Duration: `{duration}`",
+    "live": " ◉ LIVE",
+    "requestedBy": "Requested by {name}.",
+    "errorWritePermission": "You must have write permission in this channel to interact."
+  },
+  "player": {
+    "songAdded": "✅ [**{title}**]({url}) has been added to the queue.",
+    "playlistAdded": "✅ Playlist [**{title}**]({url}) containing {length} tracks with a total duration of {duration} has been added to the queue.",
+    "queueEnded": "Queue has ended.",
+    "leaveChannel": "I'm leaving the voice channel.",
+    "error": "An error occurred while trying to play the audio."
+  },
+  "common": {
+    "on": "**on**",
+    "off": "**off**",
+    "enabled": "**enabled**",
+    "disabled": "**disabled**",
+    "loading": "⏳ Loading...",
+    "cooldownMessage": "Please wait {time} second(s) before using the `{name}` command again."
+  },
+  "errors": {
+    "notQueue": "The queue is empty.",
+    "notChannel": "You must first join a voice channel!",
+    "command": "An error occurred while executing this command.",
+    "notInSameChannel": "You need to be in the same channel as me.",
+    "missingPermissionConnect": "Unable to connect to the voice channel, missing permissions.",
+    "missingPermissionSpeak": "I can't speak in this voice channel, make sure I have the permissions.",
+    "youtubeMixes": "Youtube mixes are not supported.",
+    "ageRestricted": "This video is subject to an age restriction and therefore cannot be played.",
+    "invalidURL": "The provided link is either misspelled, unavailable, or not supported.",
+    "serviceUnavailable": "Failed to connect to the source server. Please try again later.",
+    "nothingFound": "No results were found.",
+    "noData": "No data could be extracted."
+  }
 }

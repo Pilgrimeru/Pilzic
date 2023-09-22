@@ -4,24 +4,29 @@ import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
-export default {
-  name: "search",
-  aliases: ["sh"],
-  description: i18n.__("search.description"),
-  options: [
-    {
-      name: 'search',
-      description: 'your youtube search.',
-      type: ApplicationCommandOptionType.String,
-      required: true,
-    }
-  ],
-  conditions: [
-    CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL,
-    CommandConditions.CAN_BOT_SPEAK
-  ],
+export default class SearchCommand extends Command {
+  constructor() {
+    super({
+      name: "search",
+      aliases: ["sh"],
+      description: i18n.__("search.description"),
+      options: [
+        {
+          name: 'search',
+          description: 'your youtube search.',
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        }
+      ],
+      conditions: [
+        CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL,
+        CommandConditions.CAN_BOT_SPEAK
+      ],
+    })
+  }
+
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
     
     if (!args.length)

@@ -2,27 +2,31 @@ import { ApplicationCommandOptionType, CommandInteraction, Message } from "disco
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { purning } from "../utils/purning";
-import { CommandConditions } from "../interfaces/Command";
+import { Command, CommandConditions } from "../types/Command";
 
 const pattern = /^[1-9][0-9]{0,2}(\s*,\s*[1-9][0-9]{0,2})*$/;
+export default class RemoveCommand extends Command {
+  constructor() {
+    super({
+      name: "remove",
+      aliases: ["rm"],
+      description: i18n.__("remove.description"),
+      conditions: [
+        CommandConditions.QUEUE_EXISTS,
+        CommandConditions.IS_IN_SAME_CHANNEL
+      ],
+      options: [
+        {
+          name: "position",
+          description: "You can also remove multiple songs with ',' symbole",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        }
+      ],
+    })
+  }
 
-export default {
-  name: "remove",
-  aliases: ["rm"],
-  description: i18n.__("remove.description"),
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
-  ],
-  options: [
-    {
-      name: "position",
-      description: "You can also remove multiple songs with ',' symbole",
-      type: ApplicationCommandOptionType.String,
-      required: true,
-    }
-  ],
-  execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
     
     if (!args.length) return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
     

@@ -1,3 +1,4 @@
+import { User } from 'discord.js';
 import fetch from 'isomorphic-unfetch';
 import { DeezerAlbum, DeezerPlaylist, SoundCloudPlaylist, SoundCloudTrack, deezer, soundcloud } from "play-dl";
 import youtube, { Video, Playlist as YoutubePlaylist } from "youtube-sr";
@@ -10,6 +11,7 @@ import {
   YoutubeMixesError
 } from '../errors/ExtractionErrors';
 import { bot } from '../index';
+import { UrlType } from '../utils/validate';
 import { Song } from "./Song";
 const { getPreview, getTracks } = require('spotify-url-info')(fetch);
 
@@ -24,31 +26,37 @@ export class Playlist {
   public readonly title: string;
   public readonly url: string;
   public readonly songs: Song[];
+  public readonly duration: number;
 
 
   public constructor(options: PlaylistData) {
     Object.assign(this, options);
+    let total = 0;
+    options.songs.forEach((songs) => {total += songs.duration});
+    this.duration = total;
   }
 
 
-  public static async from(url: string = "", search: string = "", type: string | false): Promise<Playlist> {
+  public static async from(search: string = "", requester: User, type: UrlType): Promise<Playlist> {
+    const url = search.split(" ").at(0);
+
+    if (type === false) throw new InvalidURLError();
+
     if (type === "sp_playlist" || type === "sp_album" || type === "sp_artist") {
-      return await Playlist.fromSpotify(url);
+      return await Playlist.fromSpotify(url, requester);
     }
     if (type === "so_playlist") {
-      return await Playlist.fromSoundcloud(url);
+      return await Playlist.fromSoundcloud(url, requester);
     }
     if (type === "dz_playlist" || type === "dz_album") {
-      return await Playlist.fromDeezer(url);
+      return await Playlist.fromDeezer(url, requester);
     }
     
-    if (url.startsWith("http") && type == false) throw new InvalidURLError();
-    
-    return await Playlist.fromYoutube(url, search);
+    return await Playlist.fromYoutube(url, search, requester);
   }
 
 
-  private static async fromYoutube(url: string = "", search: string = ""): Promise<Playlist> {
+  private static async fromYoutube(url: string = "", search: string = "", requester: User): Promise<Playlist> {
     const YT_LINK = /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))\/.+$/;
     const urlValid = youtube.isPlaylist(url);
     if (url.match(YT_LINK) && !urlValid) throw new YoutubeMixesError();
@@ -63,9 +71,12 @@ export class Playlist {
         if (!playlist) throw new InvalidURLError();
         
       } else {
-        const result = await youtube.searchOne(search, "playlist");
-        if (!result) throw new NothingFoundError();
-        playlist = await result.fetch(config.MAX_PLAYLIST_SIZE);
+        const result = await youtube.searchOne(search, "playlist", true);
+        playlist = await youtube.getPlaylist(result.url!, {
+          fetchAll: true,
+          limit: config.MAX_PLAYLIST_SIZE
+        });
+        if (!playlist) throw new NothingFoundError();
       }
     } catch (error : any) {
       if (error.message?.includes("Mixes")) {
@@ -73,12 +84,12 @@ export class Playlist {
       }
       throw error;
     }
-    const songs = Playlist.getSongsFromYoutube(playlist.videos);
+    const songs = Playlist.getSongsFromYoutube(playlist.videos, requester);
 
     return new this({ title: playlist.title ?? "unknown", url: playlist.url ?? "", songs: songs });
   }
 
-  private static async fromSoundcloud(url: string = ""): Promise<Playlist> {
+  private static async fromSoundcloud(url: string = "", requester: User): Promise<Playlist> {
     let playlist;
     let tracks: SoundCloudTrack[] = [];
     try {
@@ -96,13 +107,13 @@ export class Playlist {
       throw error;
     }
   
-    const songs = Playlist.getSongsFromSoundCloud(tracks);
+    const songs = Playlist.getSongsFromSoundCloud(tracks, requester);
     if (!songs.length) throw new NoDataError();
 
     return new this({ title: playlist.name, url: url, songs: songs });
   }
 
-  private static async fromSpotify(url: string): Promise<Playlist> {
+  private static async fromSpotify(url: string = "", requester: User): Promise<Playlist> {
     let playlistPreview;
     let playlistTracks;
     try {
@@ -116,16 +127,17 @@ export class Playlist {
       }
     }
 
-    let infos: Promise<Video>[] = playlistTracks.map(async (track: any) => {
-      return await youtube.searchOne(track.artist + " " + track.name);
+    const infos: Promise<Video>[] = playlistTracks.map((track: any) => {
+      const search = track.artist + " " + track.name;
+      return youtube.searchOne(search, "video", true);
     });
-    const songs = Playlist.getSongsFromYoutube(await Promise.all(infos));
+    const songs = Playlist.getSongsFromYoutube(await Promise.all(infos), requester);
     if (!songs.length) throw new NoDataError();
 
     return new this({ title: playlistPreview.title, url: playlistPreview.link, songs: songs });
   }
 
-  private static async fromDeezer(url: string): Promise<Playlist> {
+  private static async fromDeezer(url: string = "", requester: User): Promise<Playlist> {
 
     let playlist;
     try {
@@ -141,18 +153,19 @@ export class Playlist {
     if (!playlist) throw new NoDataError();
     playlist = (playlist as DeezerPlaylist | DeezerAlbum);
 
-    let infos: Promise<Video>[] = playlist.tracks.map(async (track) => {
-      return await youtube.searchOne(track.artist.name + " " + track.title);
+    const infos: Promise<Video>[] = playlist.tracks.map((track) => {
+      const search = track.artist.name + " " + track.title;
+      return youtube.searchOne(search, "video", true);
     });
-    const songs = Playlist.getSongsFromYoutube(await Promise.all(infos));
+    const songs = Playlist.getSongsFromYoutube(await Promise.all(infos), requester);
 
     return new this({ title: playlist.title, url: playlist.url, songs: songs });
   }
 
-  private static getSongsFromYoutube(playlist: Video[]): Song[] {
+  private static getSongsFromYoutube(playlist: Video[], requester: User): Song[] {
 
     let songs = playlist
-      .filter((video) => (video.title ?? "") !== "" && video.title != "Private video" && video.title != "Deleted video")
+      .filter((video) => (video.title ?? "") !== "" && video.title != "Private video" && video.title != "Deleted video" && !video.nsfw)
       .slice(0, config.MAX_PLAYLIST_SIZE - 1)
       .map((video) => {
         return new Song({
@@ -160,7 +173,7 @@ export class Playlist {
           url: `https://youtube.com/watch?v=${video.id}`,
           duration: video.duration,
           thumbnail: video.thumbnail?.url!
-        });
+        }, requester);
       });
     if (!songs.length)
       throw new NoDataError();
@@ -168,7 +181,7 @@ export class Playlist {
     return songs;
   }
 
-  private static getSongsFromSoundCloud(playlist: SoundCloudTrack[]): Song[] {
+  private static getSongsFromSoundCloud(playlist: SoundCloudTrack[], requester: User): Song[] {
 
     let songs = playlist
       .slice(0, config.MAX_PLAYLIST_SIZE - 1)
@@ -178,7 +191,7 @@ export class Playlist {
           title: track.name,
           duration: track.durationInMs,
           thumbnail: track.thumbnail,
-        });
+        }, requester);
       });
     if (!songs.length)
       throw new NoDataError();

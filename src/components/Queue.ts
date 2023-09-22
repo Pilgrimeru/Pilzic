@@ -104,7 +104,7 @@ export class Queue {
   }
   
 
-  private setupPlayerListeners() {
+  private setupPlayerListeners() : void {
     
     this.player.onSkip(() => {
       if (this.loop === "track") this.loop = "disabled";

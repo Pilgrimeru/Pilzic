@@ -1,40 +1,44 @@
 import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
-import { ApplicationCommandOptionType, BaseGuildTextChannel, CommandInteraction, Message, PermissionsBitField } from "discord.js";
-import { ExtractionError } from "../errors/ExtractionErrors";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
+import { ApplicationCommandOptionType, BaseGuildTextChannel, CommandInteraction, Message, PermissionsBitField, User } from "discord.js";
 import { Player } from "../components/Player";
 import { Playlist } from "../components/Playlist";
 import { Song } from "../components/Song";
+import { ExtractionError } from "../errors/ExtractionErrors";
+import { i18n } from "../i18n.config";
+import { bot } from "../index";
+import { Command, CommandConditions } from "../types/Command";
 import { purning } from "../utils/purning";
-import { validate } from "../utils/validate";
-import { CommandConditions } from "../interfaces/Command";
+import { UrlType, validate } from "../utils/validate";
 
-export default {
-  name: "insert",
-  description: i18n.__("insert.description"),
-  options: [
-    {
-      name: "query",
-      description: "url or search.",
-      type: ApplicationCommandOptionType.String,
-      required: true,
-    },
-    {
-      name: "playlist",
-      description: "if is a playlist search",
-      type: ApplicationCommandOptionType.Boolean,
-      required: false,
-    },
-  ],
-  permissions: [
-    PermissionsBitField.Flags.Connect,
-    PermissionsBitField.Flags.Speak
-  ],
-  conditions: [
-    CommandConditions.QUEUE_EXISTS,
-    CommandConditions.IS_IN_SAME_CHANNEL
-  ],
+export default class InsertCommand extends Command {
+  constructor() {
+    super({
+      name: "insert",
+      description: i18n.__("insert.description"),
+      options: [
+        {
+          name: "query",
+          description: "url or search.",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+        {
+          name: "playlist",
+          description: "if is a playlist search",
+          type: ApplicationCommandOptionType.Boolean,
+          required: false,
+        },
+      ],
+      permissions: [
+        PermissionsBitField.Flags.Connect,
+        PermissionsBitField.Flags.Speak
+      ],
+      conditions: [
+        CommandConditions.QUEUE_EXISTS,
+        CommandConditions.IS_IN_SAME_CHANNEL
+      ],
+    })
+  }
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const isSlashCommand = (commandTrigger instanceof CommandInteraction);
@@ -55,18 +59,17 @@ export default {
 
     const response = await commandTrigger.reply(i18n.__mf("common.loading"));
 
-    const url = (!isSlashCommand && !args.length) ? commandTrigger!.attachments.first()?.url! : args[0];
-    const type: string | false = await validate(url);
-    const search = args.join(" ");
+    const search = (!isSlashCommand && !args.length) ? commandTrigger!.attachments.first()?.url! : args.join(" ");
+    const type: UrlType = await validate(search);
+    const requester : User = !isSlashCommand ? commandTrigger.author : commandTrigger.user;
 
     try {
       let item : Song | Playlist;
       if (type.toString().match(/playlist|album|artist/) || (type === false && playlistResearch)) {
         response.edit(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
-        item = (await Playlist.from(url, search, type))
-        
+        item = (await Playlist.from(search, requester, type));        
       } else {
-        item = (await Song.from(url, search, type));
+        item = (await Song.from(search, requester, type));
       }
       const guildMember = isSlashCommand ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id): commandTrigger.member;
       const { channel } = guildMember!.voice;
@@ -76,7 +79,7 @@ export default {
         connection: joinVoiceChannel({
           channelId: channel.id,
           guildId: channel.guild.id,
-          adapterCreator: channel.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator
+          adapterCreator: channel.guild.voiceAdapterCreator,
         })
       })
       player.queue.insert(item);
