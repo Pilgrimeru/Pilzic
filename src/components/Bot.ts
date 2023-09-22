@@ -1,9 +1,10 @@
-import { ApplicationCommandDataResolvable, Client, Collection, GatewayIntentBits, Snowflake } from "discord.js";
+import { ApplicationCommandDataResolvable, Client, ClientEvents, Collection, GatewayIntentBits, Snowflake } from "discord.js";
 import { readdirSync } from "fs";
 import { join } from "path";
 import { getFreeClientID, setToken } from "play-dl";
 import { config } from "../config";
 import { Command } from "../types/Command";
+import { Event } from "../types/Event";
 import { Player } from "./Player";
 
 export class Bot extends Client {
@@ -73,8 +74,8 @@ export class Bot extends Client {
   private async loadEvents() : Promise<void> {
     const eventFiles = readdirSync(join(__dirname, "..", "events")).filter((file) => !file.endsWith(".map"));
     for (const file of eventFiles) {
-      const event = await import(join(__dirname, "..", "events", `${file}`));
-      this.on(event.default.event, event.default.run);
+      const event = (await import(join(__dirname, "..", "events", `${file}`))).default as Event<keyof ClientEvents>;;
+      this.on(event.name, event.execute);
     }
   }
 }
