@@ -148,6 +148,7 @@
     "missingPermissionConnect": "Impossible de se connecter au salon vocal, autorisations manquantes.",
     "missingPermissionSpeak": "Je ne peux pas parler dans ce salon vocal, assurez-vous que j'ai les autorisations.",
     "youtubeMixes": "Les mixs YouTube ne sont pas pris en charge.",
+    "ageRestricted": "Cette vidéo est soumise à une limite d'âge et donc ne peut pas être lue.",
     "invalidURL": "Le lien fourni est incorrect, indisponible ou non pris en charge.",
     "serviceUnavailable": "La connexion au serveur source a échoué. Veuillez réessayer ultérieurement.",
     "nothingFound": "Aucun résultat n'a été trouvé.",

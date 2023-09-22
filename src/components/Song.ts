@@ -15,6 +15,7 @@ import {
 import youtube from "youtube-sr";
 import { config } from "../config";
 import {
+  AgeRestrictedError,
   InvalidURLError,
   NoDataError,
   NothingFoundError,
@@ -146,8 +147,9 @@ export class Song {
     let songInfo;
     if (url.match(/^https?:\/\/\S+$/) && yt_validate(url) === "video") {
       songInfo = await youtube.getVideo(url).catch(console.error);
-      if (!songInfo)
-        throw new InvalidURLError();
+
+      if (!songInfo) throw new InvalidURLError();
+      if (songInfo.nsfw) throw new AgeRestrictedError();
 
       return {
         url: songInfo.url,
@@ -156,7 +158,7 @@ export class Song {
         thumbnail: songInfo.thumbnail?.url!,
       };
     } else {
-      songInfo = await youtube.searchOne(search).catch(console.error);
+      songInfo = await youtube.searchOne(search, "video", true).catch(console.error);
       if (!songInfo)
         throw new NothingFoundError();
 
