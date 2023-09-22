@@ -61,7 +61,7 @@ export class Playlist {
     const urlValid = youtube.isPlaylist(url);
     if (url.match(YT_LINK) && !urlValid) throw new YoutubeMixesError();
 
-    let playlist: YoutubePlaylist | void;
+    let playlist: YoutubePlaylist;
     try {
       if (urlValid) {
         playlist = await youtube.getPlaylist(url, {
@@ -79,7 +79,7 @@ export class Playlist {
         if (!playlist) throw new NothingFoundError();
       }
     } catch (error : any) {
-        if (error.message?.includes("Mixes")) {
+      if (error.message?.includes("Mixes")) {
         throw new YoutubeMixesError();
       }
       throw error;

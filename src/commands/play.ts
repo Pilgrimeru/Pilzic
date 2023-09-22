@@ -52,10 +52,10 @@ export default class PlayCommand extends Command {
     if (!isSlashCommand && args.length >= 2 && args[0].toLowerCase() === "playlist") {
       args = args.slice(1);
       playlistResearch = true;
-    } else if (isSlashCommand && args.at(-1)?.toString() === "true") {
+    } else if (isSlashCommand && args.at(-1) === "true") {
       args.slice(args.length-1);
       playlistResearch = true;
-    } else if (isSlashCommand && args.at(-1)?.toString() === "false") {
+    } else if (isSlashCommand && args.at(-1) === "false") {
       args.slice(args.length-1);
     }
 
