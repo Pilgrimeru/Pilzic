@@ -71,9 +71,12 @@ export class Playlist {
         if (!playlist) throw new InvalidURLError();
         
       } else {
-        const result = await youtube.searchOne(search, "playlist");
-        if (!result) throw new NothingFoundError();
-        playlist = await result.fetch(config.MAX_PLAYLIST_SIZE);
+        const result = await youtube.searchOne(search, "playlist", true);
+        playlist = await youtube.getPlaylist(result.url!, {
+          fetchAll: true,
+          limit: config.MAX_PLAYLIST_SIZE
+        });
+        if (!playlist) throw new NothingFoundError();
       }
     } catch (error : any) {
       if (error.message?.includes("Mixes")) {

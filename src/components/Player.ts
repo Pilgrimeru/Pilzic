@@ -8,7 +8,7 @@ import {
   createAudioPlayer,
   entersState
 } from "@discordjs/voice";
-import { BaseGuildTextChannel, Message } from "discord.js";
+import { BaseGuildTextChannel } from "discord.js";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
