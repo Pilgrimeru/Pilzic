@@ -1,4 +1,4 @@
-import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
+import { joinVoiceChannel } from "@discordjs/voice";
 import { ApplicationCommandOptionType, BaseGuildTextChannel, CommandInteraction, Message, PermissionsBitField, User } from "discord.js";
 import { Player } from "../components/Player";
 import { Playlist } from "../components/Playlist";
@@ -67,7 +67,7 @@ export default class PlayCommand extends Command {
 
     try {
       let item : Song | Playlist;
-      if (type.toString().match(/playlist|album|artist/) || (type === false && playlistResearch)) {
+      if (type.toString().match(/playlist|album|artist/) || (type === "yt_search" && playlistResearch)) {
         response.edit(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
         item = (await Playlist.from(search, requester, type))
         

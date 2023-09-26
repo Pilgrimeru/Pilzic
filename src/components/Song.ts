@@ -10,7 +10,8 @@ import {
   stream as getStream,
   so_validate,
   soundcloud,
-  yt_validate
+  yt_validate,
+  video_basic_info
 } from "play-dl";
 import youtube from "youtube-sr";
 import { config } from "../config";
@@ -24,7 +25,7 @@ import {
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { formatTime } from "../utils/formatTime";
-import { UrlType } from "../utils/validate";
+import { UrlType, validate } from "../utils/validate";
 const { getPreview } = require('spotify-url-info')(fetch);
 
 interface SongData {
@@ -140,6 +141,12 @@ export class Song {
       inputType: type,
       inlineVolume: true,
     });
+  }
+
+  public async getRelated(): Promise<string[]> {
+    const query = (await validate(this.url)) === "yt_video" ? this.url : this.title ?? "";
+    const info = await video_basic_info(query, { htmldata: false });
+    return info.related_videos;
   }
   
 
