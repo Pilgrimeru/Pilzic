@@ -48,6 +48,7 @@ export class Queue {
     this._index = 0;
     this._songs.length = 0;
     this.loop = "disabled";
+    this._autoqueue = false;
   }
 
   public shuffle() : void {

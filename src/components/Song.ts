@@ -144,8 +144,13 @@ export class Song {
   }
 
   public async getRelated(): Promise<string[]> {
-    const query = (await validate(this.url)) === "yt_video" ? this.url : this.title ?? "";
-    const info = await video_basic_info(query, { htmldata: false });
+    let url = this.url;
+    if (await validate(this.url) !== "yt_video") {
+      const songInfo = await youtube.searchOne(this.title ?? "", "video", true).catch(console.error);
+      if (!songInfo) return [];
+      url = songInfo.url;
+    }
+    const info = await video_basic_info(url, { htmldata: false });
     return info.related_videos;
   }
   
