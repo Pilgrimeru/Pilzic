@@ -65,7 +65,7 @@ export default class InsertCommand extends Command {
 
     try {
       let item : Song | Playlist;
-      if (type.toString().match(/playlist|album|artist/) || (type === "yt_search" && playlistResearch)) {
+      if (type.toString().match(/playlist|album|artist/) || (type === false && playlistResearch)) {
         response.edit(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
         item = (await Playlist.from(search, requester, type));        
       } else {

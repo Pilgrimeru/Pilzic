@@ -12,7 +12,6 @@ export class Queue {
   
   private _index: number = 0;
   private _songs: Song[] = [];
-  private _autoqueue : boolean = false;
   private player : Player;
 
   private playlistAddedCallbacks: playlistAddedCallback[] = [];
@@ -25,7 +24,7 @@ export class Queue {
 
   public enqueue(item: Song | Playlist) : void {
     if (item instanceof Playlist) {
-      this._songs.push(...item.songs);
+      this._songs = this._songs.concat(item.songs);
       this.playlistAddedCallbacks.forEach(callback => callback(item));
 
     } else {
@@ -93,15 +92,6 @@ export class Queue {
   }
 
 
-  public getAutoqueue(): boolean {
-    return this._autoqueue;
-  }
-
-  public async setAutoqueue(value: boolean) {
-    this._autoqueue = value;
-    await this.autoFill();
-  }
-
   public get index() : number {
     return this._index;
   }
@@ -118,26 +108,24 @@ export class Queue {
   private setupPlayerListeners() : void {
     
     this.player.onSkip(() => {
+      if (this.loop === "track") this.loop = "disabled";
       if (this._index !== this._songs.length - 1) {
         this._index += 1;
-        if (this._autoqueue) {
-          this.autoFill();
-        }
       } else if (this.loop === "queue") {
         this._index = 0;
       }
     });
 
     this.player.onJump(songId => {
+      if (this.loop === "track") this.loop = "disabled";
       if (songId >= this._songs.length) songId = this._songs.length -1;
       else if (songId < 0) songId = 0;
-      if (this._autoqueue) {
-        this.autoFill();
-      }
       this._index = songId;
     })
 
     this.player.onPrevious(() => {
+      if (this.loop === "track") this.loop = "disabled";
+      
       if (this._index <= 0 && this.loop === "queue") {
         this._index = this._songs.length - 1;
       }
@@ -145,33 +133,5 @@ export class Queue {
         this._index--;
       }
     })
-  }
-
-  private async autoFill() : Promise<number> {
-    const MAX_FILL = 4;
-    const remainingTracks = this.songs.length - this.index - 1;
-    if (remainingTracks > 2 || remainingTracks >= MAX_FILL) return 0;
-
-    const randomPreviousIndex = Math.floor(Math.random() * (this.index + 1));
-    const limit = MAX_FILL - remainingTracks;
-    const botUser = this.player.textChannel.guild.members.me?.user!
-    
-    let related_videos = await this._songs[randomPreviousIndex].getRelated();
-    related_videos = related_videos.filter((url) => !this._songs.some((existingSong) => existingSong.url === url));
-
-    let songs: Song[] = [];
-    for (const url of related_videos) {
-      if (limit && songs.length >= limit) break;
-        
-      try {
-        const song = await Song.from(url, botUser, "yt_video");
-        songs.push(song);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    this._songs.push(...songs);
-    if (songs.length < limit) await this.autoFill();
-    return songs.length;
   }
 }

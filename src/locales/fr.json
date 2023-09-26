@@ -1,8 +1,4 @@
 {
-  "autoplay": {
-    "description": "Active le remplissage automatique de la queue.",
-    "result": "L'autoplay est maintenant {mode}."
-  },
   "help": {
     "description": "Affiche toutes les commandes et leurs descriptions.",
     "embedTitle": "Aide {botname}",

@@ -1,8 +1,4 @@
 {
-  "autoplay": {
-    "description": "Enables automatic queue filling.",
-    "result": "Autoplay is now {mode}."
-  },
   "help": {
     "description": "Display all commands and their descriptions.",
     "embedTitle": "{botname} Help",

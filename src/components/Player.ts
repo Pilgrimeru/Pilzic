@@ -190,7 +190,7 @@ export class Player {
       await this.nowPlayingMsgManager.send(song);
     } catch (error) {
       console.error(error);
-      loadingMsg.delete().catch(() => null);
+      loadingMsg?.delete().catch(() => null);
       this.textChannel.send(i18n.__("player.error")).then(purning);
       this.skip();
     }
