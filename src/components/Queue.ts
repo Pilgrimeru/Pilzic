@@ -147,31 +147,24 @@ export class Queue {
     })
   }
 
-  private async autoFill() : Promise<number> {
-    const MAX_FILL = 4;
+  private async autoFill() : Promise<void> {
     const remainingTracks = this.songs.length - this.index - 1;
-    if (remainingTracks > 2 || remainingTracks >= MAX_FILL) return 0;
-
-    const randomPreviousIndex = Math.floor(Math.random() * (this.index + 1));
-    const limit = MAX_FILL - remainingTracks;
+    if (remainingTracks > 2) return;
     const botUser = this.player.textChannel.guild.members.me?.user!
     
-    let related_videos = await this._songs[randomPreviousIndex].getRelated();
-    related_videos = related_videos.filter((url) => !this._songs.some((existingSong) => existingSong.url === url));
+    let related_videos = await this._songs[this._index].getRelated();
+    related_videos = related_videos.filter((url) => !(this._songs.some((existingSong) => existingSong.url === url)));
 
-    let songs: Song[] = [];
+    let relatedSongs: Song | undefined;
     for (const url of related_videos) {
-      if (limit && songs.length >= limit) break;
-        
       try {
-        const song = await Song.from(url, botUser, "yt_video");
-        songs.push(song);
+        relatedSongs = await Song.from(url, botUser, "yt_video");
+        break;
       } catch (error) {
         console.error(error);
       }
     }
-    this._songs.push(...songs);
-    if (songs.length < limit) await this.autoFill();
-    return songs.length;
+    if (!relatedSongs) return await this.autoFill();
+    this._songs.push(relatedSongs);
   }
 }
