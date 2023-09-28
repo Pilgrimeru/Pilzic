@@ -33,6 +33,7 @@ interface SongData {
   title: string | undefined;
   duration: number;
   thumbnail: string | null;
+  related?: string[];
 }
 
 export class Song {
@@ -42,7 +43,7 @@ export class Song {
   public readonly duration: number;
   public readonly thumbnail: string;
   public readonly requester: User;
-
+  private related : string[] | undefined;
 
   public constructor(options: SongData, requester: User) {
     Object.assign(this, options);
@@ -67,7 +68,7 @@ export class Song {
         songData = await Song.fromExternalLink(url);
         break;
       default : {
-        if (type === false && url?.startsWith("http")) throw new InvalidURLError();
+        if (type === false && url?.match(/^https?:\/\/\S+$/)) throw new InvalidURLError();
         songData = await Song.fromYoutube(url, search);
         break;
       }
@@ -144,30 +145,43 @@ export class Song {
   }
 
   public async getRelated(): Promise<string[]> {
+    if(this.related) return this.related;
     let url = this.url;
-    if (await validate(this.url) !== "yt_video") {
+    if (yt_validate(url) === "video") {
       const songInfo = await youtube.searchOne(this.title ?? "", "video", true).catch(console.error);
       if (!songInfo) return [];
       url = songInfo.url;
     }
     const info = await video_basic_info(url, { htmldata: false });
+    this.related = info.related_videos;
     return info.related_videos;
   }
   
 
   private static async fromYoutube(url: string = "", search: string = ""): Promise<SongData> {
     let songInfo;
-    if (url.match(/^https?:\/\/\S+$/) && yt_validate(url) === "video") {
-      songInfo = await youtube.getVideo(url).catch(console.error);
-
-      if (!songInfo) throw new InvalidURLError();
-      if (songInfo.nsfw) throw new AgeRestrictedError();
+    if (url.startsWith("https") && yt_validate(url) === "video") {
+      try {
+        songInfo = await video_basic_info(url);
+      } catch (error : any) {
+        if (error.message?.includes("confirm your age")) {
+          throw new AgeRestrictedError();
+        }
+        if (error.message?.includes("you are a bot")) {
+          throw new ServiceUnavailableError();
+        }
+        if (error.message?.includes("Private video") || error.message?.includes("Video unavailable")) {
+          throw new InvalidURLError();
+        }
+        throw error;
+      }
 
       return {
-        url: songInfo.url,
-        title: songInfo.title,
-        duration: songInfo.duration,
-        thumbnail: songInfo.thumbnail?.url!,
+        url: songInfo.video_details.url,
+        title: songInfo.video_details.title,
+        duration: (songInfo.video_details.durationInSec * 1000),
+        thumbnail: songInfo.video_details.thumbnails[0].url,
+        related: songInfo.related_videos
       };
     } else {
       songInfo = await youtube.searchOne(search, "video", true).catch(console.error);
