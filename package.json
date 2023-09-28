@@ -5,8 +5,7 @@
   "main": "./src/index.ts",
   "scripts": {
     "start": "ts-node ./src/index.ts",
-    "run": "node ./dist/index.js",
-    "test": "ts-node ./src/test.ts"
+    "run": "node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +18,7 @@
     "ffmpeg-static": "^5.2.0",
     "i18n": "^0.15.1",
     "isomorphic-unfetch": "^4.0.2",
+    "lru-cache": "^10.0.1",
     "lyrics-finder": "^21.7.0",
     "music-metadata": "7.13.4",
     "play-dl": "^1.9.7",

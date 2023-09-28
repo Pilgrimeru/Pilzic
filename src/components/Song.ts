@@ -2,6 +2,7 @@ import { AudioResource, StreamType, createAudioResource } from "@discordjs/voice
 import axios from 'axios';
 import { EmbedBuilder, User } from "discord.js";
 import fetch from 'isomorphic-unfetch';
+import { LRUCache } from 'lru-cache';
 import { parseStream } from 'music-metadata';
 import {
   DeezerTrack,
@@ -10,8 +11,8 @@ import {
   stream as getStream,
   so_validate,
   soundcloud,
-  yt_validate,
-  video_basic_info
+  video_basic_info,
+  yt_validate
 } from "play-dl";
 import youtube from "youtube-sr";
 import { config } from "../config";
@@ -25,7 +26,7 @@ import {
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { formatTime } from "../utils/formatTime";
-import { UrlType, validate } from "../utils/validate";
+import { UrlType } from "../utils/validate";
 const { getPreview } = require('spotify-url-info')(fetch);
 
 interface SongData {
@@ -37,13 +38,14 @@ interface SongData {
 }
 
 export class Song {
+  private static songCache = new LRUCache<string, Song>({ max: 1500 });
 
   public readonly url: string;
   public readonly title: string | undefined;
   public readonly duration: number;
   public readonly thumbnail: string;
   public readonly requester: User;
-  private related : string[] | undefined;
+  private related: string[] | undefined;
 
   public constructor(options: SongData, requester: User) {
     Object.assign(this, options);
@@ -51,9 +53,13 @@ export class Song {
   }
 
 
-  public static async from(search: string, requester: User ,type: UrlType): Promise<Song> {
+  public static async from(search: string, requester: User, type: UrlType): Promise<Song> {
+    const cachedSong = Song.songCache.get(search);
+    if (cachedSong) return cachedSong;
+
     const url = search.split(" ").at(0);
-    let songData : SongData;
+
+    let songData: SongData;
     switch (type) {
       case "sp_track":
         songData = await Song.fromSpotify(url);
@@ -67,44 +73,46 @@ export class Song {
       case "audio":
         songData = await Song.fromExternalLink(url);
         break;
-      default : {
+      default: {
         if (type === false && url?.match(/^https?:\/\/\S+$/)) throw new InvalidURLError();
         songData = await Song.fromYoutube(url, search);
         break;
       }
     }
-    return new Song(songData, requester);
+    const song = new Song(songData, requester);
+    Song.songCache.set(search, song);
+    return song;
   }
 
-  public formatedTime() : string {
+  public formatedTime(): string {
     if (this.duration == 0) {
       return i18n.__mf("nowplayingMsg.live");
     }
     return formatTime(this.duration);
   }
 
-  public playingEmbed() : EmbedBuilder {
+  public playingEmbed(): EmbedBuilder {
     return new EmbedBuilder({
       title: i18n.__mf("nowplayingMsg.startedPlaying"),
       description: `[${this.title}](${this.url})
-      ${i18n.__mf("nowplayingMsg.duration", {duration: this.formatedTime()})}`,
+      ${i18n.__mf("nowplayingMsg.duration", { duration: this.formatedTime() })}`,
       thumbnail: {
         url: this.thumbnail
       },
       color: 0x69adc7,
       footer: {
-        text : i18n.__mf("nowplayingMsg.requestedBy", { name: this.requester.displayName }),
+        text: i18n.__mf("nowplayingMsg.requestedBy", { name: this.requester.displayName }),
         icon_url: this.requester.avatarURL() ?? undefined
       }
     });
   }
 
-  public async makeResource(seek? : number): Promise<AudioResource<Song>> {
+  public async makeResource(seek?: number): Promise<AudioResource<Song>> {
     let stream;
     let type;
 
     if (seek) {
-      if (yt_validate(this.url) ==! "video")
+      if (yt_validate(this.url) == ! "video")
         throw new Error("Seeking is only supported for YouTube sources.");
 
       const response = await getStream(this.url, {
@@ -117,11 +125,11 @@ export class Song {
       type = response.type;
 
     } else if (this.url.startsWith("https") && (yt_validate(this.url) === "video" || await so_validate(this.url) === "track")) {
-      
+
       const response = await getStream(this.url, {
         htmldata: false,
         precache: 30,
-        quality : config.AUDIO_QUALITY
+        quality: config.AUDIO_QUALITY
       });
       stream = response.stream;
       type = response.type;
@@ -145,7 +153,7 @@ export class Song {
   }
 
   public async getRelated(): Promise<string[]> {
-    if(this.related) return this.related;
+    if (this.related) return this.related;
     let url = this.url;
     if (yt_validate(url) === "video") {
       const songInfo = await youtube.searchOne(this.title ?? "", "video", true).catch(console.error);
@@ -156,14 +164,14 @@ export class Song {
     this.related = info.related_videos;
     return info.related_videos;
   }
-  
+
 
   private static async fromYoutube(url: string = "", search: string = ""): Promise<SongData> {
     let songInfo;
     if (url.startsWith("https") && yt_validate(url) === "video") {
       try {
         songInfo = await video_basic_info(url);
-      } catch (error : any) {
+      } catch (error: any) {
         if (error.message?.includes("confirm your age")) {
           throw new AgeRestrictedError();
         }
@@ -207,10 +215,10 @@ export class Song {
         duration: songInfo.durationInMs,
         thumbnail: songInfo.thumbnail,
       };
-    
-    } catch (error : any) {
+
+    } catch (error: any) {
       if (error.message?.includes("out of scope")) {
-        throw new InvalidURLError()
+        throw new InvalidURLError();
       } else if (error.message?.includes("Data is missing")) {
         throw new ServiceUnavailableError();
       }
@@ -222,8 +230,8 @@ export class Song {
 
     let data;
     try {
-      data = await getPreview(url, {headers: {'user-agent': bot.useragent}});
-    } catch (error : any) {
+      data = await getPreview(url, { headers: { 'user-agent': bot.useragent } });
+    } catch (error: any) {
       if (error.message?.includes("parse")) {
         throw new InvalidURLError();
       } else {
@@ -247,7 +255,7 @@ export class Song {
       }
       throw error;
     }
-    
+
     let track: DeezerTrack | undefined;
     if (data && data.type === "track") {
       track = data as DeezerTrack;

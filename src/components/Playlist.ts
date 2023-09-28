@@ -1,5 +1,6 @@
 import { User } from 'discord.js';
 import fetch from 'isomorphic-unfetch';
+import { LRUCache } from 'lru-cache';
 import { DeezerAlbum, DeezerPlaylist, SoundCloudPlaylist, SoundCloudTrack, deezer, soundcloud } from "play-dl";
 import youtube, { Video, Playlist as YoutubePlaylist } from "youtube-sr";
 import { config } from "../config";
@@ -22,6 +23,7 @@ interface PlaylistData {
 }
 
 export class Playlist {
+  private static playlistCache = new LRUCache<string, Playlist>({ max: 100 });
 
   public readonly title: string;
   public readonly url: string;
@@ -32,27 +34,33 @@ export class Playlist {
   public constructor(options: PlaylistData) {
     Object.assign(this, options);
     let total = 0;
-    options.songs.forEach((songs) => {total += songs.duration});
+    options.songs.forEach((songs) => { total += songs.duration; });
     this.duration = total;
+    Playlist.playlistCache.set(this.url, this);
   }
 
 
   public static async from(search: string = "", requester: User, type: UrlType): Promise<Playlist> {
     const url = search.split(" ").at(0);
 
+    const cachedPlaylist = Playlist.playlistCache.get(search);
+    if (cachedPlaylist) return cachedPlaylist;
+
+    let playlist;
     if (type === false) throw new InvalidURLError();
 
     if (type === "sp_playlist" || type === "sp_album" || type === "sp_artist") {
-      return await Playlist.fromSpotify(url, requester);
+      playlist = await Playlist.fromSpotify(url, requester);
+    } else if (type === "so_playlist") {
+      playlist = await Playlist.fromSoundcloud(url, requester);
+    } else if (type === "dz_playlist" || type === "dz_album") {
+      playlist = await Playlist.fromDeezer(url, requester);
+    } else {
+      playlist = await Playlist.fromYoutube(url, search, requester);
     }
-    if (type === "so_playlist") {
-      return await Playlist.fromSoundcloud(url, requester);
-    }
-    if (type === "dz_playlist" || type === "dz_album") {
-      return await Playlist.fromDeezer(url, requester);
-    }
-    
-    return await Playlist.fromYoutube(url, search, requester);
+
+    Playlist.playlistCache.set(search, playlist);
+    return playlist;
   }
 
 
@@ -66,10 +74,10 @@ export class Playlist {
       if (urlValid) {
         playlist = await youtube.getPlaylist(url, {
           fetchAll: true,
-          limit: config.MAX_PLAYLIST_SIZE 
+          limit: config.MAX_PLAYLIST_SIZE
         });
         if (!playlist) throw new InvalidURLError();
-        
+
       } else {
         const result = await youtube.searchOne(search, "playlist", true);
         playlist = await youtube.getPlaylist(result.url!, {
@@ -78,7 +86,7 @@ export class Playlist {
         });
         if (!playlist) throw new NothingFoundError();
       }
-    } catch (error : any) {
+    } catch (error: any) {
       if (error.message?.includes("Mixes")) {
         throw new YoutubeMixesError();
       }
@@ -96,17 +104,17 @@ export class Playlist {
       playlist = await soundcloud(url);
       if (!playlist) throw new NoDataError();
       if (playlist.type === "playlist") {
-      tracks = await (playlist as SoundCloudPlaylist).all_tracks();
+        tracks = await (playlist as SoundCloudPlaylist).all_tracks();
       }
     } catch (error: any) {
       if (error.message?.includes("out of scope")) {
-        throw new InvalidURLError()
+        throw new InvalidURLError();
       } else if (error.message?.includes("Data is missing")) {
         throw new ServiceUnavailableError();
       }
       throw error;
     }
-  
+
     const songs = Playlist.getSongsFromSoundCloud(tracks, requester);
     if (!songs.length) throw new NoDataError();
 
@@ -117,9 +125,9 @@ export class Playlist {
     let playlistPreview;
     let playlistTracks;
     try {
-      playlistPreview = await getPreview(url, {headers: {'user-agent': bot.useragent}});
-      playlistTracks = await getTracks(url, {headers: {'user-agent': bot.useragent}});
-    } catch (error : any) {
+      playlistPreview = await getPreview(url, { headers: { 'user-agent': bot.useragent } });
+      playlistTracks = await getTracks(url, { headers: { 'user-agent': bot.useragent } });
+    } catch (error: any) {
       if (error.message?.includes("parse")) {
         throw new InvalidURLError();
       } else {
@@ -165,7 +173,7 @@ export class Playlist {
   private static getSongsFromYoutube(playlist: Video[], requester: User): Song[] {
 
     let songs = playlist
-      .filter((video) => (video.title ?? "") !== "" && video.title != "Private video" && video.title != "Deleted video" && !video.nsfw)
+      .filter((video) => Boolean(video) && Boolean(video.title) && video.title != "Private video" && video.title != "Deleted video" && !video.nsfw)
       .slice(0, config.MAX_PLAYLIST_SIZE - 1)
       .map((video) => {
         return new Song({
