@@ -44,7 +44,17 @@ export class Playlist {
     const url = search.split(" ").at(0);
 
     const cachedPlaylist = Playlist.playlistCache.get(search);
-    if (cachedPlaylist) return cachedPlaylist;
+    if (cachedPlaylist) {
+      const songs = cachedPlaylist.songs.map((song) => {
+        return new Song(song.data, requester);
+      });
+
+      return new Playlist({
+        title: cachedPlaylist.title,
+        url: cachedPlaylist.url,
+        songs: songs
+      });
+    }
 
     let playlist;
     if (type === false) throw new InvalidURLError();

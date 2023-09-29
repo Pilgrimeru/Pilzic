@@ -38,7 +38,7 @@ interface SongData {
 }
 
 export class Song {
-  private static songCache = new LRUCache<string, Song>({ max: 1500 });
+  private static songsDataCache = new LRUCache<string, SongData>({ max: 1500 });
 
   public readonly url: string;
   public readonly title: string | undefined;
@@ -54,8 +54,8 @@ export class Song {
 
 
   public static async from(search: string, requester: User, type: UrlType): Promise<Song> {
-    const cachedSong = Song.songCache.get(search);
-    if (cachedSong) return cachedSong;
+    const cachedSongData = Song.songsDataCache.get(search);
+    if (cachedSongData) return new Song(cachedSongData, requester);
 
     const url = search.split(" ").at(0);
 
@@ -79,9 +79,8 @@ export class Song {
         break;
       }
     }
-    const song = new Song(songData, requester);
-    Song.songCache.set(search, song);
-    return song;
+    Song.songsDataCache.set(search, songData);
+    return new Song(songData, requester);
   }
 
   public formatedTime(): string {
@@ -163,6 +162,16 @@ export class Song {
     const info = await video_basic_info(url, { htmldata: false });
     this.related = info.related_videos;
     return info.related_videos;
+  }
+
+  public get data(): SongData {
+    return {
+      url: this.url,
+      title: this.title,
+      duration: this.duration,
+      thumbnail: this.thumbnail,
+      related: this.related
+    };
   }
 
 
