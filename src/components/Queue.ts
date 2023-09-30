@@ -99,7 +99,9 @@ export class Queue {
 
   public async setAutoqueue(value: boolean) {
     this._autoqueue = value;
-    await this.autoFill();
+    if (value) {
+      await this.autoFill();
+    }
   }
 
   public get index() : number {
@@ -164,7 +166,7 @@ export class Queue {
         console.error(error);
       }
     }
-    if (!relatedSongs) return await this.autoFill();
+    if (!relatedSongs) return;
     this._songs.push(relatedSongs);
   }
 }
