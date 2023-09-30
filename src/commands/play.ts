@@ -1,5 +1,5 @@
 import { joinVoiceChannel } from "@discordjs/voice";
-import { ApplicationCommandOptionType, BaseGuildTextChannel, CommandInteraction, Message, PermissionsBitField, User } from "discord.js";
+import { ApplicationCommandOptionType, BaseGuildTextChannel, BaseInteraction, CommandInteraction, Message, PermissionsBitField, User } from "discord.js";
 import { Player } from "../components/Player";
 import { Playlist } from "../components/Playlist";
 import { Song } from "../components/Song";
@@ -43,18 +43,18 @@ export default class PlayCommand extends Command {
 
   async execute(commandTrigger: CommandInteraction | Message, args: string[]): Promise<void> {
 
-    const isSlashCommand = (commandTrigger instanceof CommandInteraction);
+    const isSlashCommand = (commandTrigger instanceof BaseInteraction);
 
     if (!args.length && (isSlashCommand || !isSlashCommand && !(commandTrigger.attachments.size)))
       return commandTrigger.reply(i18n.__mf("insert.usageReply", { prefix: bot.prefix })).then(purning);
 
-    let playlistResearch = false;
+    let searchForPlaylist = false;
     if (!isSlashCommand && args.length >= 2 && args[0].toLowerCase() === "playlist") {
       args = args.slice(1);
-      playlistResearch = true;
+      searchForPlaylist = true;
     } else if (isSlashCommand && args.at(-1) === "true") {
       args.slice(args.length - 1);
-      playlistResearch = true;
+      searchForPlaylist = true;
     } else if (isSlashCommand && args.at(-1) === "false") {
       args.slice(args.length - 1);
     }
@@ -67,7 +67,7 @@ export default class PlayCommand extends Command {
 
     try {
       let item: Song | Playlist;
-      if (type.toString().match(/playlist|album|artist/) || (type === "yt_search" && playlistResearch)) {
+      if (type.toString().match(/playlist|album|artist/) || (type === "yt_search" && searchForPlaylist)) {
         response.edit(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
         item = (await Playlist.from(search, requester, type));
 

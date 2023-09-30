@@ -1,5 +1,5 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, CommandInteraction, Message, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
-import youtube, { Video } from "youtube-sr";
+import { ActionRowBuilder, ApplicationCommandOptionType, BaseInteraction, CommandInteraction, Message, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
+import youtube, { Playlist, Video } from "youtube-sr";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
@@ -18,7 +18,13 @@ export default class SearchCommand extends Command {
           description: 'your youtube search.',
           type: ApplicationCommandOptionType.String,
           required: true,
-        }
+        },
+        {
+          name: "playlist",
+          description: "true if it's a playlist search.",
+          type: ApplicationCommandOptionType.Boolean,
+          required: false,
+        },
       ],
       conditions: [
         CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL,
@@ -35,24 +41,36 @@ export default class SearchCommand extends Command {
         .then(purning);
 
     const search = args.join(" ");
+    const isSlashCommand = (commandTrigger instanceof BaseInteraction);
 
-    let results: Video[] = [];
+    let searchMode = "video";
+    if (!isSlashCommand && args.length >= 2 && args[0].toLowerCase() === "playlist") {
+      args = args.slice(1);
+      searchMode = "playlist";
+    } else if (isSlashCommand && args.at(-1) === "true") {
+      args.slice(args.length - 1);
+      searchMode = "playlist";
+    } else if (isSlashCommand && args.at(-1) === "false") {
+      args.slice(args.length - 1);
+    }
+
+    let results: Video[] | Playlist[] = [];
 
     const response = await commandTrigger.reply(i18n.__mf("common.loading"));
-
+    
     try {
-      results = await youtube.search(search, { limit: 10, type: "video" });
+      results = await youtube.search(search, { limit: 10, type: searchMode as any });
     } catch (error: any) {
       console.error(error);
       return response.edit(i18n.__("errors.command")).then(msg => purning(msg));
     }
 
     const options = results
-      .filter((video) => video.title != undefined && video.title != "Private video" && video.title != "Deleted video")
-      .map((video) => {
+      .filter((item) => item.title != undefined && item.title != "Private video" && item.title != "Deleted video")
+      .map((item) => {
         return {
-          label: video.title!,
-          value: video.url
+          label: item.title ?? "unnamed",
+          value: item.url
         };
       });
 
