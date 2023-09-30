@@ -43,27 +43,27 @@ export default class PlayCommand extends Command {
 
   async execute(commandTrigger: CommandInteraction | Message, args: string[]): Promise<void> {
 
-    const isSlashCommand = (commandTrigger instanceof BaseInteraction);
+    const isInteraction = (commandTrigger instanceof BaseInteraction);
 
-    if (!args.length && (isSlashCommand || !isSlashCommand && !(commandTrigger.attachments.size)))
+    if (!args.length && (isInteraction || !isInteraction && !(commandTrigger.attachments.size)))
       return commandTrigger.reply(i18n.__mf("insert.usageReply", { prefix: bot.prefix })).then(purning);
 
     let searchForPlaylist = false;
-    if (!isSlashCommand && args.length >= 2 && args[0].toLowerCase() === "playlist") {
+    if (!isInteraction && args.length >= 2 && args[0].toLowerCase() === "playlist") {
       args = args.slice(1);
       searchForPlaylist = true;
-    } else if (isSlashCommand && args.at(-1) === "true") {
+    } else if (isInteraction && args.at(-1) === "true") {
       args.slice(args.length - 1);
       searchForPlaylist = true;
-    } else if (isSlashCommand && args.at(-1) === "false") {
+    } else if (isInteraction && args.at(-1) === "false") {
       args.slice(args.length - 1);
     }
 
     const response = await commandTrigger.reply(i18n.__mf("common.loading"));
 
-    const search = (!isSlashCommand && !args.length) ? commandTrigger!.attachments.first()?.url! : args.join(" ");
+    const search = (!isInteraction && !args.length) ? commandTrigger!.attachments.first()?.url! : args.join(" ");
     const type: UrlType = await validate(search);
-    const requester: User = !isSlashCommand ? commandTrigger.author : commandTrigger.user;
+    const requester: User = !isInteraction ? commandTrigger.author : commandTrigger.user;
 
     try {
       let item: Song | Playlist;
@@ -74,7 +74,7 @@ export default class PlayCommand extends Command {
       } else {
         item = (await Song.from(search, requester, type));
       }
-      const guildMember = isSlashCommand ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id) : commandTrigger.member;
+      const guildMember = isInteraction ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id) : commandTrigger.member;
       const { channel } = guildMember!.voice;
       if (!channel) return;
       const player = bot.players.get(commandTrigger.guildId!) ?? new Player({

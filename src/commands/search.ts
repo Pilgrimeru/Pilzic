@@ -41,16 +41,16 @@ export default class SearchCommand extends Command {
         .then(purning);
 
     const search = args.join(" ");
-    const isSlashCommand = (commandTrigger instanceof BaseInteraction);
+    const isInteraction = (commandTrigger instanceof BaseInteraction);
 
     let searchMode = "video";
-    if (!isSlashCommand && args.length >= 2 && args[0].toLowerCase() === "playlist") {
+    if (!isInteraction && args.length >= 2 && args[0].toLowerCase() === "playlist") {
       args = args.slice(1);
       searchMode = "playlist";
-    } else if (isSlashCommand && args.at(-1) === "true") {
+    } else if (isInteraction && args.at(-1) === "true") {
       args.slice(args.length - 1);
       searchMode = "playlist";
-    } else if (isSlashCommand && args.at(-1) === "false") {
+    } else if (isInteraction && args.at(-1) === "false") {
       args.slice(args.length - 1);
     }
 
