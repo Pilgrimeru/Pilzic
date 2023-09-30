@@ -52,7 +52,7 @@ export class Player {
 
     this.audioPlayer = createAudioPlayer({
       behaviors: {
-        maxMissedFrames: 45,
+        maxMissedFrames: 30,
         noSubscriber: NoSubscriberBehavior.Pause
       }
     });

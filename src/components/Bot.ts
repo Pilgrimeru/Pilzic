@@ -9,7 +9,7 @@ import { Player } from "./Player";
 
 export class Bot extends Client {
   
-  public readonly useragent = "Mozilla/5.0 (Windows NT 11.0; Win64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5653.214 Safari/537.36";
+  public static readonly useragent = "Mozilla/5.0 (Windows NT 11.0; Win64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5653.214 Safari/537.36";
   public readonly prefix = config.PREFIX;
   public commands = new Collection<string, Command>();
   public cooldowns = new Collection<string, Collection<Snowflake, number>>();
@@ -32,7 +32,7 @@ export class Bot extends Client {
     this.loadEvents();
     this.importCommands();
     this.soundcloudApiConnect();
-    setToken({ useragent: [this.useragent] });
+    setToken({ useragent: [Bot.useragent] });
   }
   
   private async soundcloudApiConnect(): Promise<void> {
