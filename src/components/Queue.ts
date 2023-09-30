@@ -152,17 +152,10 @@ export class Queue {
 
     let related_videos = await this._songs[this._index].getRelated();
     related_videos = related_videos.filter((url) => !(this._songs.some((existingSong) => existingSong.url === url)));
+    if (!related_videos.length) return;
 
-    let relatedSongs: Song | undefined;
-    for (const url of related_videos) {
-      try {
-        relatedSongs = await Song.from(url, botUser, "yt_video");
-        break;
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    if (!relatedSongs) return await this.autoFill();
+    let relatedSongs = await Song.from(related_videos[0], botUser, "yt_video").catch(console.error);
+    if (!relatedSongs) return;
     this._songs.push(relatedSongs);
   }
 }
