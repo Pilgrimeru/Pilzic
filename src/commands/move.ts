@@ -1,8 +1,8 @@
 import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { purning } from "../utils/purning";
 
 export default class MoveCommand extends Command {
   constructor() {
@@ -27,7 +27,7 @@ export default class MoveCommand extends Command {
           ]
         }
       ],
-    })
+    });
   }
 
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
@@ -51,4 +51,4 @@ export default class MoveCommand extends Command {
       })
     ).then(purning);
   }
-};
+}

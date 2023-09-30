@@ -13,17 +13,17 @@ export default class PreviousCommand extends Command {
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
-    })
+    });
   }
-  
+
   async execute(commandTrigger: CommandInteraction | ButtonInteraction | Message) {
     const player = bot.players.get(commandTrigger.guild!.id)!;
 
     if (!player.queue.canBack()) {
       if (commandTrigger instanceof ButtonInteraction) {
-        return commandTrigger.reply(i18n.__mf("previous.error")).then(purning); 
+        return commandTrigger.reply(i18n.__mf("previous.error")).then(purning);
       }
-      return commandTrigger.reply(i18n.__mf("previous.error")).then(purning); 
+      return commandTrigger.reply(i18n.__mf("previous.error")).then(purning);
     }
 
     player.previous();
@@ -32,6 +32,6 @@ export default class PreviousCommand extends Command {
       return commandTrigger.deferUpdate();
     }
 
-    return commandTrigger.reply(i18n.__mf("previous.result")).then(purning); 
+    return commandTrigger.reply(i18n.__mf("previous.result")).then(purning);
   }
-};
+}

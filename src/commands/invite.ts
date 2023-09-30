@@ -7,12 +7,12 @@ export default class InviteCommand extends Command {
     super({
       name: "invite",
       description: i18n.__("invite.description"),
-    })
+    });
   }
-  
+
   async execute(commandTrigger: CommandInteraction | Message) {
-    const isSlashCommand = (commandTrigger instanceof CommandInteraction) ;
-    const guildMember = isSlashCommand ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id): commandTrigger.member;
+    const isSlashCommand = (commandTrigger instanceof CommandInteraction);
+    const guildMember = isSlashCommand ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id) : commandTrigger.member;
     try {
       return await guildMember!.send(
         `https://discord.com/oauth2/authorize?client_id=${commandTrigger.client.user!.id}&permissions=274897914880&scope=bot`
@@ -21,4 +21,4 @@ export default class InviteCommand extends Command {
       return console.error(message);
     }
   }
-};
+}

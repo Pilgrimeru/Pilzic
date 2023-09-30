@@ -1,8 +1,8 @@
 import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { purning } from "../utils/purning";
 
 export default class VolumeCommand extends Command {
   constructor() {
@@ -22,9 +22,9 @@ export default class VolumeCommand extends Command {
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
-    })
+    });
   }
-  
+
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
@@ -41,7 +41,7 @@ export default class VolumeCommand extends Command {
       return commandTrigger.reply(i18n.__("volume.intervalError")).then(purning);
 
     player.volume = level;
-    
+
     return commandTrigger.reply(i18n.__mf("volume.result", { arg: args[0] })).then(purning);
   }
-};
+}

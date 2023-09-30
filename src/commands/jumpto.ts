@@ -1,8 +1,8 @@
 import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { purning } from "../utils/purning";
 
 export default class JumpCommand extends Command {
   constructor() {
@@ -22,13 +22,13 @@ export default class JumpCommand extends Command {
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
-    })
+    });
   }
-  
+
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
     if (!args.length || isNaN(Number(args[0])))
       return commandTrigger
-        .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix}))
+        .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix }))
         .then(purning);
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
@@ -42,9 +42,9 @@ export default class JumpCommand extends Command {
         .then(purning);
 
     player.jumpTo(queue.index + position);
-    
+
     return commandTrigger
       .reply(i18n.__mf("jumpto.result", { arg: position }))
       .then(purning);
   }
-};
+}

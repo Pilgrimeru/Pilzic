@@ -1,4 +1,4 @@
-import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
+import { joinVoiceChannel } from "@discordjs/voice";
 import { ApplicationCommandOptionType, BaseGuildTextChannel, CommandInteraction, Message, PermissionsBitField, User } from "discord.js";
 import { Player } from "../components/Player";
 import { Playlist } from "../components/Playlist";
@@ -37,7 +37,7 @@ export default class InsertCommand extends Command {
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
-    })
+    });
   }
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
@@ -51,27 +51,27 @@ export default class InsertCommand extends Command {
       args = args.slice(1);
       playlistResearch = true;
     } else if (isSlashCommand && args.at(-1)?.toString() === "true") {
-      args.slice(args.length-1);
+      args.slice(args.length - 1);
       playlistResearch = true;
     } else if (isSlashCommand && args.at(-1)?.toString() === "false") {
-      args.slice(args.length-1);
+      args.slice(args.length - 1);
     }
 
     const response = await commandTrigger.reply(i18n.__mf("common.loading"));
 
     const search = (!isSlashCommand && !args.length) ? commandTrigger!.attachments.first()?.url! : args.join(" ");
     const type: UrlType = await validate(search);
-    const requester : User = !isSlashCommand ? commandTrigger.author : commandTrigger.user;
+    const requester: User = !isSlashCommand ? commandTrigger.author : commandTrigger.user;
 
     try {
-      let item : Song | Playlist;
+      let item: Song | Playlist;
       if (type.toString().match(/playlist|album|artist/) || (type === "yt_search" && playlistResearch)) {
         response.edit(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
-        item = (await Playlist.from(search, requester, type));        
+        item = (await Playlist.from(search, requester, type));
       } else {
         item = (await Song.from(search, requester, type));
       }
-      const guildMember = isSlashCommand ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id): commandTrigger.member;
+      const guildMember = isSlashCommand ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id) : commandTrigger.member;
       const { channel } = guildMember!.voice;
       if (!channel) return;
       const player = bot.players.get(commandTrigger.guildId!) ?? new Player({
@@ -81,7 +81,7 @@ export default class InsertCommand extends Command {
           guildId: channel.guild.id,
           adapterCreator: channel.guild.voiceAdapterCreator,
         })
-      })
+      });
       player.queue.insert(item);
       response.delete().catch(() => null);
     } catch (error) {
@@ -92,4 +92,4 @@ export default class InsertCommand extends Command {
       return response.edit(i18n.__("errors.command")).then(purning);
     }
   }
-};
+}

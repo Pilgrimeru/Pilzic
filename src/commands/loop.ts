@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { purning } from "../utils/purning";
 
 export default class LoopCommand extends Command {
   constructor() {
@@ -27,9 +27,9 @@ export default class LoopCommand extends Command {
           ]
         }
       ],
-    })
+    });
   }
-  
+
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
@@ -37,7 +37,7 @@ export default class LoopCommand extends Command {
     if (args.length >= 1) {
       if (args[0] === "queue" || args[0] === "track" || args[0] === "disabled") {
         player.queue.loop = args[0];
-        return commandTrigger.reply(i18n.__mf("loop.result", { loop: player.queue.loop}));
+        return commandTrigger.reply(i18n.__mf("loop.result", { loop: player.queue.loop }));
       }
     }
 
@@ -65,20 +65,20 @@ export default class LoopCommand extends Command {
 
     try {
       await response
-      .awaitMessageComponent({ time: 30000 })
-      .then(async (selectInteraction) => {
-        if ((selectInteraction instanceof ButtonInteraction)) {
-          const customId = selectInteraction.customId;
-          if (customId === "queue" || customId === "track" || customId === "disabled") {
-            player.queue.loop = customId;
+        .awaitMessageComponent({ time: 30000 })
+        .then(async (selectInteraction) => {
+          if ((selectInteraction instanceof ButtonInteraction)) {
+            const customId = selectInteraction.customId;
+            if (customId === "queue" || customId === "track" || customId === "disabled") {
+              player.queue.loop = customId;
+            }
           }
-        }
-        selectInteraction.update({content: i18n.__mf("loop.result", { loop: player.queue.loop}), components: []});
-      })
+          selectInteraction.update({ content: i18n.__mf("loop.result", { loop: player.queue.loop }), components: [] });
+        });
     } catch (error) {
       response.delete().catch(() => null);
     }
 
     purning(response);
   }
-};
+}

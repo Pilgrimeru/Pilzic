@@ -2,8 +2,8 @@ import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { memoryUsage, pid } from "node:process";
 import si from "systeminformation";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command } from "../types/Command";
+import { purning } from "../utils/purning";
 
 
 export default class StatsCommand extends Command {
@@ -11,7 +11,7 @@ export default class StatsCommand extends Command {
     super({
       name: "stats",
       description: "Get information about the performance of the bot.",
-    })
+    });
   }
 
   async execute(commandTrigger: CommandInteraction | Message) {
@@ -41,6 +41,6 @@ export default class StatsCommand extends Command {
         }
       )
       .setThumbnail(bot.user ? bot.user.avatarURL() : null);
-      commandTrigger.reply({ embeds: [embed] }).then(purning);
+    commandTrigger.reply({ embeds: [embed] }).then(purning);
   }
-};
+}

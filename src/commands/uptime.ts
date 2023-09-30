@@ -9,9 +9,9 @@ export default class UptimeCommand extends Command {
       name: "uptime",
       aliases: ["up"],
       description: i18n.__("uptime.description"),
-    })
+    });
   }
-  
+
   async execute(commandTrigger: CommandInteraction | Message) {
     let seconds = Math.floor(bot.uptime! / 1000);
     let minutes = Math.floor(seconds / 60);
@@ -26,4 +26,4 @@ export default class UptimeCommand extends Command {
       .reply(i18n.__mf("uptime.result", { days: days, hours: hours, minutes: minutes, seconds: seconds }))
       .catch(console.error);
   }
-};
+}

@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Message } from "discord.js";
+import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { config } from "../config";
 import { Command } from "../types/Command";
 
 export default class HelpCommand extends Command {
@@ -9,22 +9,22 @@ export default class HelpCommand extends Command {
   constructor() {
     super(
       {
-      name: "help",
-      description: i18n.__("help.description"),
-      aliases: ["h"],
+        name: "help",
+        description: i18n.__("help.description"),
+        aliases: ["h"],
       }
-    )
+    );
   }
-  
+
   async execute(commandTrigger: CommandInteraction | Message) {
-    
+
     let commands = Array.from(bot.commands.values());
     const commandsPerPage = 15;
 
     let page = 1;
     const totalPages = Math.ceil(commands.length / commandsPerPage);
 
-    function createHelpPage(page : number) : EmbedBuilder {
+    function createHelpPage(page: number): EmbedBuilder {
       const startIndex = (page - 1) * commandsPerPage;
       const endIndex = startIndex + commandsPerPage;
 
@@ -48,7 +48,7 @@ export default class HelpCommand extends Command {
     const response = await commandTrigger.reply({ embeds: [createHelpPage(page)] });
     if (totalPages === 1) return;
 
-    function createHelpButtons(page : number) : ActionRowBuilder<ButtonBuilder> {
+    function createHelpButtons(page: number): ActionRowBuilder<ButtonBuilder> {
       return new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setCustomId('previous')
@@ -62,9 +62,9 @@ export default class HelpCommand extends Command {
           .setDisabled(page === totalPages)
       );
     }
-    
-    response.edit({components: [createHelpButtons(page)]});
-    
+
+    response.edit({ components: [createHelpButtons(page)] });
+
     const collector = response.createMessageComponentCollector({ time: 120000 });
 
     collector.on('collect', async (interaction) => {
@@ -86,4 +86,4 @@ export default class HelpCommand extends Command {
       }
     });
   }
-};
+}

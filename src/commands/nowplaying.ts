@@ -2,9 +2,9 @@ import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { splitBar } from "string-progressbar";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
+import { Command, CommandConditions } from "../types/Command";
 import { formatTime } from "../utils/formatTime";
 import { purning } from "../utils/purning";
-import { Command, CommandConditions } from "../types/Command";
 
 export default class NowPlayingCommand extends Command {
   constructor() {
@@ -15,11 +15,11 @@ export default class NowPlayingCommand extends Command {
       conditions: [
         CommandConditions.QUEUE_EXISTS
       ],
-    })
+    });
   }
-  
+
   async execute(commandTrigger: CommandInteraction | Message) {
-    
+
     const player = bot.players.get(commandTrigger.guild!.id)!;
 
     const song = player.queue.currentSong!;
@@ -54,4 +54,4 @@ export default class NowPlayingCommand extends Command {
 
     return commandTrigger.reply({ embeds: [nowPlaying] }).then(msg => purning(msg, true));
   }
-};
+}

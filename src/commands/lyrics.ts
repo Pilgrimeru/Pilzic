@@ -3,8 +3,8 @@ import { i18n } from "../i18n.config";
 import { bot } from "../index";
 // @ts-ignore
 import lyricsFinder from "lyrics-finder";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { purning } from "../utils/purning";
 export default class LyricsCommand extends Command {
   constructor() {
     super({
@@ -23,15 +23,15 @@ export default class LyricsCommand extends Command {
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
-    })
+    });
   }
-  
+
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
-    
+
     const player = bot.players.get(commandTrigger.guild!.id)!;
-    
+
     const title = args.length === 0 ? player.queue.currentSong!.title : args.join(" ");
-    
+
     const response = await commandTrigger.reply(i18n.__mf("common.loading"));
 
     let lyrics = null;
@@ -51,6 +51,6 @@ export default class LyricsCommand extends Command {
     if (lyricsEmbed.data.description!.length >= 4096)
       lyricsEmbed.setDescription(`${lyricsEmbed.data.description!.slice(0, 4093)}...`);
 
-    return response.edit({ content : "", embeds: [lyricsEmbed] }).then(msg => purning(msg, true));
+    return response.edit({ content: "", embeds: [lyricsEmbed] }).then(msg => purning(msg, true));
   }
-};
+}

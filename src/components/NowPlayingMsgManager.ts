@@ -18,19 +18,19 @@ import { Song } from "./Song";
 
 export class NowPlayingMsgManager {
 
-  private msg : Message | undefined;
-  private song : Song;
-  private collector : InteractionCollector<any>;
-  private player : Player;
-  private state : "play" | "pause" = "play";
+  private msg: Message | undefined;
+  private song: Song;
+  private collector: InteractionCollector<any>;
+  private player: Player;
+  private state: "play" | "pause" = "play";
 
 
-  constructor(player : Player) {
+  constructor(player: Player) {
     this.player = player;
   }
 
 
-  public async send(song: Song) : Promise<void> {
+  public async send(song: Song): Promise<void> {
     if (this.msg) await this.delete();
     this.song = song;
     const embed = this.song.playingEmbed();
@@ -41,7 +41,7 @@ export class NowPlayingMsgManager {
     await this.createCollector();
   }
 
-  public async delete() : Promise<void> {
+  public async delete(): Promise<void> {
     if (!this.msg) return;
     try {
       this.collector.stop();
@@ -52,10 +52,10 @@ export class NowPlayingMsgManager {
     }
   }
 
-  public edit() : void {
+  public edit(): void {
     if (!this.msg || !this.msg.editable) return;
     const playerPaused = this.player.status === "paused" || this.player.status === "autopaused";
-    
+
     if (!playerPaused && this.player.status !== "playing") return;
     if (this.state === "pause" && playerPaused) return;
     if (this.state === "play" && !playerPaused) return;
@@ -74,7 +74,7 @@ export class NowPlayingMsgManager {
   }
 
 
-  private buildButtons() : ActionRowBuilder<ButtonBuilder> {
+  private buildButtons(): ActionRowBuilder<ButtonBuilder> {
     const isPaused = this.player.status === "paused" || this.player.status === "autopaused";
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -102,12 +102,12 @@ export class NowPlayingMsgManager {
     return row;
   }
 
-  private async createCollector() : Promise<void>{
+  private async createCollector(): Promise<void> {
     if (!this.msg) return;
     const channel = this.player.textChannel;
-    this.collector =  this.msg.createMessageComponentCollector();
+    this.collector = this.msg.createMessageComponentCollector();
 
-    this.collector.on("collect", async (b : ButtonInteraction) => {
+    this.collector.on("collect", async (b: ButtonInteraction) => {
       const interactUser = await channel.guild.members.fetch(b.user);
       const command = bot.commands.get(b.customId);
       if (!command) return;

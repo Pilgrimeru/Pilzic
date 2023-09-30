@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, InteractionResponse, Message } from "discord.js";
+import { Song } from "../components/Song";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { Song } from "../components/Song";
 import { Command, CommandConditions } from "../types/Command";
 
 export default class QueueCommand extends Command {
@@ -14,13 +14,13 @@ export default class QueueCommand extends Command {
       conditions: [
         CommandConditions.QUEUE_EXISTS
       ],
-    })
+    });
   }
-  
+
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
-    player.queue.songs.slice(player.queue.index)
+    player.queue.songs.slice(player.queue.index);
 
     const followingSongs = player.queue.songs.slice(player.queue.index);
     const previousSongs = player.queue.songs.slice(0, player.queue.index);
@@ -93,9 +93,9 @@ export default class QueueCommand extends Command {
       }
     });
   }
-};
+}
 
-function generateQueueEmbed(commandTrigger: CommandInteraction | Message, followingSongs: Song[], previousSongs: Song[]) : EmbedBuilder[] {
+function generateQueueEmbed(commandTrigger: CommandInteraction | Message, followingSongs: Song[], previousSongs: Song[]): EmbedBuilder[] {
   let embeds: EmbedBuilder[] = [];
 
   previousSongs.reverse();
@@ -147,4 +147,4 @@ function generateQueueEmbed(commandTrigger: CommandInteraction | Message, follow
   }
 
   return embeds;
-};
+}

@@ -1,8 +1,8 @@
 import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { purning } from "../utils/purning";
 
 const pattern = /^[1-9][0-9]{0,2}(\s*,\s*[1-9][0-9]{0,2})*$/;
 export default class RemoveCommand extends Command {
@@ -23,15 +23,15 @@ export default class RemoveCommand extends Command {
           required: true,
         }
       ],
-    })
+    });
   }
 
   async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
-    
+
     if (!args.length) return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
-    
+
     const player = bot.players.get(commandTrigger.guild!.id)!;
-    
+
     const removeArgs = args.join("");
 
     if (pattern.test(removeArgs)) {
@@ -41,7 +41,7 @@ export default class RemoveCommand extends Command {
 
       if (removed.length === 0) {
         return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
-      } 
+      }
 
       if (removed.length === 1) {
         return commandTrigger.reply(
@@ -56,9 +56,9 @@ export default class RemoveCommand extends Command {
           titles: removed.map((song) => song.title).join(",\n")
         })
       ).then(purning);
-        
+
     } else {
       return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
     }
   }
-};
+}
