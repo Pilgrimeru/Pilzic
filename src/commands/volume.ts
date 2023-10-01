@@ -13,7 +13,7 @@ export default class VolumeCommand extends Command {
       options: [
         {
           name: "level",
-          description: "volume level of the player [0;100].",
+          description: i18n.__mf("volume.options.level"),
           type: ApplicationCommandOptionType.String,
           required: true,
         }
@@ -42,6 +42,6 @@ export default class VolumeCommand extends Command {
 
     player.volume = level;
 
-    return commandTrigger.reply(i18n.__mf("volume.result", { arg: args[0] })).then(purning);
+    return commandTrigger.reply(i18n.__mf("volume.result", { level: args[0] })).then(purning);
   }
 }

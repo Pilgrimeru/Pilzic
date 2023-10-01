@@ -13,8 +13,8 @@ export default class LyricsCommand extends Command {
       description: i18n.__("lyrics.description"),
       options: [
         {
-          name: 'name',
-          description: 'the name of the song.',
+          name: 'title',
+          description: i18n.__mf("lyrics.options.title"),
           type: ApplicationCommandOptionType.String,
           required: false,
         }

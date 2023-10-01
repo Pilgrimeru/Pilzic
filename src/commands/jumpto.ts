@@ -13,7 +13,7 @@ export default class JumpCommand extends Command {
       options: [
         {
           name: "position",
-          description: "the number of the song in the queue",
+          description: i18n.__mf("jumpto.options.position"),
           type: ApplicationCommandOptionType.Number,
           required: true,
         }
@@ -44,7 +44,7 @@ export default class JumpCommand extends Command {
     player.jumpTo(queue.index + position);
 
     return commandTrigger
-      .reply(i18n.__mf("jumpto.result", { arg: position }))
+      .reply(i18n.__mf("jumpto.result", { number: position }))
       .then(purning);
   }
 }

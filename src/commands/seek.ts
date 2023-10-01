@@ -16,7 +16,7 @@ export default class SeekCommand extends Command {
       options: [
         {
           name: "time",
-          description: "number of seconds to skip or a time code like hh:mm:ss.",
+          description: i18n.__mf("seek.options.time"),
           type: ApplicationCommandOptionType.String,
           required: true,
         }

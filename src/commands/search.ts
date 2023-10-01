@@ -15,13 +15,13 @@ export default class SearchCommand extends Command {
       options: [
         {
           name: 'search',
-          description: 'your youtube search.',
+          description: i18n.__mf("search.options.search"),
           type: ApplicationCommandOptionType.String,
           required: true,
         },
         {
           name: "playlist",
-          description: "true if it's a playlist search.",
+          description: i18n.__mf("search.options.playlist"),
           type: ApplicationCommandOptionType.Boolean,
           required: false,
         },

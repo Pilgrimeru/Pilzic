@@ -18,7 +18,7 @@ export default class RemoveCommand extends Command {
       options: [
         {
           name: "position",
-          description: "You can also remove multiple songs with ',' symbole",
+          description: i18n.__mf("remove.options.position"),
           type: ApplicationCommandOptionType.String,
           required: true,
         }

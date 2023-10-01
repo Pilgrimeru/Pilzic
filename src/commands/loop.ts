@@ -17,7 +17,7 @@ export default class LoopCommand extends Command {
       options: [
         {
           name: "mode",
-          description: "the loop mode",
+          description: i18n.__mf("loop.options.mode"),
           type: ApplicationCommandOptionType.String,
           required: false,
           choices: [

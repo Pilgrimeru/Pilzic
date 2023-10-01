@@ -18,13 +18,13 @@ export default class InsertCommand extends Command {
       options: [
         {
           name: "query",
-          description: "url or search.",
+          description: i18n.__mf("insert.options.query"),
           type: ApplicationCommandOptionType.String,
           required: true,
         },
         {
           name: "playlist",
-          description: "if is a playlist search",
+          description: i18n.__mf("insert.options.playlist"),
           type: ApplicationCommandOptionType.Boolean,
           required: false,
         },

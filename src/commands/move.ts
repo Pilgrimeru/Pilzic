@@ -16,15 +16,16 @@ export default class MoveCommand extends Command {
       ],
       options: [
         {
-          name: "mode",
-          description: "the loop mode",
+          name: "position",
+          description: i18n.__mf("move.options.position"),
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+        {
+          name: "new_position",
+          description: i18n.__mf("move.options.new_position"),
           type: ApplicationCommandOptionType.String,
           required: false,
-          choices: [
-            { name: "track", value: "track" },
-            { name: "queue", value: "queue" },
-            { name: "disabled", value: "disabled" }
-          ]
         }
       ],
     });

@@ -11,7 +11,11 @@
   "insert": {
     "description": "Ajoute une chanson au début de la file d'attente.",
     "usageReply": "Utilisation : {prefix}insert <URL de la vidéo ou de l'audio | Nom de la vidéo>",
-    "fetchingPlaylist": "⌛ Récupère la playlist..."
+    "fetchingPlaylist": "⌛ Récupère la playlist...",
+    "options": {
+      "query": "Votre recherche ou l'URL souhaitée.",
+      "playlist": "True si votre recherche concerne une playlist."
+    }
   },
   "invite": {
     "description": "Envoie le lien d'invitation du bot."
@@ -20,22 +24,35 @@
     "description": "Sauter à la position sélectionnée dans la file d'attente.",
     "usageReply": "Utilisation : {prefix}jumpto <Numéro dans la file d'attente>",
     "errorNotValid": "Ce n'est pas une position valide.",
-    "result": "Saut à la position {arg} effectué"
+    "result": "Saut à la position {number} effectué",
+    "options": {
+      "position": "Le numéro dans la file d'attente où vous souhaitez vous rendre."
+    }
   },
   "loop": {
     "description": "Met la musique en boucle.",
     "chooseMode": "Choisissez le mode de boucle.",
-    "result": "Le mode de boucle est maintenant réglé sur : `{loop}`."
+    "result": "Le mode de boucle est maintenant réglé sur : `{loop}`.",
+    "options": {
+      "mode": "Le mode de boucle souhaité."
+    }
   },
   "lyrics": {
     "description": "Obtient les paroles de la chanson en cours de lecture.",
     "lyricsNotFound": "Aucune parole trouvée pour {title}.",
-    "embedTitle": "Paroles de {title}"
+    "embedTitle": "Paroles de {title}",
+    "options": {
+      "title": "Le titre de la musique."
+    }
   },
   "move": {
     "description": "Déplace les chansons dans la file d'attente.",
     "usagesReply": "Utilisation : {prefix}move <De numéro dans la file d'attente> <Vers numéro dans la file d'attente>.",
-    "result": "Le morceau **\"{title}\"** a été déplacé vers la position {index} dans la file d'attente."
+    "result": "Le morceau **\"{title}\"** a été déplacé vers la position {index} dans la file d'attente.",
+    "options": {
+      "position": "La position dans la file d'attente de la musique que vous souhaitez déplacer.",
+      "new_position": "La nouvelle position à laquelle vous souhaitez la déplacer."
+    }
   },
   "nowplaying": {
     "description": "Affiche la chanson en cours de lecture.",
@@ -55,12 +72,11 @@
   "play": {
     "description": "Écoute de la musique depuis YouTube et d'autres sources.",
     "usageReply": "Utilisation : {prefix}play <URL de la vidéo ou de l'audio | Nom de la vidéo>",
-    "fetchingPlaylist": "⌛ Récupère la playlist..."
-  },
-  "playlist": {
-    "description": "Écoute une playlist depuis YouTube.",
-    "usagesReply": "Utilisation : {prefix}playlist <URL de la playlist | Nom de la playlist>.",
-    "fetchingPlaylist": "⌛ Récupère la playlist..."
+    "fetchingPlaylist": "⌛ Récupère la playlist...",
+    "options": {
+      "query": "Votre recherche ou l'URL souhaitée.",
+      "playlist": "True si votre recherche concerne une playlist."
+    }
   },
   "previous": {
     "description": "Revenir en arrière dans la file d'attente de lecture.",
@@ -78,7 +94,10 @@
     "description": "Retire une chanson de la file d'attente.",
     "usageReply": "Utilisation : {prefix}remove <Numéro dans la file d'attente>",
     "result": "**{title}** a été retiré de la file d'attente.",
-    "results": "**{titles}** ont été retirées de la file d'attente."
+    "results": "**{titles}** ont été retirées de la file d'attente.",
+    "options": {
+      "position": "La position dans la file que vous souhaitez retirer | Astuce : Retrait multiple avec le symbole ','."
+    }
   },
   "resume": {
     "description": "Reprend la lecture de la musique en cours.",
@@ -90,14 +109,21 @@
     "usageReply": "Utilisation : {prefix}{name} <Nom de la vidéo>",
     "menuNothing": "Rien de sélectionné",
     "chooseSong": "Choisissez le morceau à jouer.",
-    "finished": "Recherche terminée."
+    "finished": "Recherche terminée.",
+    "options": {
+      "search": "La recherche souhaitée.",
+      "playlist": "True si votre recherche concerne une playlist."
+    }
   },
   "seek": {
     "description": "Permet de sauter à un moment précis dans la musique en cours.",
     "usageReply": "Utilisation : {prefix}seek <Nombre de secondes ou temps au format (ex: 02:30)>",
     "errorSource": "Cette commande ne fonctionne pas avec les liens SoundCloud ni les fichiers audio.",
     "errorNotValid": "Le nombre de secondes doit être compris entre 0 et la durée de la piste ({duration}).",
-    "result": "La musique a été repositionnée à : `{time}`"
+    "result": "La musique a été repositionnée à : `{time}`",
+    "options": {
+      "time": "Le nombre de secondes à sauter ou le time code 'hh:mm:ss' auquel vous souhaitez vous rendre."
+    }
   },
   "shuffle": {
     "description": "Mélange la file d'attente.",
@@ -120,7 +146,10 @@
     "currentVolume": "🔊 Le volume actuel est de : **{volume}%**",
     "errorNotNumber": "Veuillez utiliser un nombre pour régler le volume.",
     "intervalError": "Veuillez utiliser un nombre entre 0 et 100.",
-    "result": "Volume réglé sur : **{arg}%**"
+    "result": "Volume réglé sur : **{level}%**",
+    "options": {
+      "level": "Le volume du lecteur dans l'intervalle [0;100]."
+    }
   },
   "nowplayingMsg": {
     "startedPlaying": "**Lecture en cours** ♪",

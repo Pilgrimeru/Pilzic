@@ -19,13 +19,13 @@ export default class PlayCommand extends Command {
       options: [
         {
           name: "query",
-          description: "url or search.",
+          description: i18n.__mf("play.options.query"),
           type: ApplicationCommandOptionType.String,
           required: true,
         },
         {
           name: "playlist",
-          description: "true if it's a playlist search.",
+          description: i18n.__mf("play.options.playlist"),
           type: ApplicationCommandOptionType.Boolean,
           required: false,
         },
