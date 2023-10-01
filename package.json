@@ -24,7 +24,6 @@
     "play-dl": "^1.9.7",
     "spotify-url-info": "^3.2.8",
     "string-progressbar": "^1.0.4",
-    "systeminformation": "^5.21.9",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2",
     "youtube-sr": "^4.3.4"
