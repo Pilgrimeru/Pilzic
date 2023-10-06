@@ -18,7 +18,8 @@
 		}
 	},
 	"invite": {
-		"description": "Send the bot's invitation link."
+		"description": "Send the bot's invitation link.",
+    "result": "I sent the invitation in your private messages. 👍"
 	},
 	"jumpto": {
 		"description": "Jump to the selected queue number.",

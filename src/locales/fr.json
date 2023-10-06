@@ -18,7 +18,8 @@
     }
   },
   "invite": {
-    "description": "Envoie le lien d'invitation du bot."
+    "description": "Envoie le lien d'invitation du bot.",
+    "result": "J'ai envoyé l'invitation dans tes messages privés. 👍"
   },
   "jumpto": {
     "description": "Sauter à la position sélectionnée dans la file d'attente.",
