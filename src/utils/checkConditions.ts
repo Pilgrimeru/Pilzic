@@ -12,7 +12,7 @@ export function checkConditions(command: Command, guildMember: GuildMember): str
   for (const condition of command.conditions) {
 
     if (condition === CommandConditions.QUEUE_EXISTS) {
-      const player = bot.players.get(guildMember.guild!.id);
+      const player = bot.players.get(guildMember.guild.id);
       if (!player || !player.queue.currentSong) {
         return i18n.__("errors.notQueue");
       }
@@ -28,19 +28,19 @@ export function checkConditions(command: Command, guildMember: GuildMember): str
           return i18n.__("errors.notInSameChannel");
         }
         break;
-  
+
       case CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL:
         if (!channel.joinable) {
           return i18n.__("errors.missingPermissionConnect");
         }
         break;
-  
+
       case CommandConditions.CAN_BOT_SPEAK:
         if (!channel.permissionsFor(bot.user!.id, true)?.has(PermissionsBitField.Flags.Speak)) {
           return i18n.__("errors.missingPermissionSpeak");
         }
         break;
-      
+
       default: break;
     }
   }

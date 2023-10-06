@@ -8,17 +8,19 @@ type songAddedCallback = (song: Song) => any;
 
 export class Queue {
 
-  public loop: "queue" | "track" | "disabled" = "disabled";
+  public loop: "queue" | "track" | "disabled";
 
-  private _index: number = 0;
-  private _songs: Song[] = [];
-  private _autoqueue: boolean = false;
+  private _index: number;
+  private _autoqueue: boolean;
   private player: Player;
-
+  private _songs: Song[] = [];
   private playlistAddedCallbacks: playlistAddedCallback[] = [];
   private songAddedCallbacks: songAddedCallback[] = [];
 
   constructor(player: Player) {
+    this.loop = "disabled";
+    this._index = 0;
+    this._autoqueue = false;
     this.player = player;
     this.setupPlayerListeners();
   }
@@ -154,8 +156,8 @@ export class Queue {
     related_videos = related_videos.filter((url) => !(this._songs.some((existingSong) => existingSong.url === url)));
     if (!related_videos.length) return;
 
-    let relatedSongs = await Song.from(related_videos[0], botUser, "yt_video").catch(console.error);
-    if (!relatedSongs) return;
-    this._songs.push(relatedSongs);
+    let relatedSong = await Song.from(related_videos[0], botUser, "yt_video").catch(console.error);
+    if (!relatedSong) return;
+    this._songs.push(relatedSong);
   }
 }

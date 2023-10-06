@@ -10,12 +10,12 @@ import {
 import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
+import { autoDelete } from "../utils/autoDelete";
 import { checkConditions } from "../utils/checkConditions";
 import { checkPermissions } from "../utils/checkPermissions";
+import { CommandTrigger } from "./CommandTrigger";
 import { Player } from "./Player";
 import { Song } from "./Song";
-import { CommandTrigger } from "./CommandTrigger";
-import { autoDelete } from "../utils/autoDelete";
 
 
 export class NowPlayingMsgManager {
