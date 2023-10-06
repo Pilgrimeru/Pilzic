@@ -1,10 +1,11 @@
-import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
 import { yt_validate } from "play-dl";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
+import { autoDelete } from "../utils/autoDelete";
 import { formatTime } from "../utils/formatTime";
-import { purning } from "../utils/purning";
 
 const timeRegEx = /^(?:[0-9]|[0-5]\d):[0-5]\d(:[0-5]\d)?$/;
 
@@ -28,21 +29,21 @@ export default class SeekCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     if (!args.length || (isNaN(Number(args[0])) && !args[0].match(timeRegEx)))
       return commandTrigger
         .reply(i18n.__mf("seek.usageReply", { prefix: bot.prefix }))
-        .then(purning);
+        .then(autoDelete);
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     const currentSong = player.queue.currentSong;
 
     if (yt_validate(currentSong?.url ?? "") == ! "video") {
       return commandTrigger
         .reply(i18n.__mf("seek.errorSource"))
-        .then(purning);
+        .then(autoDelete);
     }
 
     let seekTime;
@@ -60,13 +61,13 @@ export default class SeekCommand extends Command {
     if (seekTime < 0 || seekTime * 1000 >= (currentSong?.duration ?? 0)) {
       return commandTrigger
         .reply(i18n.__mf("seek.errorNotValid", { prefix: bot.prefix, duration: Math.floor(currentSong?.duration! / 1000) }))
-        .then(purning);
+        .then(autoDelete);
     }
 
     await player.seek(seekTime);
 
     return commandTrigger
       .reply(i18n.__mf("seek.result", { prefix: bot.prefix, time: formatTime(seekTime * 1000) }))
-      .then(purning);
+      .then(autoDelete);
   }
 }

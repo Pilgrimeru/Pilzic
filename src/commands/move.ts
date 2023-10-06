@@ -1,8 +1,9 @@
-import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class MoveCommand extends Command {
   constructor() {
@@ -31,12 +32,12 @@ export default class MoveCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     if (!args.length || isNaN(Number(args[0])) || Number(args[0]) < 1)
-      return commandTrigger.reply(i18n.__mf("move.usagesReply", { prefix: bot.prefix })).then(purning);
+      return commandTrigger.reply(i18n.__mf("move.usagesReply", { prefix: bot.prefix })).then(autoDelete);
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     const pos1 = Number(args[0]);
     let pos2 = !args[1] ? player.queue.index + 1 : Number(args[1]);
@@ -50,6 +51,6 @@ export default class MoveCommand extends Command {
         title: song.title,
         index: pos2
       })
-    ).then(purning);
+    ).then(autoDelete);
   }
 }

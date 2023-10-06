@@ -1,7 +1,7 @@
-import { CommandInteraction, Message } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { Command } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class PingCommand extends Command {
   constructor() {
@@ -11,10 +11,10 @@ export default class PingCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message): Promise<void> {
+  async execute(commandTrigger: CommandTrigger) {
 
     commandTrigger
-      .reply(i18n.__mf("ping.result", { ping: Math.round(commandTrigger.client.ws.ping) }))
-      .then(purning);
+      .reply(i18n.__mf("ping.result", { ping: Math.round(commandTrigger.guild.client.ws.ping) }))
+      .then(autoDelete);
   }
 }

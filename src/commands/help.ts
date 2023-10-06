@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Message } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
@@ -16,7 +17,7 @@ export default class HelpCommand extends Command {
     );
   }
 
-  async execute(commandTrigger: CommandInteraction | Message) {
+  async execute(commandTrigger: CommandTrigger) {
 
     let commands = Array.from(bot.commands.values());
     const commandsPerPage = 15;
@@ -29,9 +30,9 @@ export default class HelpCommand extends Command {
       const endIndex = startIndex + commandsPerPage;
 
       const helpEmbed = new EmbedBuilder()
-        .setTitle(i18n.__mf('help.embedTitle', { botname: commandTrigger.client.user!.username }))
+        .setTitle(i18n.__mf('help.embedTitle', { botname: commandTrigger.guild.client.user!.username }))
         .setDescription(`${i18n.__('help.embedDescription')} (${page}/${totalPages})`)
-        .setColor('#69adc7');
+        .setColor(config.COLORS.MAIN);
 
       commands.slice(startIndex, endIndex).forEach((cmd) => {
         helpEmbed.addFields({
@@ -45,7 +46,7 @@ export default class HelpCommand extends Command {
       return helpEmbed;
     }
 
-    const response = await commandTrigger.reply({ embeds: [createHelpPage(page)] });
+    commandTrigger.reply({ embeds: [createHelpPage(page)], ephemeral: true });
     if (totalPages === 1) return;
 
     function createHelpButtons(page: number): ActionRowBuilder<ButtonBuilder> {
@@ -63,7 +64,7 @@ export default class HelpCommand extends Command {
       );
     }
 
-    response.edit({ components: [createHelpButtons(page)] });
+    const response = await commandTrigger.editReply({ components: [createHelpButtons(page)] });
 
     const collector = response.createMessageComponentCollector({ time: 120000 });
 
@@ -74,15 +75,15 @@ export default class HelpCommand extends Command {
         page++;
       }
 
-      await response.edit({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
+      commandTrigger.editReply({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
       interaction.deferUpdate();
     });
 
     collector.on('end', () => {
-      if (config.PRUNING) {
-        response.delete().catch(() => null);
+      if (config.AUTO_DELETE) {
+        commandTrigger.deleteReply();
       } else {
-        response.edit({ components: [] });
+        commandTrigger.editReply({ components: [] });
       }
     });
   }

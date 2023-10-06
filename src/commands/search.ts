@@ -1,10 +1,11 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, BaseInteraction, CommandInteraction, Message, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
 import youtube, { Playlist, Video } from "youtube-sr";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class SearchCommand extends Command {
   constructor() {
@@ -33,36 +34,36 @@ export default class SearchCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     if (!args.length)
       return commandTrigger
         .reply(i18n.__mf("search.usageReply", { prefix: bot.prefix, name: module.exports.name }))
-        .then(purning);
+        .then(autoDelete);
 
     const search = args.join(" ");
-    const isInteraction = (commandTrigger instanceof BaseInteraction);
+    const isInteraction = commandTrigger.isInteraction;
 
     let searchMode = "video";
     if (!isInteraction && args.length >= 2 && args[0].toLowerCase() === "playlist") {
       args = args.slice(1);
       searchMode = "playlist";
     } else if (isInteraction && args.at(-1) === "true") {
-      args.slice(args.length - 1);
+      args = args.slice(0, args.length - 1);
       searchMode = "playlist";
     } else if (isInteraction && args.at(-1) === "false") {
-      args.slice(args.length - 1);
+      args = args.slice(0, args.length - 1);
     }
 
     let results: Video[] | Playlist[] = [];
 
-    const response = await commandTrigger.reply(i18n.__mf("common.loading"));
-    
+    commandTrigger.loadingReply();
+
     try {
       results = await youtube.search(search, { limit: 10, type: searchMode as any });
     } catch (error: any) {
       console.error(error);
-      return response.edit(i18n.__("errors.command")).then(msg => purning(msg));
+      return commandTrigger.reply(i18n.__("errors.command")).then(msg => autoDelete(msg));
     }
 
     const options = results
@@ -75,7 +76,7 @@ export default class SearchCommand extends Command {
       });
 
     if (options.length === 0)
-      return response.edit(i18n.__("errors.command")).then(purning);
+      return commandTrigger.reply(i18n.__("errors.command")).then(autoDelete);
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()
@@ -86,7 +87,7 @@ export default class SearchCommand extends Command {
         .addOptions(options)
     );
 
-    await response.edit({
+    const response = await commandTrigger.editReply({
       content: i18n.__("search.chooseSong"),
       components: [row]
     });
@@ -99,12 +100,12 @@ export default class SearchCommand extends Command {
         .then(async (selectInteraction) => {
           if ((selectInteraction instanceof StringSelectMenuInteraction)) {
             await response.edit({ content: i18n.__("search.finished"), components: [] }).catch(console.error);
-            await bot.commands.get("play")!.execute(selectInteraction, [selectInteraction.values[0]]);
-            config.PRUNING && response.delete().catch(() => null);
+            await bot.commands.get("play")!.execute(new CommandTrigger(selectInteraction), selectInteraction.values);
+            config.AUTO_DELETE && autoDelete(response);
           }
         });
     } catch (error) {
-      response.delete().catch(() => null);
+      commandTrigger.deleteReply();
     }
   }
 }

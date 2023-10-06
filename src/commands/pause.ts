@@ -1,8 +1,8 @@
-import { ButtonInteraction, CommandInteraction, Message } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class PauseCommand extends Command {
   constructor() {
@@ -16,24 +16,20 @@ export default class PauseCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | ButtonInteraction | Message) {
+  async execute(commandTrigger: CommandTrigger) {
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     if (player.status === "autopaused" || player.status === "paused") {
-      if (commandTrigger instanceof ButtonInteraction) {
-        return commandTrigger.reply(i18n.__mf("pause.error")).then(purning);
-      }
-      return commandTrigger.reply(i18n.__mf("pause.error")).then(purning);
+      return commandTrigger.reply(i18n.__mf("pause.error")).then(autoDelete);
     }
 
     player.pause();
 
-    if (commandTrigger instanceof ButtonInteraction) {
-      commandTrigger.deferUpdate();
-      return player.textChannel.send(i18n.__mf("pause.result")).then(purning);
+    if (commandTrigger.type === "ButtonInteraction") {
+      return commandTrigger.send(i18n.__mf("pause.result")).then(autoDelete);
     }
 
-    return commandTrigger.reply(i18n.__mf("pause.result")).then(purning);
+    return commandTrigger.reply(i18n.__mf("pause.result")).then(autoDelete);
   }
 }

@@ -1,10 +1,12 @@
-import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { splitBar } from "string-progressbar";
+import { CommandTrigger } from "../components/CommandTrigger";
+import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
+import { autoDelete } from "../utils/autoDelete";
 import { formatTime } from "../utils/formatTime";
-import { purning } from "../utils/purning";
 
 export default class NowPlayingCommand extends Command {
   constructor() {
@@ -18,9 +20,9 @@ export default class NowPlayingCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message) {
+  async execute(commandTrigger: CommandTrigger) {
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     const song = player.queue.currentSong!;
     const seek = player.playbackDuration;
@@ -29,7 +31,7 @@ export default class NowPlayingCommand extends Command {
     let nowPlaying = new EmbedBuilder()
       .setTitle(`${player.status === "playing" ? "▶" : "⏸"} ${i18n.__("nowplaying.embedTitle")}`)
       .setDescription(`[${song.title}](${song.url})`)
-      .setColor("#69adc7")
+      .setColor(config.COLORS.MAIN)
       .setThumbnail(song.thumbnail);
 
     nowPlaying.addFields(
@@ -52,6 +54,6 @@ export default class NowPlayingCommand extends Command {
       });
     }
 
-    return commandTrigger.reply({ embeds: [nowPlaying] }).then(msg => purning(msg, true));
+    return commandTrigger.reply({ embeds: [nowPlaying] }).then(msg => autoDelete(msg, true));
   }
 }

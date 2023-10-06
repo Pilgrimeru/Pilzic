@@ -1,5 +1,6 @@
 import { joinVoiceChannel } from "@discordjs/voice";
-import { ApplicationCommandOptionType, BaseGuildTextChannel, BaseInteraction, CommandInteraction, Message, PermissionsBitField, User } from "discord.js";
+import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { Player } from "../components/Player";
 import { Playlist } from "../components/Playlist";
 import { Song } from "../components/Song";
@@ -7,7 +8,7 @@ import { ExtractionError } from "../errors/ExtractionErrors";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 import { UrlType, validate } from "../utils/validate";
 
 export default class InsertCommand extends Command {
@@ -39,42 +40,40 @@ export default class InsertCommand extends Command {
       ],
     });
   }
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    const isInteraction = (commandTrigger instanceof BaseInteraction);
-
-    if (!args.length && (isInteraction || !isInteraction && !(commandTrigger.attachments.size)))
-      return commandTrigger.reply(i18n.__mf("insert.usageReply", { prefix: bot.prefix })).then(purning);
+    if (!args.length && (commandTrigger.attachments?.size))
+      return commandTrigger.reply(i18n.__mf("insert.usageReply", { prefix: bot.prefix })).then(autoDelete);
 
     let searchForPlaylist = false;
-    if (!isInteraction && args.length >= 2 && args[0].toLowerCase() === "playlist") {
+    if (!commandTrigger.isInteraction && args.length >= 2 && args[0].toLowerCase() === "playlist") {
       args = args.slice(1);
       searchForPlaylist = true;
-    } else if (isInteraction && args.at(-1)?.toString() === "true") {
-      args.slice(args.length - 1);
+    } else if (commandTrigger.isInteraction && args.at(-1) === "true") {
+      args = args.slice(0, args.length - 1);
       searchForPlaylist = true;
-    } else if (isInteraction && args.at(-1)?.toString() === "false") {
-      args.slice(args.length - 1);
+    } else if (commandTrigger.isInteraction && args.at(-1) === "false") {
+      args = args.slice(0, args.length - 1);
     }
 
-    const response = await commandTrigger.reply(i18n.__mf("common.loading"));
+    commandTrigger.loadingReply();
 
-    const search = (!isInteraction && !args.length) ? commandTrigger!.attachments.first()?.url! : args.join(" ");
+    const search = (commandTrigger.attachments && !args.length) ? commandTrigger.attachments.first()?.url! : args.join(" ");
     const type: UrlType = await validate(search);
-    const requester: User = !isInteraction ? commandTrigger.author : commandTrigger.user;
+    const requester: User = commandTrigger.member!.user;
 
     try {
       let item: Song | Playlist;
       if (type.toString().match(/playlist|album|artist/) || (type === "yt_search" && searchForPlaylist)) {
-        response.edit(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
+        commandTrigger.editReply(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
         item = (await Playlist.from(search, requester, type));
       } else {
         item = (await Song.from(search, requester, type));
       }
-      const guildMember = isInteraction ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id) : commandTrigger.member;
+      const guildMember = commandTrigger.member!;
       const { channel } = guildMember!.voice;
       if (!channel) return;
-      const player = bot.players.get(commandTrigger.guildId!) ?? new Player({
+      const player = bot.players.get(commandTrigger.guild.id) ?? new Player({
         textChannel: (commandTrigger.channel as BaseGuildTextChannel),
         connection: joinVoiceChannel({
           channelId: channel.id,
@@ -83,13 +82,13 @@ export default class InsertCommand extends Command {
         })
       });
       player.queue.insert(item);
-      response.delete().catch(() => null);
+      commandTrigger.deleteReply();
     } catch (error) {
       if (error instanceof ExtractionError) {
-        return response.edit(i18n.__(error.i18n())).then(purning);
+        return commandTrigger.editReply(i18n.__(error.i18n())).then(autoDelete);
       }
       console.error(error);
-      return response.edit(i18n.__("errors.command")).then(purning);
+      return commandTrigger.editReply(i18n.__("errors.command")).then(autoDelete);
     }
   }
 }

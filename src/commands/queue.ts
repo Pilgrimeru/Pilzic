@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, InteractionResponse, Message } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild, Message } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { Song } from "../components/Song";
 import { config } from "../config";
 import { i18n } from "../i18n.config";
@@ -17,15 +18,15 @@ export default class QueueCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
     player.queue.songs.slice(player.queue.index);
 
     const followingSongs = player.queue.songs.slice(player.queue.index);
     const previousSongs = player.queue.songs.slice(0, player.queue.index);
 
-    const embeds = generateQueueEmbed(commandTrigger, followingSongs, previousSongs);
+    const embeds = generateQueueEmbed(commandTrigger.guild, followingSongs, previousSongs);
 
     let currentPage = Math.ceil(previousSongs.length / 10);
     const wantedPage = Number(args[0]);
@@ -33,8 +34,7 @@ export default class QueueCommand extends Command {
       currentPage = wantedPage - 1;
     }
 
-    let response: Message | InteractionResponse;
-
+    let response: Message;
     try {
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 
@@ -53,7 +53,6 @@ export default class QueueCommand extends Command {
 
     } catch (error: any) {
       console.error(error);
-      commandTrigger.reply(error).catch(console.error);
       return;
     }
 
@@ -86,8 +85,8 @@ export default class QueueCommand extends Command {
     });
 
     collector.on("end", async () => {
-      if (config.PRUNING) {
-        response.delete().catch(() => null);
+      if (config.AUTO_DELETE) {
+        commandTrigger.deleteReply();
       } else {
         response.edit({ components: [] });
       }
@@ -95,55 +94,43 @@ export default class QueueCommand extends Command {
   }
 }
 
-function generateQueueEmbed(commandTrigger: CommandInteraction | Message, followingSongs: Song[], previousSongs: Song[]): EmbedBuilder[] {
+function generateQueueEmbed(guild: Guild, followingSongs: Song[], previousSongs: Song[]): EmbedBuilder[] {
   let embeds: EmbedBuilder[] = [];
 
+  function buildEmbed(info: string): EmbedBuilder {
+    return new EmbedBuilder()
+      .setTitle(i18n.__("queue.embedTitle"))
+      .setThumbnail(guild.iconURL())
+      .setColor(config.COLORS.MAIN)
+      .setDescription(
+        i18n.__mf("queue.embedCurrentSong", { title: followingSongs[0].title, url: followingSongs[0].url, info: info })
+      )
+      .setTimestamp();
+  }
+
   previousSongs.reverse();
+  let current: Song[];
   for (let i = 0; i < previousSongs.length; i += 10) {
-    const current = previousSongs.slice(i, i + 10);
+    current = previousSongs.slice(i, i + 10);
     let j = -i - 1;
 
     const info = current.map((track) => `${j--} - [${track.title}](${track.url})`).join("\n");
 
-    const embed = new EmbedBuilder()
-      .setTitle(i18n.__("queue.embedTitle"))
-      .setThumbnail(commandTrigger.guild?.iconURL()!)
-      .setColor("#69adc7")
-      .setDescription(
-        i18n.__mf("queue.embedCurrentSong", { title: followingSongs[0].title, url: followingSongs[0].url, info: info })
-      )
-      .setTimestamp();
-    embeds.push(embed);
+    embeds.push(buildEmbed(info));
   }
   embeds.reverse();
 
   if (followingSongs.length === 1) {
-    const embed = new EmbedBuilder()
-      .setTitle(i18n.__("queue.embedTitle"))
-      .setThumbnail(commandTrigger.guild?.iconURL()!)
-      .setColor("#69adc7")
-      .setDescription(
-        i18n.__mf("queue.embedCurrentSong", { title: followingSongs[0].title, url: followingSongs[0].url, info: i18n.__mf("queue.nothingMore") })
-      )
-      .setTimestamp();
-    embeds.push(embed);
+    embeds.push(buildEmbed(i18n.__mf("queue.nothingMore")));
   }
 
   for (let i = 1; i < followingSongs.length; i += 10) {
-    const current = followingSongs.slice(i, i + 10);
+    current = followingSongs.slice(i, i + 10);
     let j = i;
 
     const info = current.map((track) => `${j++} - [${track.title}](${track.url})`).join("\n");
 
-    const embed = new EmbedBuilder()
-      .setTitle(i18n.__("queue.embedTitle"))
-      .setThumbnail(commandTrigger.guild?.iconURL()!)
-      .setColor("#69adc7")
-      .setDescription(
-        i18n.__mf("queue.embedCurrentSong", { title: followingSongs[0].title, url: followingSongs[0].url, info: info })
-      )
-      .setTimestamp();
-    embeds.push(embed);
+    embeds.push(buildEmbed(info));
   }
 
   return embeds;

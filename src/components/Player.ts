@@ -14,7 +14,7 @@ import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { PlayerOptions } from "../types/PlayerOptions";
 import { formatTime } from "../utils/formatTime";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 import { NowPlayingMsgManager } from "./NowPlayingMsgManager";
 import { Playlist } from "./Playlist";
 import { Queue } from "./Queue";
@@ -22,29 +22,31 @@ import { Song } from "./Song";
 
 type skipCallback = () => any;
 type previousCallback = () => any;
-type jumpCallback = (songId : number) => any;
+type jumpCallback = (songId: number) => any;
 
 
 export class Player {
 
   public readonly textChannel: BaseGuildTextChannel;
-  public readonly queue : Queue;
+  public readonly queue: Queue;
 
   private readonly connection: VoiceConnection;
   private readonly audioPlayer: AudioPlayer;
   private readonly nowPlayingMsgManager: NowPlayingMsgManager;
   private resource: AudioResource;
 
-  private _volume = config.DEFAULT_VOLUME;
-  private _stopped = true;
+  private _volume: number;
+  private _stopped: boolean;
 
   private skipCallbacks: skipCallback[] = [];
   private previousCallbacks: previousCallback[] = [];
   private jumpCallbacks: jumpCallback[] = [];
-  
-  
+
+
   public constructor(options: PlayerOptions) {
     Object.assign(this, options);
+    this._stopped = true;
+    this._volume = config.DEFAULT_VOLUME;
     bot.players.set(this.textChannel.guildId, this);
 
     this.queue = new Queue(this);
@@ -57,17 +59,17 @@ export class Player {
       }
     });
     this.connection.subscribe(this.audioPlayer);
-    
+
     this.setupConnectionListeners();
     this.setupAudioPlayerListeners();
     this.setupQueueListeners();
   }
-  
 
-  public async skip() : Promise<void> {
+
+  public async skip(): Promise<void> {
     if (this._stopped) return;
     if (!this.queue.canNext()) {
-      this.textChannel.send(i18n.__("player.queueEnded")).then(purning);
+      this.textChannel.send(i18n.__("player.queueEnded")).then(autoDelete);
       return this.stop();
     }
     if (this.audioPlayer.state.status === "playing") {
@@ -82,44 +84,44 @@ export class Player {
     newCurrent ? this.process(newCurrent) : this.stop();
   }
 
-  public async jumpTo(songId: number) : Promise<void> {
+  public async jumpTo(songId: number): Promise<void> {
     if (this._stopped) return;
     this.audioPlayer.pause(true);
     this.nowPlayingMsgManager?.delete();
     // Send the "jump" request to the queue.
     this.jumpCallbacks.forEach(callback => callback(songId));
     const newCurrent = this.queue.currentSong;
-    newCurrent ? this.process(newCurrent) : this.stop();
+    return newCurrent ? this.process(newCurrent) : this.stop();
   }
 
-  public async previous() : Promise<void> {
+  public async previous(): Promise<void> {
     if (!this.queue.canBack()) return;
     this.audioPlayer.pause(true);
     this.nowPlayingMsgManager?.delete();
     // Send the "previous" request to the queue.
     this.previousCallbacks.forEach(callback => callback());
     const newCurrent = this.queue.currentSong;
-    newCurrent ? this.process(newCurrent) : this.stop();
+    return newCurrent ? this.process(newCurrent) : this.stop();
   }
 
-  public async seek(time : number) : Promise<void> {
+  public async seek(time: number): Promise<void> {
     this.nowPlayingMsgManager?.delete();
     this.audioPlayer.pause(true);
     const current = this.queue.currentSong;
-    current ? await this.process(current, time) : this.stop();
+    return current ? this.process(current, time) : this.stop();
   }
 
-  public pause() : boolean {
+  public pause(): boolean {
     const result = this.audioPlayer.pause();
     this.nowPlayingMsgManager?.edit();
     return result;
   }
 
-  public resume() : boolean {
+  public resume(): boolean {
     return this.audioPlayer.unpause();
   }
 
-  public stop() : void {
+  public stop(): void {
     if (this._stopped) return;
     this._stopped = true;
     this.queue.clear();
@@ -134,13 +136,13 @@ export class Player {
     }, config.STAY_TIME * 1000);
   }
 
-  public leave() : void {
+  public leave(): void {
     this.stop();
     this.connection.removeAllListeners();
     this.audioPlayer.removeAllListeners();
     if (this.connection.state.status != VoiceConnectionStatus.Destroyed) {
       this.connection.destroy();
-      this.textChannel.send(i18n.__("player.leaveChannel")).then(purning);
+      this.textChannel.send(i18n.__("player.leaveChannel")).then(autoDelete);
     }
     bot.players.delete(this.textChannel.guildId);
   }
@@ -158,40 +160,40 @@ export class Player {
   }
 
 
-  public get volume() : number {
+  public get volume(): number {
     return this._volume;
   }
 
-  public set volume(v : number) {
+  public set volume(v: number) {
     if (v >= 0 && v <= 100) {
       this._volume = v;
       this.resource?.volume?.setVolumeLogarithmic(this._volume / 100);
     }
   }
 
-  public get playbackDuration() : number {
+  public get playbackDuration(): number {
     return this.resource.playbackDuration;
   }
 
-  public get status() : AudioPlayerStatus {
+  public get status(): AudioPlayerStatus {
     return this.audioPlayer.state.status;
   }
-  
 
-  private async process(song : Song, seek? : number): Promise<void> {
-    const loadingMsg = await this.textChannel.send(i18n.__("common.loading"));
+
+  private async process(song: Song, seek?: number): Promise<void> {
+    const loadingMsg = this.textChannel.send(i18n.__("common.loading"));
     try {
       this.resource = await song.makeResource(seek);
       if (!this.resource.readable) throw new Error("Resource not readable.");
       this.resource.playbackDuration += (seek ?? 0) * 1000;
       this.resource.volume?.setVolumeLogarithmic(this._volume / 100);
-      loadingMsg.delete().catch(() => null);
+      (await loadingMsg).delete().catch(() => null);
       this.audioPlayer.play(this.resource);
       await this.nowPlayingMsgManager.send(song);
     } catch (error) {
       console.error(error);
-      loadingMsg.delete().catch(() => null);
-      this.textChannel.send(i18n.__("player.error")).then(purning);
+      (await loadingMsg).delete().catch(() => null);
+      this.textChannel.send(i18n.__("player.error")).then(autoDelete);
       this.skip();
     }
   }
@@ -246,21 +248,21 @@ export class Player {
 
   private async setupQueueListeners(): Promise<void> {
 
-    this.queue.onSongAdded( song => {
+    this.queue.onSongAdded(song => {
       this.sendSongAddedMessage(song);
       if (this._stopped) {
         this._stopped = false;
         const current = this.queue.currentSong;
-        current ? this.process(current) : this.stop();
+        return current ? this.process(current) : this.stop();
       }
     });
 
-    this.queue.onPlaylistAdded( playlist => {
+    this.queue.onPlaylistAdded(playlist => {
       this.sendPlaylistAddedMessage(playlist);
       if (this._stopped) {
         this._stopped = false;
         const current = this.queue.currentSong;
-        current ? this.process(current) : this.stop();
+        return current ? this.process(current) : this.stop();
       }
     });
   }
@@ -271,9 +273,9 @@ export class Player {
         title: song.title,
         url: song.url
       }),
-      color: 0x69adc7
+      color: config.COLORS.MAIN
     };
-    this.textChannel.send({ embeds: [embed] }).then(purning);
+    this.textChannel.send({ embeds: [embed] }).then(autoDelete);
   }
 
   private sendPlaylistAddedMessage(playlist: Playlist): void {
@@ -284,8 +286,8 @@ export class Player {
         length: playlist.songs.length,
         duration: formatTime(playlist.duration)
       }),
-      color: 0x69adc7
+      color: config.COLORS.MAIN
     };
-    this.textChannel.send({ embeds: [embed] }).then(purning);
+    this.textChannel.send({ embeds: [embed] }).then(autoDelete);
   }
 }

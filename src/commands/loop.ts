@@ -1,8 +1,9 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Message } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class LoopCommand extends Command {
   constructor() {
@@ -30,9 +31,9 @@ export default class LoopCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     if (args.length >= 1) {
       if (args[0] === "queue" || args[0] === "track" || args[0] === "disabled") {
@@ -73,12 +74,11 @@ export default class LoopCommand extends Command {
               player.queue.loop = customId;
             }
           }
-          selectInteraction.update({ content: i18n.__mf("loop.result", { loop: player.queue.loop }), components: [] });
+          await selectInteraction.update({ content: i18n.__mf("loop.result", { loop: player.queue.loop }), components: [] });
+          autoDelete(response);
         });
     } catch (error) {
-      response.delete().catch(() => null);
+      commandTrigger.deleteReply();
     }
-
-    purning(response);
   }
 }

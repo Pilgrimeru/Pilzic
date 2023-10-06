@@ -97,7 +97,7 @@ export class Song {
       thumbnail: {
         url: this.thumbnail
       },
-      color: 0x69adc7,
+      color: config.COLORS.MAIN,
       footer: {
         text: i18n.__mf("nowplayingMsg.requestedBy", { name: this.requester?.displayName ?? "unknown" }),
         icon_url: this.requester?.avatarURL() ?? undefined

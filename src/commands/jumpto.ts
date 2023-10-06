@@ -1,8 +1,9 @@
-import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class JumpCommand extends Command {
   constructor() {
@@ -25,13 +26,13 @@ export default class JumpCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
     if (!args.length || isNaN(Number(args[0])))
       return commandTrigger
         .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix }))
-        .then(purning);
+        .then(autoDelete);
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     const queue = player.queue;
     const position = Number(args[0]);
@@ -39,12 +40,12 @@ export default class JumpCommand extends Command {
     if (position < -queue.index || position >= queue.songs.length - queue.index)
       return commandTrigger
         .reply(i18n.__mf("jumpto.errorNotValid"))
-        .then(purning);
+        .then(autoDelete);
 
     player.jumpTo(queue.index + position);
 
     return commandTrigger
       .reply(i18n.__mf("jumpto.result", { number: position }))
-      .then(purning);
+      .then(autoDelete);
   }
 }

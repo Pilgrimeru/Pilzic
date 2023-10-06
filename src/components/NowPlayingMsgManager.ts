@@ -14,6 +14,8 @@ import { checkConditions } from "../utils/checkConditions";
 import { checkPermissions } from "../utils/checkPermissions";
 import { Player } from "./Player";
 import { Song } from "./Song";
+import { CommandTrigger } from "./CommandTrigger";
+import { autoDelete } from "../utils/autoDelete";
 
 
 export class NowPlayingMsgManager {
@@ -22,11 +24,12 @@ export class NowPlayingMsgManager {
   private song: Song;
   private collector: InteractionCollector<any>;
   private player: Player;
-  private state: "play" | "pause" = "play";
+  private state: "play" | "pause";
 
 
   constructor(player: Player) {
     this.player = player;
+    this.state = "play";
   }
 
 
@@ -60,7 +63,7 @@ export class NowPlayingMsgManager {
     if (this.state === "pause" && playerPaused) return;
     if (this.state === "play" && !playerPaused) return;
 
-    const color = playerPaused ? 0xd13939 : 0x69adc7;
+    const color = playerPaused ? config.COLORS.PAUSE : config.COLORS.MAIN;
     const emoji = playerPaused ? "❚❚" : "▶";
     this.state = playerPaused ? "pause" : "play";
 
@@ -108,26 +111,26 @@ export class NowPlayingMsgManager {
     this.collector = this.msg.createMessageComponentCollector();
 
     this.collector.on("collect", async (b: ButtonInteraction) => {
-      const interactUser = await channel.guild.members.fetch(b.user);
       const command = bot.commands.get(b.customId);
       if (!command) return;
+      const interactUser = await channel.guild.members.fetch(b.user);
 
       const canWrite = channel.permissionsFor(interactUser).has(PermissionsBitField.Flags.SendMessages, true);
       const checkConditionsResult = checkConditions(command, interactUser);
       const checkPermissionsResult = checkPermissions(command, interactUser);
 
       if (!canWrite) await b.reply(i18n.__("nowplayingMsg.errorWritePermission"));
-      else if (checkConditionsResult !== "passed") await b.reply(checkConditionsResult);
-      else if (checkPermissionsResult !== "passed") await b.reply(checkPermissionsResult);
+      else if (checkConditionsResult !== "passed") await b.reply(checkConditionsResult).then(autoDelete);
+      else if (checkPermissionsResult !== "passed") await b.reply(checkPermissionsResult).then(autoDelete);
 
       if (b.replied) return;
 
-      command.execute(b);
+      command.execute(new CommandTrigger(b));
     });
 
     this.collector.on("end", () => {
 
-      if (config.PRUNING) {
+      if (config.AUTO_DELETE) {
         this.msg?.delete().catch(() => null);
       } else {
         this.msg?.edit({ components: [] });

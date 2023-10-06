@@ -1,8 +1,9 @@
-import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class VolumeCommand extends Command {
   constructor() {
@@ -25,23 +26,23 @@ export default class VolumeCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
 
     if (!args[0])
-      return commandTrigger.reply(i18n.__mf("volume.currentVolume", { volume: player.volume })).then(purning);
+      return commandTrigger.reply(i18n.__mf("volume.currentVolume", { volume: player.volume })).then(autoDelete);
 
     const level = Number(args[0]);
 
     if (isNaN(level))
-      return commandTrigger.reply(i18n.__("volume.errorNotNumber")).then(purning);
+      return commandTrigger.reply(i18n.__("volume.errorNotNumber")).then(autoDelete);
 
     if (level > 100 || level < 0)
-      return commandTrigger.reply(i18n.__("volume.intervalError")).then(purning);
+      return commandTrigger.reply(i18n.__("volume.intervalError")).then(autoDelete);
 
     player.volume = level;
 
-    return commandTrigger.reply(i18n.__mf("volume.result", { level: args[0] })).then(purning);
+    return commandTrigger.reply(i18n.__mf("volume.result", { level: args[0] })).then(autoDelete);
   }
 }

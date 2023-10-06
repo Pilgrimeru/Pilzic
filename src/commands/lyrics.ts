@@ -1,10 +1,12 @@
-import { ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, Message } from "discord.js";
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 // @ts-ignore
 import lyricsFinder from "lyrics-finder";
+import { CommandTrigger } from "../components/CommandTrigger";
+import { config } from "../config";
 import { Command, CommandConditions } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 export default class LyricsCommand extends Command {
   constructor() {
     super({
@@ -26,13 +28,13 @@ export default class LyricsCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     const title = args.length === 0 ? player.queue.currentSong!.title : args.join(" ");
 
-    const response = await commandTrigger.reply(i18n.__mf("common.loading"));
+    commandTrigger.loadingReply();
 
     let lyrics = null;
     try {
@@ -45,12 +47,12 @@ export default class LyricsCommand extends Command {
     let lyricsEmbed = new EmbedBuilder()
       .setTitle(i18n.__mf("lyrics.embedTitle", { title: title }))
       .setDescription(lyrics)
-      .setColor("#69adc7")
+      .setColor(config.COLORS.MAIN)
       .setTimestamp();
 
     if (lyricsEmbed.data.description!.length >= 4096)
       lyricsEmbed.setDescription(`${lyricsEmbed.data.description!.slice(0, 4093)}...`);
 
-    return response.edit({ content: "", embeds: [lyricsEmbed] }).then(msg => purning(msg, true));
+    return commandTrigger.editReply({ content: "", embeds: [lyricsEmbed] }).then(msg => autoDelete(msg, true));
   }
 }

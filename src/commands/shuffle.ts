@@ -1,8 +1,8 @@
-import { CommandInteraction, Message } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class ShuffleCommand extends Command {
   constructor() {
@@ -16,13 +16,13 @@ export default class ShuffleCommand extends Command {
     });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message) {
+  async execute(commandTrigger: CommandTrigger) {
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
     const queue = player.queue;
 
     queue.shuffle();
 
-    commandTrigger.reply(i18n.__mf("shuffle.result")).then(purning);
+    commandTrigger.reply(i18n.__mf("shuffle.result")).then(autoDelete);
   }
 }
