@@ -20,7 +20,7 @@ function parseEnvColor(value: string | undefined, defaultValue: number): number 
   if (value) {
     value = value.replace("#", "0x");
     const parsedValue = parseInt(value, 16);
-    return parsedValue;
+    return isNaN(parsedValue) ? defaultValue : parsedValue;
   }
   return defaultValue;
 }
