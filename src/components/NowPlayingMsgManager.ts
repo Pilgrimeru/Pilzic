@@ -20,7 +20,7 @@ import { Song } from "./Song";
 
 export class NowPlayingMsgManager {
 
-  private msg: Message | undefined;
+  private msg: Promise<Message> | undefined;
   private song: Song;
   private collector: InteractionCollector<any>;
   private player: Player;
@@ -37,7 +37,7 @@ export class NowPlayingMsgManager {
     if (this.msg) await this.delete();
     this.song = song;
     const embed = this.song.playingEmbed();
-    this.msg = await this.player.textChannel.send({
+    this.msg = this.player.textChannel.send({
       embeds: [embed.setTitle(`▶  ${embed.data.title}`)],
       components: [this.buildButtons()]
     });
@@ -47,7 +47,8 @@ export class NowPlayingMsgManager {
   public async delete(): Promise<void> {
     if (!this.msg) return;
     try {
-      this.collector.stop();
+      await this.msg;
+      this.collector?.stop();
     } catch (error) {
       console.error(error);
     } finally {
@@ -55,8 +56,8 @@ export class NowPlayingMsgManager {
     }
   }
 
-  public edit(): void {
-    if (!this.msg || !this.msg.editable) return;
+  public async edit(): Promise<void> {
+    if (!this.msg || !(await this.msg).editable) return;
     const playerPaused = this.player.status === "paused" || this.player.status === "autopaused";
 
     if (!playerPaused && this.player.status !== "playing") return;
@@ -70,7 +71,7 @@ export class NowPlayingMsgManager {
     const embed = this.song.playingEmbed().setColor(color);
     embed.setTitle(`${emoji}  ${embed.data.title}`);
 
-    this.msg.edit({
+    (await this.msg).edit({
       embeds: [embed],
       components: [this.buildButtons()]
     });
@@ -107,8 +108,9 @@ export class NowPlayingMsgManager {
 
   private async createCollector(): Promise<void> {
     if (!this.msg) return;
+    const message = await this.msg;
     const channel = this.player.textChannel;
-    this.collector = this.msg.createMessageComponentCollector();
+    this.collector = message.createMessageComponentCollector();
 
     this.collector.on("collect", async (b: ButtonInteraction) => {
       const command = bot.commands.get(b.customId);
@@ -131,9 +133,9 @@ export class NowPlayingMsgManager {
     this.collector.on("end", () => {
 
       if (config.AUTO_DELETE) {
-        this.msg?.delete().catch(() => null);
+        message.delete().catch(() => null);
       } else {
-        this.msg?.edit({ components: [] });
+        message.edit({ components: [] });
       }
     });
   }

@@ -77,7 +77,7 @@ export class Player {
       return;
     }
 
-    this.nowPlayingMsgManager?.delete();
+    this.nowPlayingMsgManager.delete();
     // Send the "skip" request to the queue.
     this.skipCallbacks.forEach(callback => callback());
     const newCurrent = this.queue.currentSong;
@@ -87,7 +87,7 @@ export class Player {
   public async jumpTo(songId: number): Promise<void> {
     if (this._stopped) return;
     this.audioPlayer.pause(true);
-    this.nowPlayingMsgManager?.delete();
+    this.nowPlayingMsgManager.delete();
     // Send the "jump" request to the queue.
     this.jumpCallbacks.forEach(callback => callback(songId));
     const newCurrent = this.queue.currentSong;
@@ -97,7 +97,7 @@ export class Player {
   public async previous(): Promise<void> {
     if (!this.queue.canBack()) return;
     this.audioPlayer.pause(true);
-    this.nowPlayingMsgManager?.delete();
+    this.nowPlayingMsgManager.delete();
     // Send the "previous" request to the queue.
     this.previousCallbacks.forEach(callback => callback());
     const newCurrent = this.queue.currentSong;
@@ -105,15 +105,15 @@ export class Player {
   }
 
   public async seek(time: number): Promise<void> {
-    this.nowPlayingMsgManager?.delete();
+    this.nowPlayingMsgManager.delete();
     this.audioPlayer.pause(true);
     const current = this.queue.currentSong;
     return current ? this.process(current, time) : this.stop();
   }
 
-  public pause(): boolean {
+  public async pause(): Promise<boolean> {
     const result = this.audioPlayer.pause();
-    this.nowPlayingMsgManager?.edit();
+    await this.nowPlayingMsgManager.edit();
     return result;
   }
 
@@ -125,7 +125,7 @@ export class Player {
     if (this._stopped) return;
     this._stopped = true;
     this.queue.clear();
-    this.nowPlayingMsgManager?.delete();
+    this.nowPlayingMsgManager.delete();
     this.audioPlayer.stop();
     this.resource?.playStream?.destroy();
 
@@ -194,7 +194,7 @@ export class Player {
       console.error(error);
       (await loadingMsg).delete().catch(() => null);
       this.textChannel.send(i18n.__("player.error")).then(autoDelete);
-      this.skip();
+      await this.skip();
     }
   }
 
@@ -223,7 +223,7 @@ export class Player {
 
     this.audioPlayer.on(AudioPlayerStatus.AutoPaused, async () => {
       try {
-        this.nowPlayingMsgManager?.edit();
+        await this.nowPlayingMsgManager.edit();
         if (!this._stopped) {
           this.connection.configureNetworking();
         }
@@ -237,11 +237,12 @@ export class Player {
     });
 
     this.audioPlayer.on(AudioPlayerStatus.Playing, async () => {
-      this.nowPlayingMsgManager?.edit();
+      this.nowPlayingMsgManager.edit();
     });
 
     this.audioPlayer.on("error", (error) => {
       console.error(error);
+      this.textChannel.send(i18n.__("player.error")).then(autoDelete);
       this.skip();
     });
   }

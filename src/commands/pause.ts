@@ -24,7 +24,7 @@ export default class PauseCommand extends Command {
       return commandTrigger.reply(i18n.__mf("pause.error")).then(autoDelete);
     }
 
-    player.pause();
+    await player.pause();
 
     if (commandTrigger.type === "ButtonInteraction") {
       return commandTrigger.send(i18n.__mf("pause.result")).then(autoDelete);
