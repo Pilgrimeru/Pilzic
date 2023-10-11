@@ -1,4 +1,4 @@
-import { CommandInteraction, Message } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { Command } from "../types/Command";
 
@@ -7,18 +7,17 @@ export default class InviteCommand extends Command {
     super({
       name: "invite",
       description: i18n.__("invite.description"),
-    })
+    });
   }
-  
-  async execute(commandTrigger: CommandInteraction | Message) {
-    const isSlashCommand = (commandTrigger instanceof CommandInteraction) ;
-    const guildMember = isSlashCommand ? commandTrigger.guild!.members.cache.get(commandTrigger.user.id): commandTrigger.member;
+
+  async execute(commandTrigger: CommandTrigger) {
     try {
-      return await guildMember!.send(
-        `https://discord.com/oauth2/authorize?client_id=${commandTrigger.client.user!.id}&permissions=274897914880&scope=bot`
+      await commandTrigger.member!.send(
+        `https://discord.com/oauth2/authorize?client_id=${commandTrigger.guild.client.user!.id}&permissions=274897914880&scope=bot`
       );
+      commandTrigger.reply(i18n.__mf("invite.result"));
     } catch (message) {
       return console.error(message);
     }
   }
-};
+}

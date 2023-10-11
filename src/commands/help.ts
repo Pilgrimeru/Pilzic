@@ -1,7 +1,8 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Message } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
+import { config } from "../config";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { config } from "../config";
 import { Command } from "../types/Command";
 
 export default class HelpCommand extends Command {
@@ -9,29 +10,29 @@ export default class HelpCommand extends Command {
   constructor() {
     super(
       {
-      name: "help",
-      description: i18n.__("help.description"),
-      aliases: ["h"],
+        name: "help",
+        description: i18n.__("help.description"),
+        aliases: ["h"],
       }
-    )
+    );
   }
-  
-  async execute(commandTrigger: CommandInteraction | Message) {
-    
+
+  async execute(commandTrigger: CommandTrigger) {
+
     let commands = Array.from(bot.commands.values());
     const commandsPerPage = 15;
 
     let page = 1;
     const totalPages = Math.ceil(commands.length / commandsPerPage);
 
-    function createHelpPage(page : number) : EmbedBuilder {
+    function createHelpPage(page: number): EmbedBuilder {
       const startIndex = (page - 1) * commandsPerPage;
       const endIndex = startIndex + commandsPerPage;
 
       const helpEmbed = new EmbedBuilder()
-        .setTitle(i18n.__mf('help.embedTitle', { botname: commandTrigger.client.user!.username }))
+        .setTitle(i18n.__mf('help.embedTitle', { botname: commandTrigger.guild.client.user!.username }))
         .setDescription(`${i18n.__('help.embedDescription')} (${page}/${totalPages})`)
-        .setColor('#69adc7');
+        .setColor(config.COLORS.MAIN);
 
       commands.slice(startIndex, endIndex).forEach((cmd) => {
         helpEmbed.addFields({
@@ -45,10 +46,10 @@ export default class HelpCommand extends Command {
       return helpEmbed;
     }
 
-    const response = await commandTrigger.reply({ embeds: [createHelpPage(page)] });
+    commandTrigger.reply({ embeds: [createHelpPage(page)], ephemeral: true });
     if (totalPages === 1) return;
 
-    function createHelpButtons(page : number) : ActionRowBuilder<ButtonBuilder> {
+    function createHelpButtons(page: number): ActionRowBuilder<ButtonBuilder> {
       return new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setCustomId('previous')
@@ -62,9 +63,9 @@ export default class HelpCommand extends Command {
           .setDisabled(page === totalPages)
       );
     }
-    
-    response.edit({components: [createHelpButtons(page)]});
-    
+
+    const response = await commandTrigger.editReply({ components: [createHelpButtons(page)] });
+
     const collector = response.createMessageComponentCollector({ time: 120000 });
 
     collector.on('collect', async (interaction) => {
@@ -74,16 +75,16 @@ export default class HelpCommand extends Command {
         page++;
       }
 
-      await response.edit({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
+      commandTrigger.editReply({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
       interaction.deferUpdate();
     });
 
     collector.on('end', () => {
-      if (config.PRUNING) {
-        response.delete().catch(() => null);
+      if (config.AUTO_DELETE) {
+        commandTrigger.deleteReply();
       } else {
-        response.edit({ components: [] });
+        commandTrigger.editReply({ components: [] });
       }
     });
   }
-};
+}

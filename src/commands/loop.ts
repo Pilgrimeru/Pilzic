@@ -1,8 +1,9 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Message } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class LoopCommand extends Command {
   constructor() {
@@ -17,7 +18,7 @@ export default class LoopCommand extends Command {
       options: [
         {
           name: "mode",
-          description: "the loop mode",
+          description: i18n.__mf("loop.options.mode"),
           type: ApplicationCommandOptionType.String,
           required: false,
           choices: [
@@ -27,17 +28,17 @@ export default class LoopCommand extends Command {
           ]
         }
       ],
-    })
+    });
   }
-  
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
+
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     if (args.length >= 1) {
       if (args[0] === "queue" || args[0] === "track" || args[0] === "disabled") {
         player.queue.loop = args[0];
-        return commandTrigger.reply(i18n.__mf("loop.result", { loop: player.queue.loop}));
+        return commandTrigger.reply(i18n.__mf("loop.result", { loop: player.queue.loop }));
       }
     }
 
@@ -65,20 +66,19 @@ export default class LoopCommand extends Command {
 
     try {
       await response
-      .awaitMessageComponent({ time: 30000 })
-      .then(async (selectInteraction) => {
-        if ((selectInteraction instanceof ButtonInteraction)) {
-          const customId = selectInteraction.customId;
-          if (customId === "queue" || customId === "track" || customId === "disabled") {
-            player.queue.loop = customId;
+        .awaitMessageComponent({ time: 30000 })
+        .then(async (selectInteraction) => {
+          if ((selectInteraction instanceof ButtonInteraction)) {
+            const customId = selectInteraction.customId;
+            if (customId === "queue" || customId === "track" || customId === "disabled") {
+              player.queue.loop = customId;
+            }
           }
-        }
-        selectInteraction.update({content: i18n.__mf("loop.result", { loop: player.queue.loop}), components: []});
-      })
+          await selectInteraction.update({ content: i18n.__mf("loop.result", { loop: player.queue.loop }), components: [] });
+          autoDelete(response);
+        });
     } catch (error) {
-      response.delete().catch(() => null);
+      commandTrigger.deleteReply();
     }
-
-    purning(response);
   }
-};
+}

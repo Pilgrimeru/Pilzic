@@ -4,11 +4,12 @@ import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
 import { autoDelete } from "../utils/autoDelete";
 
-export default class ShuffleCommand extends Command {
+
+export default class AutoplayCommand extends Command {
   constructor() {
     super({
-      name: "shuffle",
-      description: i18n.__("shuffle.description"),
+      name: "autoplay",
+      description: i18n.__("autoplay.description"),
       conditions: [
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
@@ -19,10 +20,10 @@ export default class ShuffleCommand extends Command {
   async execute(commandTrigger: CommandTrigger) {
 
     const player = bot.players.get(commandTrigger.guild.id)!;
-    const queue = player.queue;
+    commandTrigger.loadingReply();
+    const autoqueue = await player.queue.toggleAutoqueue();
 
-    queue.shuffle();
-
-    commandTrigger.reply(i18n.__mf("shuffle.result")).then(autoDelete);
+    const mode = autoqueue ? i18n.__mf("common.enabled") : i18n.__mf("common.disabled");
+    return commandTrigger.editReply(i18n.__mf("autoplay.result", { mode: mode })).then(autoDelete);
   }
 }

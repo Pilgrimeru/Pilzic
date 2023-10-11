@@ -3,26 +3,29 @@ import { Player } from './Player';
 import { Playlist } from "./Playlist";
 import { Song } from "./Song";
 
-type playlistAddedCallback = (playlist : Playlist) => any;
-type songAddedCallback = (song : Song) => any;
+type playlistAddedCallback = (playlist: Playlist) => any;
+type songAddedCallback = (song: Song) => any;
 
 export class Queue {
-  
-  public loop : "queue" | "track" | "disabled" = "disabled";
-  
-  private _index: number = 0;
-  private _songs: Song[] = [];
-  private player : Player;
 
+  public loop: "queue" | "track" | "disabled";
+
+  private _index: number;
+  private _autoqueue: boolean;
+  private player: Player;
+  private _songs: Song[] = [];
   private playlistAddedCallbacks: playlistAddedCallback[] = [];
   private songAddedCallbacks: songAddedCallback[] = [];
 
-  constructor(player : Player) {
+  constructor(player: Player) {
+    this.loop = "disabled";
+    this._index = 0;
+    this._autoqueue = false;
     this.player = player;
     this.setupPlayerListeners();
   }
 
-  public enqueue(item: Song | Playlist) : void {
+  public enqueue(item: Song | Playlist): void {
     if (item instanceof Playlist) {
       this._songs = this._songs.concat(item.songs);
       this.playlistAddedCallbacks.forEach(callback => callback(item));
@@ -33,7 +36,7 @@ export class Queue {
     }
   }
 
-  public insert(item: Song | Playlist) : void {
+  public insert(item: Song | Playlist): void {
     if (item instanceof Playlist) {
       this._songs.splice(this.index + 1, 0, ...item.songs);
       this.playlistAddedCallbacks.forEach(callback => callback(item));
@@ -43,13 +46,14 @@ export class Queue {
     }
   }
 
-  public clear() : void {
+  public clear(): void {
     this._index = 0;
     this._songs.length = 0;
     this.loop = "disabled";
+    this._autoqueue = false;
   }
 
-  public shuffle() : void {
+  public shuffle(): void {
     let previousSongs = this.songs.slice(0, this.index);
     let followingSongs = this.songs.slice(this.index);
 
@@ -60,17 +64,25 @@ export class Queue {
     this._songs = previousSongs.concat(followingSongs);
   }
 
-  public move(id1 : number, id2 : number) : void {
+  public move(id1: number, id2: number): void {
     this._songs = arrayMove(this._songs, id1, id2);
   }
 
-  public remove(...idsToRemove : number[]) : Song[] {
+  public remove(...idsToRemove: number[]): Song[] {
     let removed: Song[] = [];
-      this._songs = this._songs.filter((song, songIndex) => {
-        if (idsToRemove.includes(songIndex)) removed.push(song);
-        else return true;
-      });
+    this._songs = this._songs.filter((song, songIndex) => {
+      if (idsToRemove.includes(songIndex)) removed.push(song);
+      else return true;
+    });
     return removed;
+  }
+
+  public async toggleAutoqueue(): Promise<boolean> {
+    this._autoqueue = !this._autoqueue;
+    if (this._autoqueue) {
+      await this.autoAddNextSong();
+    }
+    return this._autoqueue;
   }
 
   public onSongAdded(callback: songAddedCallback) {
@@ -81,46 +93,50 @@ export class Queue {
     this.playlistAddedCallbacks.push(callback);
   }
 
-  public canBack() : boolean {
+  public canBack(): boolean {
     return this._index !== 0;
   }
 
-  public canNext() : boolean {
+  public canNext(): boolean {
     if (this.loop === "queue" || this.loop === "track") return true;
     return this._index !== (this._songs.length - 1);
   }
 
-
-  public get index() : number {
+  public get index(): number {
     return this._index;
   }
 
-  public get songs() : readonly Song[] {
+  public get songs(): readonly Song[] {
     return this._songs;
   }
 
-  public get currentSong() : Song | undefined {
+  public get currentSong(): Song | undefined {
     return this._songs.at(this.index);
   }
-  
 
-  private setupPlayerListeners() : void {
-    
+
+  private setupPlayerListeners(): void {
+
     this.player.onSkip(() => {
       if (this.loop === "track") this.loop = "disabled";
       if (this._index !== this._songs.length - 1) {
         this._index += 1;
+        if (this._autoqueue) {
+          this.autoAddNextSong();
+        }
       } else if (this.loop === "queue") {
         this._index = 0;
       }
     });
 
     this.player.onJump(songId => {
-      if (this.loop === "track") this.loop = "disabled";
-      if (songId >= this._songs.length) songId = this._songs.length -1;
+      if (songId >= this._songs.length) songId = this._songs.length - 1;
       else if (songId < 0) songId = 0;
+      if (this._autoqueue) {
+        this.autoAddNextSong();
+      }
       this._index = songId;
-    })
+    });
 
     this.player.onPrevious(() => {
       if (this.loop === "track") this.loop = "disabled";
@@ -131,6 +147,20 @@ export class Queue {
       if (this._index >= 0) {
         this._index--;
       }
-    })
+    });
+  }
+
+  private async autoAddNextSong(): Promise<void> {
+    const remainingTracks = this.songs.length - this.index - 1;
+    if (remainingTracks > 2) return;
+    const botUser = this.player.textChannel.guild.members.me?.user!;
+
+    let related_videos = await this._songs[this._index].getRelated();
+    related_videos = related_videos.filter((url) => !(this._songs.some((existingSong) => existingSong.url === url)));
+    if (!related_videos.length) return;
+
+    let relatedSong = await Song.from(related_videos[0], botUser, "yt_video").catch(console.error);
+    if (!relatedSong) return;
+    this._songs.push(relatedSong);
   }
 }

@@ -3,8 +3,9 @@ import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { checkConditions } from "../utils/checkConditions";
 import { checkPermissions } from "../utils/checkPermissions";
-import { purning } from "../utils/purning";
+import { autoDelete } from "../utils/autoDelete";
 import { Event } from "../types/Event";
+import { CommandTrigger } from "../components/CommandTrigger";
 
 export default new Event("messageCreate", async (message: Message) => {
   
@@ -25,13 +26,13 @@ export default new Event("messageCreate", async (message: Message) => {
 
   try {
     const checkConditionsResult = checkConditions(command, message.member!);
-    if (checkConditionsResult !== "passed") return message.reply(checkConditionsResult).then(purning);
+    if (checkConditionsResult !== "passed") return message.reply(checkConditionsResult).then(autoDelete);
     const checkPermissionsResult = checkPermissions(command, message.member!);
-    if (checkPermissionsResult !== "passed") return message.reply(checkPermissionsResult).then(purning);
+    if (checkPermissionsResult !== "passed") return message.reply(checkPermissionsResult).then(autoDelete);
 
-    command.execute(message, args);
+    command.execute(new CommandTrigger(message), args);
   } catch (error) {
-    message.reply(i18n.__("errors.command")).then(purning);
+    message.reply(i18n.__("errors.command")).then(autoDelete);
     console.error(error);
   }
 });

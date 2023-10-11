@@ -1,8 +1,8 @@
-import { ButtonInteraction, CommandInteraction, Message } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class StopCommand extends Command {
   constructor() {
@@ -13,20 +13,19 @@ export default class StopCommand extends Command {
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
-    })
+    });
   }
-  
-  async execute(commandTrigger: CommandInteraction | ButtonInteraction | Message) {
+
+  async execute(commandTrigger: CommandTrigger) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
 
     player.stop();
 
-    if (commandTrigger instanceof ButtonInteraction) {
-      commandTrigger.deferUpdate();
-      return player.textChannel.send(i18n.__mf("stop.result")).then(purning); 
+    if (commandTrigger.type === "ButtonInteraction") {
+      return commandTrigger.send(i18n.__mf("stop.result")).then(autoDelete);
     }
 
-    return commandTrigger.reply(i18n.__mf("stop.result")).then(purning); 
+    return commandTrigger.reply(i18n.__mf("stop.result")).then(autoDelete);
   }
-};
+}

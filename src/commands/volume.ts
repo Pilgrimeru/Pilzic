@@ -1,8 +1,9 @@
-import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class VolumeCommand extends Command {
   constructor() {
@@ -13,7 +14,7 @@ export default class VolumeCommand extends Command {
       options: [
         {
           name: "level",
-          description: "volume level of the player [0;100].",
+          description: i18n.__mf("volume.options.level"),
           type: ApplicationCommandOptionType.String,
           required: true,
         }
@@ -22,26 +23,26 @@ export default class VolumeCommand extends Command {
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
-    })
+    });
   }
-  
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
 
     if (!args[0])
-      return commandTrigger.reply(i18n.__mf("volume.currentVolume", { volume: player.volume })).then(purning);
+      return commandTrigger.reply(i18n.__mf("volume.currentVolume", { volume: player.volume })).then(autoDelete);
 
     const level = Number(args[0]);
 
     if (isNaN(level))
-      return commandTrigger.reply(i18n.__("volume.errorNotNumber")).then(purning);
+      return commandTrigger.reply(i18n.__("volume.errorNotNumber")).then(autoDelete);
 
     if (level > 100 || level < 0)
-      return commandTrigger.reply(i18n.__("volume.intervalError")).then(purning);
+      return commandTrigger.reply(i18n.__("volume.intervalError")).then(autoDelete);
 
     player.volume = level;
-    
-    return commandTrigger.reply(i18n.__mf("volume.result", { arg: args[0] })).then(purning);
+
+    return commandTrigger.reply(i18n.__mf("volume.result", { level: args[0] })).then(autoDelete);
   }
-};
+}

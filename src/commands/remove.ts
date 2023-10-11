@@ -1,8 +1,9 @@
-import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { autoDelete } from "../utils/autoDelete";
 
 const pattern = /^[1-9][0-9]{0,2}(\s*,\s*[1-9][0-9]{0,2})*$/;
 export default class RemoveCommand extends Command {
@@ -18,20 +19,20 @@ export default class RemoveCommand extends Command {
       options: [
         {
           name: "position",
-          description: "You can also remove multiple songs with ',' symbole",
+          description: i18n.__mf("remove.options.position"),
           type: ApplicationCommandOptionType.String,
           required: true,
         }
       ],
-    })
+    });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
-    
-    if (!args.length) return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
-    
-    const player = bot.players.get(commandTrigger.guild!.id)!;
-    
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
+
+    if (!args.length) return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);
+
+    const player = bot.players.get(commandTrigger.guild.id)!;
+
     const removeArgs = args.join("");
 
     if (pattern.test(removeArgs)) {
@@ -40,25 +41,25 @@ export default class RemoveCommand extends Command {
       let removed = player.queue.remove(...indexs);
 
       if (removed.length === 0) {
-        return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
-      } 
+        return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);
+      }
 
       if (removed.length === 1) {
         return commandTrigger.reply(
           i18n.__mf("remove.result", {
             title: removed[0].title
           })
-        ).then(purning);
+        ).then(autoDelete);
       }
 
       return commandTrigger.reply(
         i18n.__mf("remove.results", {
           titles: removed.map((song) => song.title).join(",\n")
         })
-      ).then(purning);
-        
+      ).then(autoDelete);
+
     } else {
-      return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(purning);
+      return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);
     }
   }
-};
+}

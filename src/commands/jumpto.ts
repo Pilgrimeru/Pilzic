@@ -1,8 +1,9 @@
-import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class JumpCommand extends Command {
   constructor() {
@@ -13,7 +14,7 @@ export default class JumpCommand extends Command {
       options: [
         {
           name: "position",
-          description: "the number of the song in the queue",
+          description: i18n.__mf("jumpto.options.position"),
           type: ApplicationCommandOptionType.Number,
           required: true,
         }
@@ -22,16 +23,16 @@ export default class JumpCommand extends Command {
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
-    })
+    });
   }
-  
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
     if (!args.length || isNaN(Number(args[0])))
       return commandTrigger
-        .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix}))
-        .then(purning);
+        .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix }))
+        .then(autoDelete);
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     const queue = player.queue;
     const position = Number(args[0]);
@@ -39,12 +40,12 @@ export default class JumpCommand extends Command {
     if (position < -queue.index || position >= queue.songs.length - queue.index)
       return commandTrigger
         .reply(i18n.__mf("jumpto.errorNotValid"))
-        .then(purning);
+        .then(autoDelete);
 
     player.jumpTo(queue.index + position);
-    
+
     return commandTrigger
-      .reply(i18n.__mf("jumpto.result", { arg: position }))
-      .then(purning);
+      .reply(i18n.__mf("jumpto.result", { number: position }))
+      .then(autoDelete);
   }
-};
+}

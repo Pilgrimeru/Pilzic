@@ -1,8 +1,9 @@
-import { ApplicationCommandOptionType, CommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
-import { purning } from "../utils/purning";
 import { Command, CommandConditions } from "../types/Command";
+import { autoDelete } from "../utils/autoDelete";
 
 export default class MoveCommand extends Command {
   constructor() {
@@ -16,26 +17,27 @@ export default class MoveCommand extends Command {
       ],
       options: [
         {
-          name: "mode",
-          description: "the loop mode",
+          name: "position",
+          description: i18n.__mf("move.options.position"),
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+        {
+          name: "new_position",
+          description: i18n.__mf("move.options.new_position"),
           type: ApplicationCommandOptionType.String,
           required: false,
-          choices: [
-            { name: "track", value: "track" },
-            { name: "queue", value: "queue" },
-            { name: "disabled", value: "disabled" }
-          ]
         }
       ],
-    })
+    });
   }
 
-  async execute(commandTrigger: CommandInteraction | Message, args: string[]) {
+  async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     if (!args.length || isNaN(Number(args[0])) || Number(args[0]) < 1)
-      return commandTrigger.reply(i18n.__mf("move.usagesReply", { prefix: bot.prefix })).then(purning);
+      return commandTrigger.reply(i18n.__mf("move.usagesReply", { prefix: bot.prefix })).then(autoDelete);
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.players.get(commandTrigger.guild.id)!;
 
     const pos1 = Number(args[0]);
     let pos2 = !args[1] ? player.queue.index + 1 : Number(args[1]);
@@ -49,6 +51,6 @@ export default class MoveCommand extends Command {
         title: song.title,
         index: pos2
       })
-    ).then(purning);
+    ).then(autoDelete);
   }
-};
+}

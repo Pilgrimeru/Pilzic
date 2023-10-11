@@ -1,4 +1,5 @@
-import { CommandInteraction, Message, ApplicationCommandDataResolvable, ApplicationCommandOptionData, PermissionResolvable, MessageComponentInteraction } from "discord.js";
+import {ApplicationCommandDataResolvable, ApplicationCommandOptionData, PermissionResolvable } from "discord.js";
+import { CommandTrigger } from "../components/CommandTrigger";
 
 export enum CommandConditions {
   IS_CONNECTED_TO_CHANNEL,
@@ -26,5 +27,5 @@ export abstract class Command {
     Object.assign(this, data);
   }
 
-  abstract execute(commandTrigger: CommandInteraction | Message | MessageComponentInteraction, args?: string[]) : any;
+  abstract execute(commandTrigger: CommandTrigger, args?: string[]) : any;
 }
