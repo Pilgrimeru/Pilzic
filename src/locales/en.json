@@ -25,7 +25,7 @@
 		"description": "Jump to the selected queue number.",
 		"usageReply": "Usage: {prefix}jumpto <Queue number>",
 		"errorNotValid": "This is not a valid position.",
-		"result": "Jump to queue position {number} completed",
+		"result": "Jump to queue position {number} completed ↪️",
 		"options": {
 			"position": "The position in the queue where you want to go."
 		}
@@ -49,7 +49,7 @@
 	"move": {
 		"description": "Move songs in the queue.",
 		"usagesReply": "Usage: {prefix}move <From queue index> <To queue index>.",
-		"result": "The track **\"{title}\"** has been moved to position {index} in the queue.",
+		"result": "The track **\"{title}\"** has been moved to position {index} in the queue. ✅",
 		"options": {
 			"position": "The position in the queue you want to move.",
 			"new_position": "The new position to which you want to move it."
@@ -81,7 +81,7 @@
 	},
 	"previous": {
 		"description": "Go back to the previous song in the playback queue.",
-		"result": "Successfully returned to the previous song.",
+		"result": "Successfully returned to the previous song. ⏮",
 		"error": "Unable to go back, there is no previous music."
 	},
 	"queue": {
@@ -111,7 +111,7 @@
 		"usageReply": "Usage: {prefix}{name} <Video name>",
 		"menuNothing": "Nothing selected",
 		"chooseSong": "Choose the song to play.",
-		"finished": "Search finished.",
+		"finished": "Search finished. 🔍",
 		"options": {
 			"search": "The desired search.",
 			"playlist": "True if your search is for a playlist."
@@ -133,7 +133,7 @@
 	},
 	"skip": {
 		"description": "Skip the currently playing song.",
-		"result": "Skipped the song. ⏩"
+		"result": "Skipped the song. ⏭️"
 	},
 	"stop": {
 		"description": "Stop the music.",

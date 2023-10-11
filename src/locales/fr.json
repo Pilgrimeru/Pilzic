@@ -25,7 +25,7 @@
     "description": "Sauter à la position sélectionnée dans la file d'attente.",
     "usageReply": "Utilisation : {prefix}jumpto <Numéro dans la file d'attente>",
     "errorNotValid": "Ce n'est pas une position valide.",
-    "result": "Saut à la position {number} effectué",
+    "result": "Saut à la position {number} effectué ↪️",
     "options": {
       "position": "Le numéro dans la file d'attente où vous souhaitez vous rendre."
     }
@@ -49,7 +49,7 @@
   "move": {
     "description": "Déplace les chansons dans la file d'attente.",
     "usagesReply": "Utilisation : {prefix}move <De numéro dans la file d'attente> <Vers numéro dans la file d'attente>.",
-    "result": "Le morceau **\"{title}\"** a été déplacé vers la position {index} dans la file d'attente.",
+    "result": "Le morceau **\"{title}\"** a été déplacé vers la position {index} dans la file d'attente. ✅",
     "options": {
       "position": "La position dans la file d'attente de la musique que vous souhaitez déplacer.",
       "new_position": "La nouvelle position à laquelle vous souhaitez la déplacer."
@@ -81,7 +81,7 @@
   },
   "previous": {
     "description": "Revenir en arrière dans la file d'attente de lecture.",
-    "result": "Retour à la chanson précédente réussi.",
+    "result": "Retour à la chanson précédente réussi. ⏮",
     "error": "Impossible de revenir en arrière, il n'y a pas de musique précédente."
   },
   "queue": {
@@ -110,7 +110,7 @@
     "usageReply": "Utilisation : {prefix}{name} <Nom de la vidéo>",
     "menuNothing": "Rien de sélectionné",
     "chooseSong": "Choisissez le morceau à jouer.",
-    "finished": "Recherche terminée.",
+    "finished": "Recherche terminée. 🔍",
     "options": {
       "search": "La recherche souhaitée.",
       "playlist": "True si votre recherche concerne une playlist."
@@ -132,7 +132,7 @@
   },
   "skip": {
     "description": "Passe la musique en cours de lecture.",
-    "result": "Musique passée. ⏩"
+    "result": "Musique passée. ⏭️"
   },
   "stop": {
     "description": "Arrête la musique.",
