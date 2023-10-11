@@ -1,14 +1,14 @@
 {
   "name": "pilzic",
   "version": "1.0.0",
-  "description": "",
+  "description": "Feature-rich Discord bot that allows you to play music from various sources, manage your music queue, and enjoy a seamless music experience in your Discord server.",
   "main": "./src/index.ts",
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "run": "node ./dist/index.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Elliott DE LUCA",
+  "license": "MIT",
   "dependencies": {
     "@discordjs/voice": "^0.16.0",
     "array-move": "3.0.1",
