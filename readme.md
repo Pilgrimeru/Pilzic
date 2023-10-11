@@ -84,4 +84,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Enjoy your music experience with Pilzic! 🎶**
 
-If you have any questions, issues, or suggestions, please feel free to open an [issue](insert_link_to_issues_here) on this repository.
+If you have any questions, issues, or suggestions, please feel free to open an [issue](https://github.com/Pilgrimeru/Pilzic/issues) on this repository.
