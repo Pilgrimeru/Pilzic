@@ -35,7 +35,19 @@ To get started with the bot, follow these steps:
    npm install
    ```
 
-3. Start the bot with:
+3. Rename config.env.example to config.env and fill out the values:
+    ```env
+    TOKEN = "" # your discord token
+    MAX_PLAYLIST_SIZE = 500 # Maximum number of music fetches per playlist
+    PREFIX = "!" # Command prefix
+    AUTO_DELETE = true # Set to true to automatically delete bot responses
+    LOCALE = "en" # Language setting, it must exist in the local folder
+    STAY_TIME = 30 # Duration before disconnection when the bot is alone
+    AUDIO_QUALITY = 0 # 0 = minimum, 2 = maximum
+    DEFAULT_VOLUME = 100 # Default volume setting [0;100]
+    MAIN_COLOR = "#69ADC7" # Main color for the bot
+    ```
+4. Start the bot with:
 
    ```bash
    npm start
@@ -84,4 +96,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Enjoy your music experience with Pilzic! 🎶**
 
-If you have any questions, issues, or suggestions, please feel free to open an [issue](https://github.com/Pilgrimeru/Pilzic/issues) on this repository.
+If you have any questions, issues, or suggestions, please feel free to open an [issue](insert_link_to_issues_here) on this repository.
