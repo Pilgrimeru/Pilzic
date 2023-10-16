@@ -1,23 +1,25 @@
+import { i18n } from "../i18n.config";
+
 export abstract class ExtractionError extends Error {
-  constructor(message : string) {
-    super(message)
+  constructor(message: string) {
+    super(message);
   }
-  public abstract i18n() : string;
+  public abstract i18n(): string;
 }
 
 export class InvalidURLError extends ExtractionError {
 
   constructor() {
-    super(i18n.__mf("errors.invalidURL"))
+    super(i18n.__mf("errors.invalidURL"));
   }
   public i18n() {
     return "errors.invalidURL";
   }
 }
 
-export class NoDataError  extends ExtractionError {
+export class NoDataError extends ExtractionError {
   constructor() {
-    super(i18n.__mf("errors.noData"))
+    super(i18n.__mf("errors.noData"));
   }
   public i18n() {
     return "errors.noData";
@@ -26,16 +28,16 @@ export class NoDataError  extends ExtractionError {
 
 export class NothingFoundError extends ExtractionError {
   constructor() {
-    super(i18n.__mf("errors.nothingFound"))
+    super(i18n.__mf("errors.nothingFound"));
   }
   public i18n() {
     return "errors.nothingFound";
   }
 }
 
-export class ServiceUnavailableError  extends ExtractionError {
+export class ServiceUnavailableError extends ExtractionError {
   constructor() {
-    super(i18n.__mf("errors.serviceUnavailable"))
+    super(i18n.__mf("errors.serviceUnavailable"));
   }
   public i18n() {
     return "errors.serviceUnavailable";
@@ -44,7 +46,7 @@ export class ServiceUnavailableError  extends ExtractionError {
 
 export class AgeRestrictedError extends ExtractionError {
   constructor() {
-    super(i18n.__mf("errors.ageRestricted"))
+    super(i18n.__mf("errors.ageRestricted"));
   }
   public i18n() {
     return "errors.ageRestricted";
@@ -53,7 +55,7 @@ export class AgeRestrictedError extends ExtractionError {
 
 export class YoutubeMixesError extends ExtractionError {
   constructor() {
-    super(i18n.__mf("errors.youtubeMixes"))
+    super(i18n.__mf("errors.youtubeMixes"));
   }
   public i18n() {
     return "errors.youtubeMixes";
