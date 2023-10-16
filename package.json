@@ -12,7 +12,7 @@
   "dependencies": {
     "@discordjs/voice": "^0.16.0",
     "array-move": "3.0.1",
-    "axios": "^1.5.0",
+    "axios": "^1.5.1",
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
     "ffmpeg-static": "^5.2.0",
@@ -21,15 +21,15 @@
     "lru-cache": "^10.0.1",
     "lyrics-finder": "^21.7.0",
     "music-metadata": "7.13.4",
-    "play-dl": "^1.9.6",
-    "spotify-url-info": "^3.2.6",
+    "play-dl": "^1.9.7",
+    "spotify-url-info": "^3.2.8",
     "string-progressbar": "^1.0.4",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2",
     "youtube-sr": "^4.3.4"
   },
   "devDependencies": {
-    "@types/i18n": "^0.13.6"
+    "@types/i18n": "^0.13.7"
   },
   "optionalDependencies": {
     "@discordjs/opus": "^0.9.0",
