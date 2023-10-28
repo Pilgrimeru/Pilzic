@@ -172,8 +172,7 @@
 		"off": "**off**",
 		"enabled": "**enabled**",
 		"disabled": "**disabled**",
-		"loading": "⏳ Loading...",
-		"cooldownMessage": "Please wait {time} second(s) before using the `{name}` command again."
+		"loading": "⏳ Loading..."
 	},
 	"errors": {
 		"notQueue": "The queue is empty.",

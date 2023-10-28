@@ -167,8 +167,7 @@
     "off": "**désactivé**",
     "enabled": "**activé**",
     "disabled": "**désactivé**",
-    "loading": "⏳ Chargement...",
-    "cooldownMessage": "Veuillez patienter {time} seconde(s) avant de réutiliser la commande `{name}`."
+    "loading": "⏳ Chargement..."
   },
   "errors": {
     "notQueue": "La file d'attente est vide.",
