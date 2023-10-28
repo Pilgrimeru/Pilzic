@@ -38,7 +38,7 @@ export default class LoopCommand extends Command {
     if (args.length >= 1) {
       if (args[0] === "queue" || args[0] === "track" || args[0] === "disabled") {
         player.queue.loop = args[0];
-        return commandTrigger.reply(i18n.__mf("loop.result", { loop: player.queue.loop }));
+        return commandTrigger.reply(i18n.__mf("loop.result", { loop: player.queue.loop })).then(autoDelete);
       }
     }
 
