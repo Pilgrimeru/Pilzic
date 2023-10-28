@@ -1,4 +1,8 @@
 {
+  "autoplay": {
+    "description": "Active le remplissage automatique de la file d'attente.",
+    "result": "L'autoplay est maintenant {mode}."
+  },
   "help": {
     "description": "Affiche toutes les commandes et leurs descriptions.",
     "embedTitle": "Aide {botname}",
