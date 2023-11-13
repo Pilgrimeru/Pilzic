@@ -1,19 +1,10 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
-  InteractionCollector,
   Message,
-  PermissionsBitField
 } from "discord.js";
 import { config } from "../config";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { autoDelete } from "../utils/autoDelete";
-import { checkConditions } from "../utils/checkConditions";
-import { checkPermissions } from "../utils/checkPermissions";
-import { CommandTrigger } from "./CommandTrigger";
 import { Player } from "./Player";
 import { Song } from "./Song";
 
@@ -22,7 +13,6 @@ export class NowPlayingMsgManager {
 
   private msg: Promise<Message> | undefined;
   private song: Song;
-  private collector: InteractionCollector<any>;
   private player: Player;
   private state: "play" | "pause";
 
@@ -41,14 +31,17 @@ export class NowPlayingMsgManager {
       embeds: [embed.setTitle(`▶  ${embed.data.title}`)],
       components: [this.buildButtons()]
     });
-    await this.createCollector();
   }
 
   public async delete(): Promise<void> {
     if (!this.msg) return;
     try {
-      await this.msg;
-      this.collector?.stop();
+      const message = await this.msg;
+      if (config.AUTO_DELETE) {
+        message.delete().catch(() => null);
+      } else {
+        message.edit({ components: [] });
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -83,60 +76,26 @@ export class NowPlayingMsgManager {
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId("stop")
+        .setCustomId("cmd-stop")
         .setEmoji("⏹")
         .setStyle(ButtonStyle.Secondary),
 
       new ButtonBuilder()
-        .setCustomId("previous")
+        .setCustomId("cmd-previous")
         .setEmoji("⏮")
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(!this.player.queue.canBack()),
 
       new ButtonBuilder()
-        .setCustomId(isPaused ? "resume" : "pause")
+        .setCustomId(isPaused ? "cmd-resume" : "cmd-pause")
         .setEmoji(isPaused ? '▶️' : '⏸️')
         .setStyle(ButtonStyle.Secondary),
 
       new ButtonBuilder()
-        .setCustomId("skip")
+        .setCustomId("cmd-skip")
         .setEmoji("⏭")
         .setStyle(ButtonStyle.Secondary)
     );
     return row;
-  }
-
-  private async createCollector(): Promise<void> {
-    if (!this.msg) return;
-    const message = await this.msg;
-    const channel = this.player.textChannel;
-    this.collector = message.createMessageComponentCollector();
-
-    this.collector.on("collect", async (b: ButtonInteraction) => {
-      const command = bot.commands.get(b.customId);
-      if (!command) return;
-      const interactUser = await channel.guild.members.fetch(b.user);
-
-      const canWrite = channel.permissionsFor(interactUser).has(PermissionsBitField.Flags.SendMessages, true);
-      const checkConditionsResult = checkConditions(command, interactUser);
-      const checkPermissionsResult = checkPermissions(command, interactUser);
-
-      if (!canWrite) await b.reply(i18n.__("nowplayingMsg.errorWritePermission"));
-      else if (checkConditionsResult !== "passed") await b.reply(checkConditionsResult).then(autoDelete);
-      else if (checkPermissionsResult !== "passed") await b.reply(checkPermissionsResult).then(autoDelete);
-
-      if (b.replied) return;
-
-      command.execute(new CommandTrigger(b));
-    });
-
-    this.collector.on("end", () => {
-
-      if (config.AUTO_DELETE) {
-        message.delete().catch(() => null);
-      } else {
-        message.edit({ components: [] });
-      }
-    });
   }
 }
