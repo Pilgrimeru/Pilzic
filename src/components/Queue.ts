@@ -118,7 +118,6 @@ export class Queue {
   private setupPlayerListeners(): void {
 
     this.player.onSkip(() => {
-      if (this.loop === "track") this.loop = "disabled";
       if (this._index !== this._songs.length - 1) {
         this._index += 1;
         if (this._autoqueue) {
@@ -139,8 +138,6 @@ export class Queue {
     });
 
     this.player.onPrevious(() => {
-      if (this.loop === "track") this.loop = "disabled";
-      
       if (this._index <= 0 && this.loop === "queue") {
         this._index = this._songs.length - 1;
       }

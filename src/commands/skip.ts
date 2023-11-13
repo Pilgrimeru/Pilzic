@@ -22,6 +22,7 @@ export default class SkipCommand extends Command {
 
     const player = bot.players.get(commandTrigger.guild!.id)!;
 
+    if (player.queue.loop === "track") player.queue.loop = "disabled";
     player.skip();
 
     if (commandTrigger.type === "ButtonInteraction") {

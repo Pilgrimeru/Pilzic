@@ -1,4 +1,3 @@
-import { ButtonInteraction } from "discord.js";
 import { i18n } from "../i18n.config";
 import { bot } from "../index";
 import { Command, CommandConditions } from "../types/Command";
@@ -23,7 +22,8 @@ export default class PreviousCommand extends Command {
     if (!player.queue.canBack()) {
       return commandTrigger.reply(i18n.__mf("previous.error")).then(autoDelete);
     }
-
+    
+    if (player.queue.loop === "track") player.queue.loop = "disabled";
     player.previous();
 
     if (commandTrigger.type === "ButtonInteraction") {

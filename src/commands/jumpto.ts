@@ -42,6 +42,7 @@ export default class JumpCommand extends Command {
         .reply(i18n.__mf("jumpto.errorNotValid"))
         .then(autoDelete);
 
+    if (player.queue.loop === "track") player.queue.loop = "disabled";
     player.jumpTo(queue.index + position);
 
     return commandTrigger
