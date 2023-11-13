@@ -2,11 +2,11 @@ import {ApplicationCommandDataResolvable, ApplicationCommandOptionData, Permissi
 import { CommandTrigger } from "../components/CommandTrigger";
 
 export enum CommandConditions {
+  QUEUE_EXISTS,
   IS_CONNECTED_TO_CHANNEL,
   IS_IN_SAME_CHANNEL,
   CAN_BOT_CONNECT_TO_CHANNEL,
   CAN_BOT_SPEAK,
-  QUEUE_EXISTS,
 }
 
 type ExtendedCommandDataResolvable = (ApplicationCommandDataResolvable & {
