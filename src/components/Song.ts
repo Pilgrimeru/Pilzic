@@ -144,7 +144,7 @@ export class Song {
         highWaterMark: 1 << 62,
         liveBuffer: 1 << 62,
         dlChunkSize: 0,
-        quality: 128,
+        quality: config.AUDIO_QUALITY < 2 ? 'lowestaudio' : 'highestaudio'
       });
       type = StreamType.Arbitrary;
     }
