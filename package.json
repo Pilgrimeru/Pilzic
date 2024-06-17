@@ -11,6 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "@discordjs/voice": "^0.17.0",
+    "@distube/ytdl-core": "^4.13.4",
     "array-move": "3.0.1",
     "axios": "^1.7.2",
     "discord.js": "^14.15.2",

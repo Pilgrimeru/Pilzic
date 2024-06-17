@@ -1,4 +1,5 @@
 import { AudioResource, StreamType, createAudioResource } from "@discordjs/voice";
+import ytdl from "@distube/ytdl-core";
 import axios from 'axios';
 import { EmbedBuilder, User } from "discord.js";
 import fetch from 'isomorphic-unfetch';
@@ -120,22 +121,16 @@ export class Song {
 
   public async makeResource(seek?: number): Promise<AudioResource<Song>> {
     let stream;
-    let type;
+    let type: StreamType;
 
     if (seek) {
       if (yt_validate(this.url) !== "video") {
         throw new Error("Seeking is only supported for YouTube sources.");
       }
 
-      const response = await getStream(this.url, {
-        htmldata: false,
-        precache: 10,
-        seek
-      });
+      throw new Error("The seek feature is not available with this fix, I'm working on it.");
 
-      stream = response.stream;
-      type = response.type;
-    } else if (this.url.startsWith("https") && (yt_validate(this.url) === "video" || await so_validate(this.url) === "track")) {
+    } else if (this.url.startsWith("https") && await so_validate(this.url) === "track") {
       const response = await getStream(this.url, {
         htmldata: false,
         precache: 15,
@@ -143,7 +138,17 @@ export class Song {
       });
       stream = response.stream;
       type = response.type;
-    } else {
+    } else if (this.url.startsWith("https") && yt_validate(this.url) === "video") {
+      stream = ytdl(this.url, {
+        filter: "audioonly",
+        highWaterMark: 1 << 62,
+        liveBuffer: 1 << 62,
+        dlChunkSize: 0,
+        quality: 128,
+      });
+      type = StreamType.Arbitrary;
+    }
+    else {
       const response = await axios.get(this.url, {
         responseType: 'stream',
       });
