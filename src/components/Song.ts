@@ -1,5 +1,4 @@
 import { AudioResource, StreamType, createAudioResource } from "@discordjs/voice";
-import ytdl from "@distube/ytdl-core";
 import axios from 'axios';
 import { EmbedBuilder, User } from "discord.js";
 import fetch from 'isomorphic-unfetch';
@@ -16,6 +15,7 @@ import {
   yt_validate
 } from "play-dl";
 import youtube from "youtube-sr";
+import ytdl from 'ytdl-core-discord';
 import { config } from "../config";
 import {
   AgeRestrictedError,
@@ -139,14 +139,13 @@ export class Song {
       stream = response.stream;
       type = response.type;
     } else if (this.url.startsWith("https") && yt_validate(this.url) === "video") {
-      stream = ytdl(this.url, {
-        filter: "audioonly",
+      stream = await ytdl(this.url, {
         highWaterMark: 1 << 62,
         liveBuffer: 1 << 62,
         dlChunkSize: 0,
-        quality: config.AUDIO_QUALITY < 2 ? 'lowestaudio' : 'highestaudio'
+        quality: 'lowestaudio'
       });
-      type = StreamType.Arbitrary;
+      type = StreamType.Opus;
     }
     else {
       const response = await axios.get(this.url, {
