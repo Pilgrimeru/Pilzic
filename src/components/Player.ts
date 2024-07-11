@@ -138,7 +138,6 @@ export class Player {
 
   public leave(): void {
     this.stop();
-    this.connection.destroy();
     if (this.connection.state.status != VoiceConnectionStatus.Destroyed) {
       this.connection.destroy();
       this.textChannel.send(i18n.__("player.leaveChannel")).then(autoDelete);

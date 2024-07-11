@@ -15,7 +15,6 @@ import {
   yt_validate
 } from "play-dl";
 import youtube from "youtube-sr";
-import ytdl from 'ytdl-core-discord';
 import { config } from "../config";
 import {
   AgeRestrictedError,
@@ -29,6 +28,7 @@ import { formatTime } from "../utils/formatTime";
 import { UrlType } from "../utils/validate";
 import { Bot } from "./Bot";
 const { getPreview } = require('spotify-url-info')(fetch);
+import ytstream from 'yt-stream';
 
 export interface SongData {
   url: string;
@@ -139,13 +139,14 @@ export class Song {
       stream = response.stream;
       type = response.type;
     } else if (this.url.startsWith("https") && yt_validate(this.url) === "video") {
-      stream = await ytdl(this.url, {
-        highWaterMark: 1 << 62,
-        liveBuffer: 1 << 62,
-        dlChunkSize: 0,
-        quality: 'lowestaudio'
+      const reponse = await ytstream.stream( this.url, {
+        quality: 'high',
+        type: 'audio',
+        highWaterMark: 1048576 * 32,
+        download: true
       });
-      type = StreamType.Opus;
+      stream = reponse.stream;
+      type = reponse.type as any;
     }
     else {
       const response = await axios.get(this.url, {
