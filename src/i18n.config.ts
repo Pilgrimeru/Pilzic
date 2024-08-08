@@ -2,6 +2,8 @@ import i18n from 'i18n';
 import path from 'path';
 import { config } from './config';
 
+const __dirname = path.dirname(import.meta.filename);
+
 i18n.configure({
 
   locales: ['en', 'fr'],

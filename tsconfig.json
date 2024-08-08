@@ -2,8 +2,8 @@
   "compilerOptions": {
     "strict": true,
     "outDir": "dist",
-    "module": "commonjs",
-    "target": "es2022",
+    "module": "ESNext",
+    "target": "ESNext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "useUnknownInCatchVariables": true,

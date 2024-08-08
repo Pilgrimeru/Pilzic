@@ -1,4 +1,4 @@
-import arrayMove from 'array-move';
+import { arrayMoveImmutable } from 'array-move';
 import { Player } from './Player';
 import { Playlist } from "./Playlist";
 import { Song } from "./Song";
@@ -65,7 +65,7 @@ export class Queue {
   }
 
   public move(id1: number, id2: number): void {
-    this._songs = arrayMove(this._songs, id1, id2);
+    this._songs = arrayMoveImmutable(this._songs, id1, id2);
   }
 
   public remove(...idsToRemove: number[]): Song[] {

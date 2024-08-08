@@ -4,38 +4,44 @@
   "description": "Feature-rich Discord bot that allows you to play music from various sources, manage your music queue, and enjoy a seamless music experience in your Discord server.",
   "main": "./src/index.ts",
   "scripts": {
-    "start": "ts-node ./src/index.ts",
+    "start": "tsx ./src/index.ts",
     "run": "node ./dist/index.js"
   },
   "author": "Elliott DE LUCA",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "@discordjs/voice": "^0.17.0",
-    "array-move": "3.0.1",
+    "@distube/ytdl-core": "^4.14.4",
+    "array-move": "^4.0.0",
     "axios": "^1.7.2",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
     "ffmpeg-static": "^5.2.0",
+    "fluent-ffmpeg": "^2.1.3",
+    "fs-capacitor": "^8.0.0",
     "i18n": "^0.15.1",
     "isomorphic-unfetch": "^4.0.2",
-    "lru-cache": "^10.3.0",
+    "lru-cache": "^11.0.0",
     "lyrics-finder": "^21.7.0",
-    "music-metadata": "7.13.4",
+    "music-metadata": "^10.0.1",
     "play-dl": "^1.9.7",
     "spotify-url-info": "^3.2.15",
     "string-progressbar": "^1.0.4",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.2",
     "youtube-sr": "^4.3.11",
-    "yt-stream": "^1.6.0"
+    "yt-stream": "^1.7.3"
   },
   "devDependencies": {
-    "@types/i18n": "^0.13.12"
+    "@types/fluent-ffmpeg": "^2.1.25",
+    "@types/i18n": "^0.13.12",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4"
   },
   "optionalDependencies": {
-    "opusscript": "^0.0.8",
     "bufferutil": "^4.0.8",
     "libsodium-wrappers": "^0.7.13",
+    "opusscript": "^0.1.1",
     "sodium-native": "^4.1.1",
     "tweetnacl": "^1.0.3",
     "utf-8-validate": "^6.0.4"

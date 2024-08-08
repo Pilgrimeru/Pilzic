@@ -55,10 +55,13 @@ export class Bot extends Client {
 
   private async importCommands(): Promise<void> {
     const slashCommands: ApplicationCommandDataResolvable[] = [];
-    const commandFiles = readdirSync(join(__dirname, "..", "commands")).filter((file) => !file.endsWith(".map"));
+    const commandFolder = new URL('../commands', import.meta.url);
+    const commandFiles = readdirSync(commandFolder).filter((file) => !file.endsWith(".map"));
 
     for (const file of commandFiles) {
-      const CommandClass = (await import(join(__dirname, "..", "commands", file))).default;
+      const filePath = join(commandFolder.pathname, file);
+      const fileURL = new URL(`file://${filePath}`);
+      const CommandClass = (await import(new URL(fileURL.href, commandFolder).pathname)).default;
       const commandInstance = new CommandClass() as Command;
       this.commands.set(commandInstance.name, commandInstance);
       const slashCommand: ApplicationCommandDataResolvable = {
@@ -76,9 +79,12 @@ export class Bot extends Client {
   }
 
   private async loadEvents(): Promise<void> {
-    const eventFiles = readdirSync(join(__dirname, "..", "events")).filter((file) => !file.endsWith(".map"));
+    const eventFolder = new URL('../events', import.meta.url);
+    const eventFiles = readdirSync(eventFolder).filter((file) => !file.endsWith(".map"));
     for (const file of eventFiles) {
-      const event = (await import(join(__dirname, "..", "events", `${file}`))).default as Event<keyof ClientEvents>;;
+      const filePath = join(eventFolder.pathname, file);
+      const fileURL = new URL(`file://${filePath}`);
+      const event = (await import(fileURL.href)).default as Event<keyof ClientEvents>;
       this.on(event.name, event.execute);
     }
   }

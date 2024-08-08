@@ -14,7 +14,9 @@ import {
 import { UrlType } from '../utils/validate';
 import { Bot } from './Bot';
 import { Song, SongData } from "./Song";
-const { getPreview, getTracks } = require('spotify-url-info')(fetch);
+// @ts-ignore
+import spotifyUrlInfo from 'spotify-url-info';
+const { getPreview, getTracks } = spotifyUrlInfo(fetch);
 
 interface PlaylistData {
   title: string;

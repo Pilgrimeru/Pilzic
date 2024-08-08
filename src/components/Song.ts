@@ -15,6 +15,7 @@ import {
   yt_validate
 } from "play-dl";
 import youtube from "youtube-sr";
+import ytstream from 'yt-stream';
 import { config } from "../config";
 import {
   AgeRestrictedError,
@@ -27,8 +28,9 @@ import { i18n } from "../i18n.config";
 import { formatTime } from "../utils/formatTime";
 import { UrlType } from "../utils/validate";
 import { Bot } from "./Bot";
-const { getPreview } = require('spotify-url-info')(fetch);
-import ytstream from 'yt-stream';
+// @ts-ignore
+import spotifyUrlInfo from 'spotify-url-info';
+const { getPreview } = spotifyUrlInfo(fetch);
 
 export interface SongData {
   url: string;
@@ -125,7 +127,7 @@ export class Song {
 
     if (seek) {
       if (yt_validate(this.url) !== "video") {
-        throw new Error("Seeking is only supported for YouTube sources.");
+        throw new Error("The seek feature is not available with this fix, I'm working on it.");
       }
 
       throw new Error("The seek feature is not available with this fix, I'm working on it.");
