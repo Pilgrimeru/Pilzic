@@ -3,17 +3,17 @@ import fetch from 'isomorphic-unfetch';
 import { LRUCache } from 'lru-cache';
 import { DeezerAlbum, DeezerPlaylist, SoundCloudPlaylist, SoundCloudTrack, deezer, soundcloud } from "play-dl";
 import youtube, { Video, Playlist as YoutubePlaylist } from "youtube-sr";
-import { config } from "../config";
+import { config } from "../config.js";
 import {
   InvalidURLError,
   NoDataError,
   NothingFoundError,
   ServiceUnavailableError,
   YoutubeMixesError
-} from '../errors/ExtractionErrors';
-import { UrlType } from '../utils/validate';
-import { Bot } from './Bot';
-import { Song, SongData } from "./Song";
+} from '../errors/ExtractionErrors.js';
+import { UrlType } from '../utils/validate.js';
+import { Bot } from './Bot.js';
+import { Song, SongData } from "./Song.js";
 // @ts-ignore
 import spotifyUrlInfo from 'spotify-url-info';
 const { getPreview, getTracks } = spotifyUrlInfo(fetch);

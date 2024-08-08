@@ -1,11 +1,11 @@
 import { GuildBasedChannel, GuildMember, PermissionsBitField } from "discord.js";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { checkConditions } from "../utils/checkConditions";
-import { checkPermissions } from "../utils/checkPermissions";
-import { autoDelete } from "../utils/autoDelete";
-import { Event } from "../types/Event";
-import { CommandTrigger } from "../components/CommandTrigger";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
+import { checkConditions } from "../utils/checkConditions.js";
+import { checkPermissions } from "../utils/checkPermissions.js";
+import { autoDelete } from "../utils/autoDelete.js";
+import { Event } from "../types/Event.js";
+import { CommandTrigger } from "../components/CommandTrigger.js";
 
 function hasChannelPermissions(guildBot: GuildMember, interactionChannel: GuildBasedChannel) {
   const canView = interactionChannel.permissionsFor(guildBot).has(PermissionsBitField.Flags.ViewChannel);

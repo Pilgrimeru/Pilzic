@@ -9,16 +9,16 @@ import {
   entersState
 } from "@discordjs/voice";
 import { BaseGuildTextChannel } from "discord.js";
-import { config } from "../config";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { PlayerOptions } from "../types/PlayerOptions";
-import { autoDelete } from "../utils/autoDelete";
-import { formatTime } from "../utils/formatTime";
-import { NowPlayingMsgManager } from "./NowPlayingMsgManager";
-import { Playlist } from "./Playlist";
-import { Queue } from "./Queue";
-import { Song } from "./Song";
+import { config } from "../config.js";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
+import { PlayerOptions } from "../types/PlayerOptions.js";
+import { autoDelete } from "../utils/autoDelete.js";
+import { formatTime } from "../utils/formatTime.js";
+import { NowPlayingMsgManager } from "./NowPlayingMsgManager.js";
+import { Playlist } from "./Playlist.js";
+import { Queue } from "./Queue.js";
+import { Song } from "./Song.js";
 
 type skipCallback = () => any;
 type previousCallback = () => any;

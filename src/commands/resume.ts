@@ -1,8 +1,8 @@
-import { CommandTrigger } from "../components/CommandTrigger";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { Command, CommandConditions } from "../types/Command";
-import { autoDelete } from "../utils/autoDelete";
+import { CommandTrigger } from "../components/CommandTrigger.js";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
+import { Command, CommandConditions } from "../types/Command.js";
+import { autoDelete } from "../utils/autoDelete.js";
 
 export default class ResumeCommand extends Command {
   constructor() {

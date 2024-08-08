@@ -1,6 +1,6 @@
-import { CommandTrigger } from "../components/CommandTrigger";
-import { i18n } from "../i18n.config";
-import { Command } from "../types/Command";
+import { CommandTrigger } from "../components/CommandTrigger.js";
+import { i18n } from "../i18n.config.js";
+import { Command } from "../types/Command.js";
 
 export default class InviteCommand extends Command {
   constructor() {

@@ -1,7 +1,7 @@
-import { CommandTrigger } from "../components/CommandTrigger";
-import { i18n } from "../i18n.config";
-import { Command } from "../types/Command";
-import { autoDelete } from "../utils/autoDelete";
+import { CommandTrigger } from "../components/CommandTrigger.js";
+import { i18n } from "../i18n.config.js";
+import { Command } from "../types/Command.js";
+import { autoDelete } from "../utils/autoDelete.js";
 
 export default class PingCommand extends Command {
   constructor() {

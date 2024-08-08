@@ -1,7 +1,7 @@
 import { arrayMoveImmutable } from 'array-move';
-import { Player } from './Player';
-import { Playlist } from "./Playlist";
-import { Song } from "./Song";
+import { Player } from './Player.js';
+import { Playlist } from "./Playlist.js";
+import { Song } from "./Song.js";
 
 type playlistAddedCallback = (playlist: Playlist) => any;
 type songAddedCallback = (song: Song) => any;

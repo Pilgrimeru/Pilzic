@@ -16,18 +16,18 @@ import {
 } from "play-dl";
 import youtube from "youtube-sr";
 import ytstream from 'yt-stream';
-import { config } from "../config";
+import { config } from "../config.js";
 import {
   AgeRestrictedError,
   InvalidURLError,
   NoDataError,
   NothingFoundError,
   ServiceUnavailableError
-} from '../errors/ExtractionErrors';
-import { i18n } from "../i18n.config";
-import { formatTime } from "../utils/formatTime";
-import { UrlType } from "../utils/validate";
-import { Bot } from "./Bot";
+} from '../errors/ExtractionErrors.js';
+import { i18n } from "../i18n.config.js";
+import { formatTime } from "../utils/formatTime.js";
+import { UrlType } from "../utils/validate.js";
+import { Bot } from "./Bot.js";
 // @ts-ignore
 import spotifyUrlInfo from 'spotify-url-info';
 const { getPreview } = spotifyUrlInfo(fetch);

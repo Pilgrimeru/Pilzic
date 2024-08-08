@@ -1,11 +1,11 @@
 import { ApplicationCommandOptionType } from "discord.js";
 import { yt_validate } from "play-dl";
-import { CommandTrigger } from "../components/CommandTrigger";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { Command, CommandConditions } from "../types/Command";
-import { autoDelete } from "../utils/autoDelete";
-import { formatTime } from "../utils/formatTime";
+import { CommandTrigger } from "../components/CommandTrigger.js";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
+import { Command, CommandConditions } from "../types/Command.js";
+import { autoDelete } from "../utils/autoDelete.js";
+import { formatTime } from "../utils/formatTime.js";
 
 const timeRegEx = /^(?:[0-9]|[0-5]\d):[0-5]\d(:[0-5]\d)?$/;
 

@@ -1,6 +1,6 @@
 import i18n from 'i18n';
 import path from 'path';
-import { config } from './config';
+import { config } from './config.js';
 
 const __dirname = path.dirname(import.meta.filename);
 
@@ -25,3 +25,4 @@ i18n.configure({
 i18n.setLocale(config.LOCALE);
 
 export { i18n };
+

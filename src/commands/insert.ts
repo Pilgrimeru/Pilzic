@@ -1,15 +1,15 @@
 import { joinVoiceChannel } from "@discordjs/voice";
 import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from "discord.js";
-import { CommandTrigger } from "../components/CommandTrigger";
-import { Player } from "../components/Player";
-import { Playlist } from "../components/Playlist";
-import { Song } from "../components/Song";
-import { ExtractionError } from "../errors/ExtractionErrors";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { Command, CommandConditions } from "../types/Command";
-import { autoDelete } from "../utils/autoDelete";
-import { UrlType, validate } from "../utils/validate";
+import { CommandTrigger } from "../components/CommandTrigger.js";
+import { Player } from "../components/Player.js";
+import { Playlist } from "../components/Playlist.js";
+import { Song } from "../components/Song.js";
+import { ExtractionError } from "../errors/ExtractionErrors.js";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
+import { Command, CommandConditions } from "../types/Command.js";
+import { autoDelete } from "../utils/autoDelete.js";
+import { UrlType, validate } from "../utils/validate.js";
 
 export default class InsertCommand extends Command {
   constructor() {

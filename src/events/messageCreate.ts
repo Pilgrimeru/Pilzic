@@ -1,11 +1,11 @@
 import { Message } from "discord.js";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { checkConditions } from "../utils/checkConditions";
-import { checkPermissions } from "../utils/checkPermissions";
-import { autoDelete } from "../utils/autoDelete";
-import { Event } from "../types/Event";
-import { CommandTrigger } from "../components/CommandTrigger";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
+import { checkConditions } from "../utils/checkConditions.js";
+import { checkPermissions } from "../utils/checkPermissions.js";
+import { autoDelete } from "../utils/autoDelete.js";
+import { Event } from "../types/Event.js";
+import { CommandTrigger } from "../components/CommandTrigger.js";
 
 export default new Event("messageCreate", async (message: Message) => {
   

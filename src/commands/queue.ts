@@ -1,10 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild, Message } from "discord.js";
-import { CommandTrigger } from "../components/CommandTrigger";
-import { Song } from "../components/Song";
-import { config } from "../config";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { Command, CommandConditions } from "../types/Command";
+import { CommandTrigger } from "../components/CommandTrigger.js";
+import { Song } from "../components/Song.js";
+import { config } from "../config.js";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
+import { Command, CommandConditions } from "../types/Command.js";
 
 export default class QueueCommand extends Command {
   constructor() {

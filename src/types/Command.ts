@@ -1,5 +1,5 @@
 import {ApplicationCommandDataResolvable, ApplicationCommandOptionData, PermissionResolvable } from "discord.js";
-import { CommandTrigger } from "../components/CommandTrigger";
+import { CommandTrigger } from "../components/CommandTrigger.js";
 
 export enum CommandConditions {
   QUEUE_EXISTS,

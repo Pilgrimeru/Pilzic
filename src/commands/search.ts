@@ -1,11 +1,11 @@
 import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
 import youtube, { Playlist, Video } from "youtube-sr";
-import { CommandTrigger } from "../components/CommandTrigger";
-import { config } from "../config";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { Command, CommandConditions } from "../types/Command";
-import { autoDelete } from "../utils/autoDelete";
+import { CommandTrigger } from "../components/CommandTrigger.js";
+import { config } from "../config.js";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
+import { Command, CommandConditions } from "../types/Command.js";
+import { autoDelete } from "../utils/autoDelete.js";
 
 export default class SearchCommand extends Command {
   constructor() {

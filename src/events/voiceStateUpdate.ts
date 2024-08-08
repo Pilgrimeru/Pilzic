@@ -1,7 +1,7 @@
 import { VoiceState } from "discord.js";
-import { config } from "../config";
-import { bot } from "../index";
-import { Event } from "../types/Event";
+import { config } from "../config.js";
+import { bot } from "../index.js";
+import { Event } from "../types/Event.js";
 
 export default new Event("voiceStateUpdate", async (voice: VoiceState) => {
   setTimeout(() => {

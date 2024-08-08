@@ -4,9 +4,9 @@ import {
   ButtonStyle,
   Message,
 } from "discord.js";
-import { config } from "../config";
-import { Player } from "./Player";
-import { Song } from "./Song";
+import { config } from "../config.js";
+import { Player } from "./Player.js";
+import { Song } from "./Song.js";
 
 
 export class NowPlayingMsgManager {

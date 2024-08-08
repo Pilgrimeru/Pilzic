@@ -1,4 +1,4 @@
-import { i18n } from "../i18n.config";
+import { i18n } from "../i18n.config.js";
 
 export abstract class ExtractionError extends Error {
   constructor(message: string) {

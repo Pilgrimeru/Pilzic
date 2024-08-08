@@ -1,8 +1,8 @@
 import { GuildMember, PermissionsBitField } from "discord.js";
-import { Command, CommandConditions } from "../types/Command";
-import { i18n } from "../i18n.config";
+import { Command, CommandConditions } from "../types/Command.js";
+import { i18n } from "../i18n.config.js";
 
-import { bot } from "../index";
+import { bot } from "../index.js";
 
 export function checkConditions(command: Command, guildMember: GuildMember): string {
   if (!command.conditions) return "passed";

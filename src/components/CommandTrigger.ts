@@ -13,7 +13,7 @@ import {
   MessageComponentInteraction,
   Snowflake
 } from "discord.js";
-import { i18n } from "../i18n.config";
+import { i18n } from "../i18n.config.js";
 
 export class CommandTrigger {
 

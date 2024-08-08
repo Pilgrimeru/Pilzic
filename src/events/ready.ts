@@ -1,6 +1,6 @@
 import { ActivityType } from "discord.js";
-import { bot } from "../index";
-import { Event } from "../types/Event";
+import { bot } from "../index.js";
+import { Event } from "../types/Event.js";
 
 
 export default new Event("ready", () => {

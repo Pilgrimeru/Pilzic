@@ -2,10 +2,10 @@ import { ApplicationCommandDataResolvable, Client, ClientEvents, Collection, Gat
 import { readdirSync } from "fs";
 import { join } from "path";
 import { getFreeClientID, setToken } from "play-dl";
-import { config } from "../config";
-import { Command } from "../types/Command";
-import { Event } from "../types/Event";
-import { Player } from "./Player";
+import { config } from "../config.js";
+import { Command } from "../types/Command.js";
+import { Event } from "../types/Event.js";
+import { Player } from "./Player.js";
 
 export class Bot extends Client {
 

@@ -1,12 +1,12 @@
 import { EmbedBuilder } from "discord.js";
 import { splitBar } from "string-progressbar";
-import { CommandTrigger } from "../components/CommandTrigger";
-import { config } from "../config";
-import { i18n } from "../i18n.config";
-import { bot } from "../index";
-import { Command, CommandConditions } from "../types/Command";
-import { autoDelete } from "../utils/autoDelete";
-import { formatTime } from "../utils/formatTime";
+import { CommandTrigger } from "../components/CommandTrigger.js";
+import { config } from "../config.js";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
+import { Command, CommandConditions } from "../types/Command.js";
+import { autoDelete } from "../utils/autoDelete.js";
+import { formatTime } from "../utils/formatTime.js";
 
 export default class NowPlayingCommand extends Command {
   constructor() {
