@@ -2,7 +2,7 @@ import { User } from 'discord.js';
 import fetch from 'isomorphic-unfetch';
 import { LRUCache } from 'lru-cache';
 import { DeezerAlbum, DeezerPlaylist, SoundCloudPlaylist, SoundCloudTrack, deezer, soundcloud } from "play-dl";
-import youtube, { Video, Playlist as YoutubePlaylist } from "youtube-sr";
+import { Video, YouTube, Playlist as YoutubePlaylist } from "youtube-sr";
 import { config } from "../config.js";
 import {
   InvalidURLError,
@@ -78,7 +78,7 @@ export class Playlist {
 
   private static async fromYoutube(url: string = "", search: string = ""): Promise<PlaylistData> {
     const YT_LINK = /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))\/.+$/;
-    const urlValid = youtube.isPlaylist(url);
+    const urlValid = YouTube.isPlaylist(url);
     if (url.match(YT_LINK) && !urlValid) {
       throw new YoutubeMixesError();
     }
@@ -86,7 +86,7 @@ export class Playlist {
     try {
       let playlist: YoutubePlaylist;
       if (urlValid) {
-        playlist = await youtube.getPlaylist(url, {
+        playlist = await YouTube.getPlaylist(url, {
           fetchAll: true,
           limit: config.MAX_PLAYLIST_SIZE
         });
@@ -94,8 +94,8 @@ export class Playlist {
           throw new InvalidURLError();
         }
       } else {
-        const result = await youtube.searchOne(search, "playlist", true);
-        playlist = await youtube.getPlaylist(result.url!, {
+        const result = await YouTube.searchOne(search, "playlist", true);
+        playlist = await YouTube.getPlaylist(result.url!, {
           fetchAll: true,
           limit: config.MAX_PLAYLIST_SIZE
         });
@@ -150,7 +150,7 @@ export class Playlist {
 
       const infos: Promise<Video>[] = playlistTracks.map((track: any) => {
         const search = track.artist + " " + track.name;
-        return youtube.searchOne(search, "video", true);
+        return YouTube.searchOne(search, "video", true);
       });
 
       const songs = await Playlist.getSongsFromYoutube(await Promise.all(infos));
@@ -177,7 +177,7 @@ export class Playlist {
 
       const infos: Promise<Video>[] = playlist.tracks.map((track) => {
         const search = track.artist.name + " " + track.title;
-        return youtube.searchOne(search, "video", true);
+        return YouTube.searchOne(search, "video", true);
       });
 
       const songs = await Playlist.getSongsFromYoutube(await Promise.all(infos));

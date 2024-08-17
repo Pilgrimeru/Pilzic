@@ -14,7 +14,7 @@ import {
   video_basic_info,
   yt_validate
 } from "play-dl";
-import youtube from "youtube-sr";
+import { YouTube } from "youtube-sr";
 import ytstream from 'yt-stream';
 import { config } from "../config.js";
 import {
@@ -112,7 +112,7 @@ export class Song {
     if (this.related) return this.related;
     let url = this.url;
     if (yt_validate(url) !== "video") {
-      const songInfo = await youtube.searchOne(this.title, "video", true).catch(console.error);
+      const songInfo = await YouTube.searchOne(this.title, "video", true).catch(console.error);
       if (!songInfo) return [];
       url = songInfo.url;
     }
@@ -210,7 +210,7 @@ export class Song {
         related: songInfo.related_videos
       };
     } else {
-      songInfo = await youtube.searchOne(search, "video", true).catch(console.error);
+      songInfo = await YouTube.searchOne(search, "video", true).catch(console.error);
       if (!songInfo || !songInfo.title) {
         throw new NothingFoundError();
       }
