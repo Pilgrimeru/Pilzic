@@ -124,9 +124,9 @@ export class CommandTrigger {
     if (this.interaction) {
       if (this.interaction instanceof MessageComponentInteraction && !this.interaction.replied && !this.interaction.deferred)
         this.interaction.deferUpdate();
-      return this.interaction.channel!.send(content);
+      return this.channel.send(content);
     } else {
-      return this.message!.channel.send(content);
+      return this.channel.send(content);
     }
   }
 
