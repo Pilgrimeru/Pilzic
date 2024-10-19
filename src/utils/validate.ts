@@ -14,7 +14,7 @@ export async function validate(url: string): Promise<UrlType> {
   const SO_LINK = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/.+$/;
   const SP_LINK = /^https?:\/\/(?:open|play)\.spotify\.com\/?.+/;
   const DZ_LINK = /^https?:\/\/(?:www\.)?(?:deezer\.com|deezer\.page\.link)\/?.+/;
-  const AUDIO_LINK = /^https?:\/\/.+\.(mp3|wav|flac|ogg)$/;
+  const AUDIO_LINK = /https?:\/\/.+\.(mp3|wav|flac|ogg)(\?.*)?$/;
 
   try {
     if (!url.match(/^https?:\/\/\S+$/)) return "yt_search";

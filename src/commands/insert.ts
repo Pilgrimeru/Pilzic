@@ -42,7 +42,7 @@ export default class InsertCommand extends Command {
   }
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    if (!args.length && (commandTrigger.attachments?.size))
+    if (!args.length && !(commandTrigger.attachments?.size))
       return commandTrigger.reply(i18n.__mf("insert.usageReply", { prefix: bot.prefix })).then(autoDelete);
 
     let searchForPlaylist = false;

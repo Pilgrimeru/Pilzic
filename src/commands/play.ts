@@ -44,8 +44,8 @@ export default class PlayCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    if (!args.length && (commandTrigger.attachments?.size))
-      return commandTrigger.reply(i18n.__mf("insert.usageReply", { prefix: bot.prefix })).then(autoDelete);
+    if (!args.length && !(commandTrigger.attachments?.size))
+      return commandTrigger.reply(i18n.__mf("play.usageReply", { prefix: bot.prefix })).then(autoDelete);
 
     let searchForPlaylist = false;
     if (!commandTrigger.isInteraction && args.length >= 2 && args[0].toLowerCase() === "playlist") {
