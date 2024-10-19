@@ -1,0 +1,11 @@
+node_modules
+bun.lockb
+bun
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+README.md
+LICENSE
+config.env.example
+tsconfig.json
