@@ -9,11 +9,14 @@ RUN apk add --no-cache ffmpeg
 # Répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Copier uniquement les fichiers nécessaires (code source et config)
-COPY . .
+# Copier les fichiers de dépendances
+COPY package.json bun.lockb ./
 
 # Installer les dépendances avec Bun (production uniquement)
 RUN bun install --production
+
+# Copier le reste du code
+COPY . .
 
 # Créer un utilisateur non-root pour des raisons de sécurité
 RUN adduser -D appuser
