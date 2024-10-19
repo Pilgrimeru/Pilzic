@@ -2,56 +2,129 @@
 
 ![banner](https://i.imgur.com/y73VY4q.jpg)
 
-**Pilzic** is a feature-rich Discord bot that allows you to play music from various sources, manage your music queue, and enjoy a seamless music experience in your Discord server. Whether you want to listen to tracks from YouTube, Spotify, Soundcloud, Deezer, or direct link, this bot has you covered.
+**Pilzic** is a feature-rich Discord bot designed to provide a seamless music experience in your Discord server. Play tracks from various sources like YouTube, Spotify, SoundCloud, Deezer, and direct links. Manage your music queue effortlessly and enjoy interactive controls with ease.
 
 ## Features 🚀
 
 - 🎵 **Multi-Media Control Buttons:** Easily control your music with interactive buttons.
-- 🌐 **Multi-Language Support:** The bot supports both English and French.
-- 🎶 **Source Variety:** Play music from YouTube, Spotify, Soundcloud, Deezer, and direct links.
-- 📎 **Attachment Playback:** Enjoy the convenience of playing audio attachments.
-- ⏱️ **Automatic Disconnect:** The bot will automatically disconnect if left alone in a voice channel.
-- 🗨️ **Slash Commands and Prefix Commands:** Use either slash commands or traditional prefix commands for ease of use.
-- 🧹 **Auto Message Cleanup:** Automatically remove bot messages for a cleaner chat experience.
-- 💪 **Strongly Typed Code:** The bot is coded in TypeScript for robust and error-free operation.
-- ⚡ **Asynchronous Operations:** Utilizes asynchronous operations extensively for accelerated bot responsiveness.
-- 🤖 **Powered by discord.js and play-dl:** Utilizes popular modules to provide reliable functionality.
+- 🌐 **Multi-Language Support:** Supports both English and French.
+- 🎶 **Source Variety:** Play music from YouTube, Spotify, SoundCloud, Deezer, and direct links.
+- 📎 **Attachment Playback:** Play audio attachments directly.
+- ⏱️ **Automatic Disconnect:** Automatically disconnects if left alone in a voice channel.
+- 🗨️ **Slash Commands and Prefix Commands:** Use either slash commands or traditional prefix commands.
+- 🧹 **Auto Message Cleanup:** Automatically removes bot messages for a cleaner chat.
+- 💪 **Strongly Typed Code:** Coded in TypeScript for robust and error-free operation.
+- ⚡ **Asynchronous Operations:** Ensures accelerated bot responsiveness.
+- 🤖 **Powered by discord.js and play-dl:** Utilizes reliable modules for consistent functionality.
 
-## Prerequisites 📋
+## Getting Started 📋
 
-Before running the bot, make sure you have the following:
+Follow the steps below to set up and run Pilzic. Docker installation is recommended for beginners due to its simplicity and ease of use.
 
-- **Node.js:** Version 16.11.0 or higher.
-- **Discord API Token:** Optionally, enable "Message Content Intent" in Discord Developer Portal.
+### Option 1: Using Docker 🐋 (Recommended)
 
-## Installation 🛠️
+#### Prerequisites
 
-To get started with the bot, follow these steps:
+Before you begin, ensure you have the following installed:
 
-1. Clone this repository to your local machine.
-2. Navigate to the bot's directory and run the following command to install dependencies:
+- **Docker:** Version 20.10 or higher. [Download Docker](https://www.docker.com/get-started)
+- **Discord API Token:** Obtain from the [Discord Developer Portal](https://discord.com/developers/applications).
 
-   ```bash
-   npm install
-   ```
+#### Step 1: Clone the Repository
 
-3. Rename config.env.example to config.env and fill out the values:
-    ```env
-    TOKEN = "" # your discord token
-    MAX_PLAYLIST_SIZE = 500 # Maximum number of music fetches per playlist
-    PREFIX = "!" # Command prefix
-    AUTO_DELETE = true # Set to true to automatically delete bot responses
-    LOCALE = "en" # Language setting, it must exist in the local folder
-    STAY_TIME = 30 # Duration before disconnection when the bot is alone
-    AUDIO_QUALITY = 0 # 0 = minimum, 2 = maximum
-    DEFAULT_VOLUME = 100 # Default volume setting [0;100]
-    MAIN_COLOR = "#69ADC7" # Main color for the bot
-    ```
-4. Start the bot with:
+```bash
+git clone https://github.com/Pilgrimeru/Pilzic.git
+cd Pilzic
+```
+
+#### Step 2: Configure Environment Variables
+
+1. Rename the example configuration file:
 
    ```bash
-   npm start
+   cp config.env.example config.env
    ```
+
+2. Open `config.env` in a text editor and fill in the necessary values:
+
+   ```env
+   TOKEN="your-discord-bot-token" # Your Discord bot token
+   MAX_PLAYLIST_SIZE=500
+   PREFIX="!"
+   AUTO_DELETE=true
+   LOCALE="en"
+   STAY_TIME=30
+   AUDIO_QUALITY=0
+   DEFAULT_VOLUME=100
+   MAIN_COLOR="#69ADC7"
+   ```
+
+   > **Note:** You can also pass the `TOKEN` directly via Docker run command, which will override the value in `config.env`.
+
+#### Step 3: Build the Docker Image
+
+```bash
+docker build -t pilzic .
+```
+
+#### Step 4: Run the Docker Container
+
+```bash
+docker run -d --name pilzic \
+  --restart=always \
+  -e TOKEN="your-discord-bot-token" \
+  pilzic
+```
+
+- **`-e TOKEN="your-discord-bot-token"`**: Passes the Discord token directly.
+- **`--restart=always`**: Ensures the container restarts automatically on system reboot or if it crashes.
+
+#### Step 5: Verify the Bot is Running
+
+Check the logs to ensure the bot started successfully:
+
+```bash
+docker logs -f pilzic
+```
+
+### Option 2: Manual Installation 🛠️
+
+If you prefer not to use Docker, follow these steps:
+
+#### Prerequisites
+
+- **Bun:** Version 1.1.31 or higher. [Install Bun](https://bun.sh/)
+- **FFmpeg:** Required for audio processing. [Download FFmpeg](https://ffmpeg.org/download.html)
+- **Discord API Token:** Obtain from the [Discord Developer Portal](https://discord.com/developers/applications).
+
+#### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/Pilgrimeru/Pilzic.git
+cd Pilzic
+```
+
+#### Step 2: Install Dependencies
+
+```bash
+bun install
+```
+
+#### Step 3: Configure Environment Variables
+
+1. Rename the example configuration file:
+
+   ```bash
+   cp config.env.example config.env
+   ```
+
+2. Open `config.env` in a text editor and fill in the necessary values
+
+#### Step 4: Start the Bot
+
+```bash
+bun start
+```
 
 ## Command List 📜
 
@@ -65,7 +138,7 @@ To get started with the bot, follow these steps:
 - `-jumpto (jump)`: Jump to the selected position in the queue.
 - `-loop (l)`: Loop the currently playing music.
 - `-lyrics (ly)`: Get the lyrics of the currently playing song.
-- `-move (l)`: Move the music to loop.
+- `-move (m)`: Move a song within the queue.
 - `-nowplaying (np)`: Display the currently playing song.
 - `-pause`: Pause the currently playing music.
 - `-ping`: Show the bot's ping.

@@ -1,6 +1,6 @@
 {
   "name": "pilzic",
-  "version": "1.0.0",
+  "version": "2.0",
   "description": "Feature-rich Discord bot that allows you to play music from various sources, manage your music queue, and enjoy a seamless music experience in your Discord server.",
   "main": "./src/index.ts",
   "scripts": {
