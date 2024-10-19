@@ -40,7 +40,7 @@ export default class SeekCommand extends Command {
 
     const currentSong = player.queue.currentSong;
 
-    if (yt_validate(currentSong?.url ?? "") == ! "video") {
+    if (!currentSong || yt_validate(currentSong.url) !== "video") {
       return commandTrigger
         .reply(i18n.__mf("seek.errorSource"))
         .then(autoDelete);
