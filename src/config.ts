@@ -1,5 +1,5 @@
 import { config as dotenvConfig } from 'dotenv';
-import { Config } from './types/Config.js';
+import type { Config } from './types/Config.js';
 
 dotenvConfig({ path: 'config.env' });
 
@@ -26,16 +26,16 @@ function parseEnvColor(value: string | undefined, defaultValue: number): number 
 }
 
 const config: Config = {
-  TOKEN: process.env.TOKEN ?? "",
-  PREFIX: process.env.PREFIX ?? "!",
-  MAX_PLAYLIST_SIZE: parseEnvInt(process.env.MAX_PLAYLIST_SIZE, 10),
-  AUTO_DELETE: Boolean(process.env.AUTO_DELETE),
-  STAY_TIME: parseEnvInt(process.env.STAY_TIME, 30),
-  AUDIO_QUALITY: parseEnvAudioQuality(process.env.AUDIO_QUALITY, 0),
-  DEFAULT_VOLUME: parseEnvInt(process.env.DEFAULT_VOLUME, 100),
-  LOCALE: process.env.LOCALE ?? "en",
+  TOKEN: process.env['TOKEN'] ?? "",
+  PREFIX: process.env['PREFIX'] ?? "!",
+  MAX_PLAYLIST_SIZE: parseEnvInt(process.env['MAX_PLAYLIST_SIZE'], 10),
+  AUTO_DELETE: Boolean(process.env['AUTO_DELETE']),
+  STAY_TIME: parseEnvInt(process.env['STAY_TIME'], 30),
+  AUDIO_QUALITY: parseEnvAudioQuality(process.env['AUDIO_QUALITY'], 0),
+  DEFAULT_VOLUME: parseEnvInt(process.env['DEFAULT_VOLUME'], 100),
+  LOCALE: process.env['LOCALE'] ?? "en",
   COLORS: {
-    MAIN: parseEnvColor(process.env.MAIN_COLOR, 0x69ADC7),
+    MAIN: parseEnvColor(process.env['MAIN_COLOR'], 0x69ADC7),
     PAUSE: 0xC0C0C0
   }
 };

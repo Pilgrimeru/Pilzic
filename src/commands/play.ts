@@ -9,7 +9,7 @@ import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
 import { autoDelete } from "../utils/autoDelete.js";
-import { UrlType, validate } from "../utils/validate.js";
+import { type UrlType, validate } from "../utils/validate.js";
 
 export default class PlayCommand extends Command {
   constructor() {
@@ -81,7 +81,7 @@ export default class PlayCommand extends Command {
         connection: joinVoiceChannel({
           channelId: channel.id,
           guildId: channel.guild.id,
-          adapterCreator: channel.guild.voiceAdapterCreator,
+          adapterCreator: channel.guild.voiceAdapterCreator as any,
         })
       });
       player.queue.enqueue(item);

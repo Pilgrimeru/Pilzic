@@ -3,7 +3,6 @@ import axios from 'axios';
 import { EmbedBuilder, User } from "discord.js";
 import fetch from 'isomorphic-unfetch';
 import { LRUCache } from 'lru-cache';
-import { parseStream } from 'music-metadata';
 import {
   DeezerTrack,
   SoundCloudTrack,
@@ -26,10 +25,11 @@ import {
 } from '../errors/ExtractionErrors.js';
 import { i18n } from "../i18n.config.js";
 import { formatTime } from "../utils/formatTime.js";
-import { UrlType } from "../utils/validate.js";
+import type { UrlType } from "../utils/validate.js";
 import { Bot } from "./Bot.js";
 // @ts-ignore
 import spotifyUrlInfo from 'spotify-url-info';
+import { getExternalStreamInfo } from "../utils/getExternalStreamInfo.js";
 const { getPreview } = spotifyUrlInfo(fetch);
 
 export interface SongData {
@@ -43,10 +43,10 @@ export interface SongData {
 export class Song {
   private static readonly songsDataCache = new LRUCache<string, SongData>({ max: 200 });
 
-  public readonly url: string;
-  public readonly title: string;
-  public readonly duration: number;
-  public readonly thumbnail: string;
+  public readonly url!: string;
+  public readonly title!: string;
+  public readonly duration!: number;
+  public readonly thumbnail!: string;
   public readonly requester: User;
   private related: string[] | undefined;
 
@@ -284,28 +284,14 @@ export class Song {
   }
 
   private static async fromExternalLink(url: string = ""): Promise<SongData> {
-    if (url.startsWith("http") && /\.(mp3|wav|flac|ogg)$/i.test(url)) {
-      const name = url.substring(url.lastIndexOf("/") + 1);
 
-      const response = await axios.get(url, {
-        responseType: 'stream',
-      }).catch(() => null);
-      if (!response) throw new InvalidURLError();
+    const info = await getExternalStreamInfo(url);
 
-      let duration = (await parseStream(response.data, {
-        mimeType: response.headers["content-type"],
-        size: response.headers["content-length"]
-      })).format.duration;
-
-      duration = duration ? Math.floor(duration) * 1000 : 1;
-
-      return {
-        url: url,
-        title: name,
-        duration: duration,
-        thumbnail: null,
-      };
-    }
-    throw new NoDataError();
+    return {
+      url: url,
+      title: info.fileName,
+      duration: info.durationInMs,
+      thumbnail: null,
+    };
   }
 }

@@ -1,21 +1,26 @@
 {
   "compilerOptions": {
-    "strict": true,
-    "outDir": "dist",
-    "module": "ESNext",
+    // Enable latest features
+    "lib": ["ESNext"],
     "target": "ESNext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "useUnknownInCatchVariables": true,
-    "allowUnreachableCode": false,
-    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "allowJs": true,
+
+    // Bundler mode
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    // Best practices
+    "strict": true,
     "skipLibCheck": true,
-    "importHelpers": true,
-    "typeRoots": ["node_modules/@types"],
-    "types": ["node"],
-    "sourceMap": true,
-    "strictPropertyInitialization": false
-  },
-  "include": ["./", "./src/locales/*.json"],
-  "exclude": ["/.github", "./dist", "./node_modules"]
+    "noFallthroughCasesInSwitch": true,
+
+    // Some stricter flags
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": true
+  }
 }

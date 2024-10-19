@@ -1,4 +1,4 @@
-import { GuildBasedChannel, GuildMember, PermissionsBitField } from "discord.js";
+import { type GuildBasedChannel, GuildMember, PermissionsBitField } from "discord.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { checkConditions } from "../utils/checkConditions.js";

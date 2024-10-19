@@ -12,7 +12,7 @@ import { Song } from "./Song.js";
 export class NowPlayingMsgManager {
 
   private msg: Promise<Message> | undefined;
-  private song: Song;
+  private song: Song | undefined;
   private player: Player;
   private state: "play" | "pause";
 
@@ -50,7 +50,7 @@ export class NowPlayingMsgManager {
   }
 
   public async edit(): Promise<void> {
-    if (!this.msg || !(await this.msg).editable) return;
+    if (!this.msg || !(await this.msg).editable || !this.song) return;
     const playerPaused = this.player.status === "paused" || this.player.status === "autopaused";
 
     if (!playerPaused && this.player.status !== "playing") return;

@@ -1,4 +1,4 @@
-import {ApplicationCommandDataResolvable, ApplicationCommandOptionData, PermissionResolvable } from "discord.js";
+import type { ApplicationCommandDataResolvable, ApplicationCommandOptionData, PermissionResolvable } from "discord.js";
 import { CommandTrigger } from "../components/CommandTrigger.js";
 
 export enum CommandConditions {
@@ -16,8 +16,8 @@ type ExtendedCommandDataResolvable = (ApplicationCommandDataResolvable & {
   })
 
 export abstract class Command {
-  public readonly name: string;
-  public readonly description: string;
+  public readonly name!: string;
+  public readonly description!: string;
   public readonly aliases?: string[];
   public readonly permissions?: PermissionResolvable[];
   public readonly options?: ApplicationCommandOptionData[];

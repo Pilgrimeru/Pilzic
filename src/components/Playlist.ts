@@ -11,9 +11,9 @@ import {
   ServiceUnavailableError,
   YoutubeMixesError
 } from '../errors/ExtractionErrors.js';
-import { UrlType } from '../utils/validate.js';
+import type { UrlType } from '../utils/validate.js';
 import { Bot } from './Bot.js';
-import { Song, SongData } from "./Song.js";
+import { Song, type SongData } from "./Song.js";
 // @ts-ignore
 import spotifyUrlInfo from 'spotify-url-info';
 const { getPreview, getTracks } = spotifyUrlInfo(fetch);

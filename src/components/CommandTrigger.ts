@@ -1,17 +1,17 @@
 import {
   Attachment,
   BaseInteraction,
-  BaseMessageOptions,
+  type BaseMessageOptions,
   ButtonInteraction,
   Collection,
   CommandInteraction,
   Guild, GuildMember,
-  GuildTextBasedChannel,
-  InteractionEditReplyOptions,
-  InteractionReplyOptions,
+  type GuildTextBasedChannel,
+  type InteractionEditReplyOptions,
+  type InteractionReplyOptions,
   Message,
   MessageComponentInteraction,
-  Snowflake
+  type Snowflake
 } from "discord.js";
 import { i18n } from "../i18n.config.js";
 

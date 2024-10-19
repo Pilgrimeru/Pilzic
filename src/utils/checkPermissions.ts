@@ -1,4 +1,4 @@
-import { GuildMember, PermissionResolvable } from "discord.js";
+import { GuildMember, type PermissionResolvable } from "discord.js";
 import { Command } from "../types/Command.js";
 
 export function checkPermissions(command: Command, guildMember: GuildMember): string {

@@ -12,7 +12,7 @@ import { BaseGuildTextChannel } from "discord.js";
 import { config } from "../config.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
-import { PlayerOptions } from "../types/PlayerOptions.js";
+import type { PlayerOptions } from "../types/PlayerOptions.js";
 import { autoDelete } from "../utils/autoDelete.js";
 import { formatTime } from "../utils/formatTime.js";
 import { NowPlayingMsgManager } from "./NowPlayingMsgManager.js";
@@ -27,13 +27,13 @@ type jumpCallback = (songId: number) => any;
 
 export class Player {
 
-  public readonly textChannel: BaseGuildTextChannel;
+  public readonly textChannel!: BaseGuildTextChannel;
   public readonly queue: Queue;
 
-  private readonly connection: VoiceConnection;
+  private readonly connection!: VoiceConnection;
   private readonly audioPlayer: AudioPlayer;
   private readonly nowPlayingMsgManager: NowPlayingMsgManager;
-  private resource: AudioResource;
+  private resource: AudioResource | undefined;
 
   private _volume: number;
   private _stopped: boolean;
@@ -170,7 +170,7 @@ export class Player {
   }
 
   public get playbackDuration(): number {
-    return this.resource.playbackDuration;
+    return this.resource?.playbackDuration ?? -1;
   }
 
   public get status(): AudioPlayerStatus {
