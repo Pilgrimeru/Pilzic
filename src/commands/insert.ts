@@ -1,9 +1,9 @@
 import { joinVoiceChannel } from "@discordjs/voice";
 import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from "discord.js";
-import { CommandTrigger } from "../components/CommandTrigger.js";
-import { Player } from "../components/Player.js";
-import { Playlist } from "../components/Playlist.js";
-import { Song } from "../components/Song.js";
+import { CommandTrigger } from "../core/CommandTrigger.js";
+import { Player } from "../core/Player.js";
+import { Playlist } from "../core/Playlist.js";
+import { Track } from "../core/Track.js";
 import { ExtractionError } from "../errors/ExtractionErrors.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
@@ -63,12 +63,12 @@ export default class InsertCommand extends Command {
     const requester: User = commandTrigger.member!.user;
 
     try {
-      let item: Song | Playlist;
+      let item: Track | Playlist;
       if (type.toString().match(/playlist|album|artist/) || (type === "yt_search" && searchForPlaylist)) {
         commandTrigger.editReply(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
         item = (await Playlist.from(search, requester, type));
       } else {
-        item = (await Song.from(search, requester, type));
+        item = (await Track.from(search, requester, type));
       }
       const guildMember = commandTrigger.member!;
       const { channel } = guildMember!.voice;

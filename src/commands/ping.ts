@@ -1,4 +1,4 @@
-import { CommandTrigger } from "../components/CommandTrigger.js";
+import { CommandTrigger } from "../core/CommandTrigger.js";
 import { i18n } from "../i18n.config.js";
 import { Command } from "../types/Command.js";
 import { autoDelete } from "../utils/autoDelete.js";

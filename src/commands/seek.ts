@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType } from "discord.js";
 import { yt_validate } from "play-dl";
-import { CommandTrigger } from "../components/CommandTrigger.js";
+import { CommandTrigger } from "../core/CommandTrigger.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";

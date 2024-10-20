@@ -18,7 +18,7 @@ import { formatTime } from "../utils/formatTime.js";
 import { NowPlayingMsgManager } from "./NowPlayingMsgManager.js";
 import { Playlist } from "./Playlist.js";
 import { Queue } from "./Queue.js";
-import { Song } from "./Song.js";
+import { Track } from "./Track.js";
 
 type skipCallback = () => any;
 type previousCallback = () => any;
@@ -178,7 +178,7 @@ export class Player {
   }
 
 
-  private async process(song: Song, seek?: number): Promise<void> {
+  private async process(song: Track, seek?: number): Promise<void> {
     const loadingMsg = this.textChannel.send(i18n.__("common.loading"));
     try {
       this.resource = await song.makeResource(seek);
@@ -266,7 +266,7 @@ export class Player {
     });
   }
 
-  private sendSongAddedMessage(song: Song): void {
+  private sendSongAddedMessage(song: Track): void {
     const embed = {
       description: i18n.__mf("player.songAdded", {
         title: song.title,

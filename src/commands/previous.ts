@@ -2,7 +2,7 @@ import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
 import { autoDelete } from "../utils/autoDelete.js";
-import { CommandTrigger } from "../components/CommandTrigger.js";
+import { CommandTrigger } from "../core/CommandTrigger.js";
 
 export default class PreviousCommand extends Command {
   constructor() {

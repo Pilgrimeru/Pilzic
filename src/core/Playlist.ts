@@ -13,31 +13,25 @@ import {
 } from '../errors/ExtractionErrors.js';
 import type { UrlType } from '../utils/validate.js';
 import { Bot } from './Bot.js';
-import { Song, type SongData } from "./Song.js";
+import { Track, type SongData } from "./Track.js";
 // @ts-ignore
 import spotifyUrlInfo from 'spotify-url-info';
+import type { PlaylistData } from '../types/extractor/PlaylistData.js';
 const { getPreview, getTracks } = spotifyUrlInfo(fetch);
-
-interface PlaylistData {
-  title: string;
-  url: string;
-  songs: SongData[];
-  duration: number;
-}
 
 export class Playlist {
   private static playlistDataCache = new LRUCache<string, PlaylistData>({ max: 30 });
 
   public readonly title: string;
   public readonly url: string;
-  public readonly songs: Song[];
+  public readonly songs: Track[];
   public readonly duration: number;
 
   private constructor(options: PlaylistData, requester: User) {
     this.title = options.title;
     this.url = options.url;
     this.duration = options.duration;
-    this.songs = options.songs.map((data) => new Song(data, requester));
+    this.songs = options.songs.map((data) => new Track(data, requester));
   }
 
   public static async from(search: string = "", requester: User, type: UrlType): Promise<Playlist> {

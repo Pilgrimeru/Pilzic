@@ -5,7 +5,7 @@ import { checkConditions } from "../utils/checkConditions.js";
 import { checkPermissions } from "../utils/checkPermissions.js";
 import { autoDelete } from "../utils/autoDelete.js";
 import { Event } from "../types/Event.js";
-import { CommandTrigger } from "../components/CommandTrigger.js";
+import { CommandTrigger } from "../core/CommandTrigger.js";
 
 export default new Event("messageCreate", async (message: Message) => {
   

@@ -6,13 +6,13 @@ import {
 } from "discord.js";
 import { config } from "../config.js";
 import { Player } from "./Player.js";
-import { Song } from "./Song.js";
+import { Track } from "./Track.js";
 
 
 export class NowPlayingMsgManager {
 
   private msg: Promise<Message> | undefined;
-  private song: Song | undefined;
+  private song: Track | undefined;
   private player: Player;
   private state: "play" | "pause";
 
@@ -23,7 +23,7 @@ export class NowPlayingMsgManager {
   }
 
 
-  public async send(song: Song): Promise<void> {
+  public async send(song: Track): Promise<void> {
     if (this.msg) await this.delete();
     this.song = song;
     const embed = this.song.playingEmbed();

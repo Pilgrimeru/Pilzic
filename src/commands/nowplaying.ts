@@ -1,6 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { splitBar } from "string-progressbar";
-import { CommandTrigger } from "../components/CommandTrigger.js";
+import { CommandTrigger } from "../core/CommandTrigger.js";
 import { config } from "../config.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";

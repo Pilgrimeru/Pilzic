@@ -1,10 +1,10 @@
 import { arrayMoveImmutable } from 'array-move';
 import { Player } from './Player.js';
 import { Playlist } from "./Playlist.js";
-import { Song } from "./Song.js";
+import { Track } from "./Track.js";
 
 type playlistAddedCallback = (playlist: Playlist) => any;
-type songAddedCallback = (song: Song) => any;
+type songAddedCallback = (song: Track) => any;
 
 export class Queue {
 
@@ -13,7 +13,7 @@ export class Queue {
   private _index: number;
   private _autoqueue: boolean;
   private player: Player;
-  private _songs: Song[] = [];
+  private _songs: Track[] = [];
   private playlistAddedCallbacks: playlistAddedCallback[] = [];
   private songAddedCallbacks: songAddedCallback[] = [];
 
@@ -25,7 +25,7 @@ export class Queue {
     this.setupPlayerListeners();
   }
 
-  public enqueue(item: Song | Playlist): void {
+  public enqueue(item: Track | Playlist): void {
     if (item instanceof Playlist) {
       this._songs = this._songs.concat(item.songs);
       this.playlistAddedCallbacks.forEach(callback => callback(item));
@@ -36,7 +36,7 @@ export class Queue {
     }
   }
 
-  public insert(item: Song | Playlist): void {
+  public insert(item: Track | Playlist): void {
     if (item instanceof Playlist) {
       this._songs.splice(this.index + 1, 0, ...item.songs);
       this.playlistAddedCallbacks.forEach(callback => callback(item));
@@ -68,8 +68,8 @@ export class Queue {
     this._songs = arrayMoveImmutable(this._songs, id1, id2);
   }
 
-  public remove(...idsToRemove: number[]): Song[] {
-    let removed: Song[] = [];
+  public remove(...idsToRemove: number[]): Track[] {
+    let removed: Track[] = [];
     this._songs = this._songs.filter((song, songIndex) => {
       if (idsToRemove.includes(songIndex)) removed.push(song);
       else return true;
@@ -106,11 +106,11 @@ export class Queue {
     return this._index;
   }
 
-  public get songs(): readonly Song[] {
+  public get songs(): readonly Track[] {
     return this._songs;
   }
 
-  public get currentSong(): Song | undefined {
+  public get currentSong(): Track | undefined {
     return this._songs.at(this.index);
   }
 
@@ -156,7 +156,7 @@ export class Queue {
     related_videos = related_videos.filter((url) => !(this._songs.some((existingSong) => existingSong.url === url)));
     if (!related_videos.length) return;
 
-    let relatedSong = await Song.from(related_videos[0], botUser, "yt_video").catch(console.error);
+    let relatedSong = await Track.from(related_videos[0], botUser, "yt_video").catch(console.error);
     if (!relatedSong) return;
     this._songs.push(relatedSong);
   }

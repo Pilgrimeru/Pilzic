@@ -40,7 +40,7 @@ export interface SongData {
   related?: string[];
 }
 
-export class Song {
+export class Track {
   private static readonly songsDataCache = new LRUCache<string, SongData>({ max: 200 });
 
   public readonly url!: string;
@@ -56,34 +56,34 @@ export class Song {
   }
 
 
-  public static async from(search: string, requester: User, type: UrlType): Promise<Song> {
-    const cachedSongData = Song.songsDataCache.get(search);
-    if (cachedSongData) return new Song(cachedSongData, requester);
+  public static async from(search: string, requester: User, type: UrlType): Promise<Track> {
+    const cachedSongData = Track.songsDataCache.get(search);
+    if (cachedSongData) return new Track(cachedSongData, requester);
 
     const url = search.split(" ")[0];
 
     let songData: SongData;
     switch (type) {
       case "sp_track":
-        songData = await Song.fromSpotify(url);
+        songData = await Track.fromSpotify(url);
         break;
       case "so_track":
-        songData = await Song.fromSoundCloud(url);
+        songData = await Track.fromSoundCloud(url);
         break;
       case "dz_track":
-        songData = await Song.fromDeezer(url);
+        songData = await Track.fromDeezer(url);
         break;
       case "audio":
-        songData = await Song.fromExternalLink(url);
+        songData = await Track.fromExternalLink(url);
         break;
       default: {
         if (!type && url?.match(/^https?:\/\/\S+$/)) throw new InvalidURLError();
-        songData = await Song.fromYoutube(url, search);
+        songData = await Track.fromYoutube(url, search);
         break;
       }
     }
-    Song.songsDataCache.set(search, songData);
-    return new Song(songData, requester);
+    Track.songsDataCache.set(search, songData);
+    return new Track(songData, requester);
   }
 
   public formatedTime(): string {
@@ -121,7 +121,7 @@ export class Song {
     return info.related_videos;
   }
 
-  public async makeResource(seek?: number): Promise<AudioResource<Song>> {
+  public async makeResource(seek?: number): Promise<AudioResource<Track>> {
     let stream;
     let type: StreamType;
 
@@ -257,7 +257,7 @@ export class Song {
     }
     if (!data.type) throw new NoDataError();
     const search = data.artist + " " + data.track;
-    return await Song.fromYoutube("", search);
+    return await Track.fromYoutube("", search);
   }
 
   private static async fromDeezer(url: string = ""): Promise<SongData> {
@@ -280,7 +280,7 @@ export class Song {
       throw new NoDataError();
     }
     let search = track.artist.name + " " + track.title;
-    return await Song.fromYoutube("", search);
+    return await Track.fromYoutube("", search);
   }
 
   private static async fromExternalLink(url: string = ""): Promise<SongData> {

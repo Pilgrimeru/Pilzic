@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
 import youtube, { Playlist, Video } from "youtube-sr";
-import { CommandTrigger } from "../components/CommandTrigger.js";
+import { CommandTrigger } from "../core/CommandTrigger.js";
 import { config } from "../config.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";

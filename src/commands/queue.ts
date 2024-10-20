@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild, Message } from "discord.js";
-import { CommandTrigger } from "../components/CommandTrigger.js";
-import { Song } from "../components/Song.js";
+import { CommandTrigger } from "../core/CommandTrigger.js";
+import { Track } from "../core/Track.js";
 import { config } from "../config.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
@@ -94,7 +94,7 @@ export default class QueueCommand extends Command {
   }
 }
 
-function generateQueueEmbed(guild: Guild, followingSongs: Song[], previousSongs: Song[]): EmbedBuilder[] {
+function generateQueueEmbed(guild: Guild, followingSongs: Track[], previousSongs: Track[]): EmbedBuilder[] {
   let embeds: EmbedBuilder[] = [];
 
   function buildEmbed(info: string): EmbedBuilder {
@@ -109,7 +109,7 @@ function generateQueueEmbed(guild: Guild, followingSongs: Song[], previousSongs:
   }
 
   previousSongs.reverse();
-  let current: Song[];
+  let current: Track[];
   for (let i = 0; i < previousSongs.length; i += 10) {
     current = previousSongs.slice(i, i + 10);
     let j = -i - 1;
