@@ -1,26 +1,26 @@
-import { LinkExtractor } from './LinkExtractor';
 import fetch from 'isomorphic-unfetch';
+import { sp_validate } from 'play-dl';
+import { InvalidURLError, NoDataError, ServiceUnavailableError } from '../../errors/ExtractionErrors';
+import type { PlaylistData } from '../../types/extractor/PlaylistData';
+import type { TrackData } from '../../types/extractor/TrackData';
+import { Bot } from '../Bot';
+import { LinkExtractor } from './abstract/LinkExtractor';
 // @ts-ignore
 import spotifyUrlInfo from 'spotify-url-info';
-import { InvalidURLError, ServiceUnavailableError, NoDataError } from '../../errors/ExtractionErrors';
-import { Bot } from '../Bot';
-import type { TrackData } from '../../types/extractor/TrackData';
-import type { PlaylistData } from '../../types/extractor/PlaylistData';
-import { sp_validate } from 'play-dl';
-import YouTube, { Video } from 'youtube-sr';
+import { DataFinder } from '../helpers/DataFinder';
 const { getPreview, getTracks } = spotifyUrlInfo(fetch);
 
 
-export class SpotifyExtractor extends LinkExtractor {
+export class SpotifyLinkExtractor extends LinkExtractor {
   private static readonly SP_LINK = /^https?:\/\/(?:open|play)\.spotify\.com\/?.+/;
   private static readonly SP_ARTIST = /^https?:\/\/(?:open|play)\.spotify\.com\/artist\/?.+/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
-    if (url.match(SpotifyExtractor.SP_LINK)) {
+    if (url.match(SpotifyLinkExtractor.SP_LINK)) {
       let result = sp_validate(url);
       if (result == "search") return false;
       if (result == "album") return "playlist";
-      if (url.match(SpotifyExtractor.SP_ARTIST)) return "playlist";
+      if (url.match(SpotifyLinkExtractor.SP_ARTIST)) return "playlist";
       return result;
     }
     return false;
@@ -43,6 +43,7 @@ export class SpotifyExtractor extends LinkExtractor {
     }
     if (!data.type) throw new NoDataError();
     const search = data.artist + " " + data.track;
+    return DataFinder.searchTrackData(search);
   }
 
   protected async extractPlaylist(): Promise<PlaylistData> {
@@ -50,15 +51,15 @@ export class SpotifyExtractor extends LinkExtractor {
       let playlistPreview = await getPreview(this.url, { headers: { 'user-agent': Bot.useragent } });
       let playlistTracks = await getTracks(this.url, { headers: { 'user-agent': Bot.useragent } });
 
-      const infos: Promise<Video>[] = playlistTracks.map((track: any) => {
+      const promiseTracksData: Promise<TrackData>[] = playlistTracks.map((track: any) => {
         const search = track.artist + " " + track.name;
-        return YouTube.searchOne(search, "video", true);
+        return DataFinder.searchTrackData(search);
       });
 
-      const songs = await SpotifyExtractor.getTracksDataFromYoutube(await Promise.all(infos));
-      const duration = songs.reduce((total, song) => total + song.duration, 0);
+      const tracks = await Promise.all(promiseTracksData);
+      const duration = tracks.reduce((total, track) => total + track.duration, 0);
 
-      return { title: playlistPreview.title, url: playlistPreview.link, songs, duration };
+      return { title: playlistPreview.title, url: playlistPreview.link, tracks: tracks, duration };
     } catch (error: any) {
       if (error.message?.includes("parse")) {
         throw new InvalidURLError();

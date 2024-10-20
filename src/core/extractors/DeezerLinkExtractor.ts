@@ -1,16 +1,16 @@
-import YouTube, { Video } from 'youtube-sr';
-import { InvalidURLError, NoDataError, ServiceUnavailableError } from '../../errors/ExtractionErrors';
-import { LinkExtractor } from './LinkExtractor';
+import axios from 'axios';
 import { deezer, DeezerAlbum, DeezerPlaylist, DeezerTrack } from 'play-dl';
+import { InvalidURLError, NoDataError, ServiceUnavailableError } from '../../errors/ExtractionErrors';
 import type { PlaylistData } from '../../types/extractor/PlaylistData';
 import type { TrackData } from '../../types/extractor/TrackData';
-import axios from 'axios';
+import { DataFinder } from '../helpers/DataFinder';
+import { LinkExtractor } from './abstract/LinkExtractor';
 
-export class DeezerExtractor extends LinkExtractor {
+export class DeezerLinkExtractor extends LinkExtractor {
   private static readonly DZ_LINK = /^https?:\/\/(?:www\.)?(?:deezer\.com|deezer\.page\.link)\/?.+/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
-    if (url.match(DeezerExtractor.DZ_LINK)) {
+    if (url.match(DeezerLinkExtractor.DZ_LINK)) {
       let r = await axios.head(url).catch(() => null);
       if (!r) return false;
       let patch = r.request?.socket?._httpMessage?.path;
@@ -20,10 +20,6 @@ export class DeezerExtractor extends LinkExtractor {
       if (patch.match(/^\/(?:\w{2})\/playlist/)) return "playlist";
     }
     return false;
-  }
-
-  public static getType(url: string): 'track' | 'playlist' {
-    return url.includes('/playlist/') ? 'playlist' : 'track';
   }
 
   protected async extractTrack(): Promise<TrackData> {
@@ -46,8 +42,7 @@ export class DeezerExtractor extends LinkExtractor {
       throw new NoDataError();
     }
     let search = track.artist.name + " " + track.title;
-    const searchExtractor = this.getSearchExtractor(search, "track");
-    return searchExtractor.extract() as any;
+    return DataFinder.searchTrackData(search);
   }
 
   protected async extractPlaylist(): Promise<PlaylistData> {
@@ -59,15 +54,15 @@ export class DeezerExtractor extends LinkExtractor {
       }
       playlist = (playlist as DeezerPlaylist | DeezerAlbum);
 
-      const infos: Promise<Video>[] = playlist.tracks.map((track) => {
-        const search = track.artist.name + " " + track.title;
-        return YouTube.searchOne(search, "video", true);
+      const promiseTracksData: Promise<TrackData>[] = playlist.tracks.map((track: any) => {
+        const search = track.artist + " " + track.name;
+        return DataFinder.searchTrackData(search);
       });
 
-      const songs = await DeezerExtractor.getTracksDataFromYoutube(await Promise.all(infos));
-      const duration = songs.reduce((total, song) => total + song.duration, 0);
+      const tracks = await Promise.all(promiseTracksData);
+      const duration = tracks.reduce((total, track) => total + track.duration, 0);
 
-      return { title: playlist.title, url: playlist.url, songs, duration };
+      return { title: playlist.title, url: playlist.url, tracks, duration };
     } catch (error: any) {
       if (error.message?.includes("not a Deezer")) {
         throw new InvalidURLError();

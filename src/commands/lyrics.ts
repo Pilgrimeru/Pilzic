@@ -3,8 +3,8 @@ import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 // @ts-ignore
 import lyricsFinder from "lyrics-finder";
-import { CommandTrigger } from "../core/CommandTrigger.js";
 import { config } from "../config.js";
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
 import { Command, CommandConditions } from "../types/Command.js";
 import { autoDelete } from "../utils/autoDelete.js";
 export default class LyricsCommand extends Command {
@@ -30,7 +30,7 @@ export default class LyricsCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    const player = bot.players.get(commandTrigger.guild.id)!;
+    const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     const title = args.length === 0 ? player.queue.currentSong!.title : args.join(" ");
 

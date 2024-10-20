@@ -1,8 +1,8 @@
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
 import { autoDelete } from "../utils/autoDelete.js";
-import { CommandTrigger } from "../core/CommandTrigger.js";
 
 export default class PreviousCommand extends Command {
   constructor() {
@@ -17,7 +17,7 @@ export default class PreviousCommand extends Command {
   }
 
   async execute(commandTrigger: CommandTrigger) {
-    const player = bot.players.get(commandTrigger.guild.id)!;
+    const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     if (!player.queue.canBack()) {
       return commandTrigger.reply(i18n.__mf("previous.error")).then(autoDelete);

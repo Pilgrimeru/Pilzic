@@ -1,15 +1,11 @@
-import { joinVoiceChannel } from "@discordjs/voice";
 import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from "discord.js";
-import { CommandTrigger } from "../core/CommandTrigger.js";
-import { Player } from "../core/Player.js";
-import { Playlist } from "../core/Playlist.js";
-import { Track } from "../core/Track.js";
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
+import { ExtractorFactory } from "../core/helpers/ExtractorFactory.js";
 import { ExtractionError } from "../errors/ExtractionErrors.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
 import { autoDelete } from "../utils/autoDelete.js";
-import { type UrlType, validate } from "../utils/validate.js";
 
 export default class InsertCommand extends Command {
   constructor() {
@@ -58,30 +54,22 @@ export default class InsertCommand extends Command {
 
     commandTrigger.loadingReply();
 
-    const search = (commandTrigger.attachments && !args.length) ? commandTrigger.attachments.first()?.url! : args.join(" ");
-    const type: UrlType = await validate(search);
+    const query = (commandTrigger.attachments && !args.length) ? commandTrigger.attachments.first()?.url! : args.join(" ");
     const requester: User = commandTrigger.member!.user;
 
     try {
-      let item: Track | Playlist;
-      if (type.toString().match(/playlist|album|artist/) || (type === "yt_search" && searchForPlaylist)) {
+      let extractor = await ExtractorFactory.createExtractor(query, searchForPlaylist ? "playlist" : "track");
+      if (extractor.type === "playlist") {
         commandTrigger.editReply(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
-        item = (await Playlist.from(search, requester, type));
-      } else {
-        item = (await Track.from(search, requester, type));
       }
+      
+      let item = await extractor.extractAndBuild(requester);
       const guildMember = commandTrigger.member!;
       const { channel } = guildMember!.voice;
       if (!channel) return;
-      const player = bot.players.get(commandTrigger.guild.id) ?? new Player({
-        textChannel: (commandTrigger.channel as BaseGuildTextChannel),
-        connection: joinVoiceChannel({
-          channelId: channel.id,
-          guildId: channel.guild.id,
-          adapterCreator: channel.guild.voiceAdapterCreator as any,
-        })
-      });
-      player.queue.insert(item);
+      
+      bot.playerManager.enqueue(item, commandTrigger.channel as BaseGuildTextChannel, channel)
+
       commandTrigger.deleteReply();
     } catch (error) {
       if (error instanceof ExtractionError) {

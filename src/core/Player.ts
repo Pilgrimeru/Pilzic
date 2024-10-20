@@ -15,7 +15,7 @@ import { bot } from "../index.js";
 import type { PlayerOptions } from "../types/PlayerOptions.js";
 import { autoDelete } from "../utils/autoDelete.js";
 import { formatTime } from "../utils/formatTime.js";
-import { NowPlayingMsgManager } from "./NowPlayingMsgManager.js";
+import { NowPlayingMsgManager } from "./managers/NowPlayingMsgManager.js";
 import { Playlist } from "./Playlist.js";
 import { Queue } from "./Queue.js";
 import { Track } from "./Track.js";
@@ -47,7 +47,6 @@ export class Player {
     Object.assign(this, options);
     this._stopped = true;
     this._volume = config.DEFAULT_VOLUME;
-    bot.players.set(this.textChannel.guildId, this);
 
     this.queue = new Queue(this);
     this.nowPlayingMsgManager = new NowPlayingMsgManager(this);
@@ -142,7 +141,7 @@ export class Player {
       this.connection.destroy();
       this.textChannel.send(i18n.__("player.leaveChannel")).then(autoDelete);
     }
-    bot.players.delete(this.textChannel.guildId);
+    bot.playerManager.removePlayer(this.textChannel.guildId);
   }
 
   public onSkip(callback: skipCallback) {
@@ -282,7 +281,7 @@ export class Player {
       description: i18n.__mf("player.playlistAdded", {
         title: playlist.title,
         url: playlist.url,
-        length: playlist.songs.length,
+        length: playlist.tracks.length,
         duration: formatTime(playlist.duration)
       }),
       color: config.COLORS.MAIN

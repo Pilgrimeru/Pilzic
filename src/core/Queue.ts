@@ -2,6 +2,7 @@ import { arrayMoveImmutable } from 'array-move';
 import { Player } from './Player.js';
 import { Playlist } from "./Playlist.js";
 import { Track } from "./Track.js";
+import { DataFinder } from './helpers/DataFinder.js';
 
 type playlistAddedCallback = (playlist: Playlist) => any;
 type songAddedCallback = (song: Track) => any;
@@ -27,7 +28,7 @@ export class Queue {
 
   public enqueue(item: Track | Playlist): void {
     if (item instanceof Playlist) {
-      this._songs = this._songs.concat(item.songs);
+      this._songs = this._songs.concat(item.tracks);
       this.playlistAddedCallbacks.forEach(callback => callback(item));
 
     } else {
@@ -38,7 +39,7 @@ export class Queue {
 
   public insert(item: Track | Playlist): void {
     if (item instanceof Playlist) {
-      this._songs.splice(this.index + 1, 0, ...item.songs);
+      this._songs.splice(this.index + 1, 0, ...item.tracks);
       this.playlistAddedCallbacks.forEach(callback => callback(item));
     } else {
       this._songs.splice(this.index + 1, 0, item);
@@ -156,8 +157,10 @@ export class Queue {
     related_videos = related_videos.filter((url) => !(this._songs.some((existingSong) => existingSong.url === url)));
     if (!related_videos.length) return;
 
-    let relatedSong = await Track.from(related_videos[0], botUser, "yt_video").catch(console.error);
-    if (!relatedSong) return;
+    const trackData = await DataFinder.getTrackDataFromLink(related_videos[0]).catch(console.error);
+    if (!trackData) return;
+
+    let relatedSong = Track.from(trackData, botUser);
     this._songs.push(relatedSong);
   }
 }

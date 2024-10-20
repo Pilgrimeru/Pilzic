@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType } from "discord.js";
-import { CommandTrigger } from "../core/CommandTrigger.js";
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
@@ -28,7 +28,7 @@ export default class VolumeCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    const player = bot.players.get(commandTrigger.guild!.id)!;
+    const player = bot.playerManager.getPlayer(commandTrigger.guild!.id)!;
 
     if (!args[0])
       return commandTrigger.reply(i18n.__mf("volume.currentVolume", { volume: player.volume })).then(autoDelete);

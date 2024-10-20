@@ -1,15 +1,16 @@
-import { LinkExtractor } from './LinkExtractor';
 import { so_validate, soundcloud, SoundCloudPlaylist, SoundCloudTrack } from 'play-dl';
+import { config } from '../../config';
 import { InvalidURLError, NoDataError, ServiceUnavailableError } from '../../errors/ExtractionErrors';
-import type { TrackData } from '../../types/extractor/TrackData';
 import type { PlaylistData } from '../../types/extractor/PlaylistData';
+import type { TrackData } from '../../types/extractor/TrackData';
+import { LinkExtractor } from './abstract/LinkExtractor';
 
-export class SoundCloudExtractor extends LinkExtractor {
+export class SoundCloudLinkExtractor extends LinkExtractor {
 
   private static readonly SO_LINK = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/.+$/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
-    if (url.match(SoundCloudExtractor.SO_LINK)) {
+    if (url.match(SoundCloudLinkExtractor.SO_LINK)) {
       let result = await so_validate(url);
       if (result == "search") return false;
       return result;
@@ -41,7 +42,7 @@ export class SoundCloudExtractor extends LinkExtractor {
     try {
       let tracks: SoundCloudTrack[] = [];
 
-      let playlist = await soundcloud(url);
+      let playlist = await soundcloud(this.url);
       if (!playlist) {
         throw new NoDataError();
       }
@@ -50,10 +51,10 @@ export class SoundCloudExtractor extends LinkExtractor {
         tracks = await (playlist as SoundCloudPlaylist).all_tracks();
       }
 
-      const songs = await SoundCloudExtractor.getTracksDataFromSoundCloud(tracks);
+      const songs = await SoundCloudLinkExtractor.buildTracksData(tracks);
       const duration = songs.reduce((total, song) => total + song.duration, 0);
 
-      return { title: playlist.name, this.url, songs, duration };
+      return { title: playlist.name, url: this.url, tracks: songs, duration };
     } catch (error: any) {
       if (error.message?.includes("out of scope")) {
         throw new InvalidURLError();
@@ -62,5 +63,18 @@ export class SoundCloudExtractor extends LinkExtractor {
       }
       throw error;
     }
+  }
+
+  protected static async buildTracksData(tracks: SoundCloudTrack[]): Promise<TrackData[]> {
+    if (!tracks.length) {
+      throw new NoDataError();
+    }
+
+    return tracks.slice(0, config.MAX_PLAYLIST_SIZE - 1).map((track) => ({
+      url: track.permalink,
+      title: track.name,
+      duration: track.durationInMs,
+      thumbnail: track.thumbnail,
+    }));
   }
 }

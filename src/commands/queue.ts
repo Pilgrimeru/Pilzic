@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild, Message } from "discord.js";
-import { CommandTrigger } from "../core/CommandTrigger.js";
-import { Track } from "../core/Track.js";
 import { config } from "../config.js";
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
+import { Track } from "../core/Track.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
@@ -20,7 +20,7 @@ export default class QueueCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    const player = bot.players.get(commandTrigger.guild.id)!;
+    const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
     player.queue.songs.slice(player.queue.index);
 
     const followingSongs = player.queue.songs.slice(player.queue.index);

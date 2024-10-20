@@ -11,7 +11,7 @@ export default new Event("voiceStateUpdate", async (voice: VoiceState) => {
         (member) => !member.user.bot
       );
       if (nbUser?.size === 0) {
-        const player = bot.players.get(voice.guild.id);
+        const player = bot.playerManager.getPlayer(voice.guild.id);
         player?.leave();
       }
     }

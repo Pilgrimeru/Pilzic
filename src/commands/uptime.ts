@@ -1,4 +1,4 @@
-import { CommandTrigger } from "../core/CommandTrigger.js";
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command } from "../types/Command.js";

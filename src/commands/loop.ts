@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle } from "discord.js";
-import { CommandTrigger } from "../core/CommandTrigger.js";
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
@@ -33,7 +33,7 @@ export default class LoopCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    const player = bot.players.get(commandTrigger.guild.id)!;
+    const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     if (args.length >= 1) {
       if (args[0] === "queue" || args[0] === "track" || args[0] === "disabled") {

@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType } from "discord.js";
-import { CommandTrigger } from "../core/CommandTrigger.js";
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
@@ -37,7 +37,7 @@ export default class MoveCommand extends Command {
     if (!args.length || isNaN(Number(args[0])) || Number(args[0]) < 1)
       return commandTrigger.reply(i18n.__mf("move.usagesReply", { prefix: bot.prefix })).then(autoDelete);
 
-    const player = bot.players.get(commandTrigger.guild.id)!;
+    const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     const pos1 = Number(args[0]);
     let pos2 = !args[1] ? player.queue.index + 1 : Number(args[1]);

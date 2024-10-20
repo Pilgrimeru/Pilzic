@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
 import youtube, { Playlist, Video } from "youtube-sr";
-import { CommandTrigger } from "../core/CommandTrigger.js";
 import { config } from "../config.js";
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
@@ -100,7 +100,7 @@ export default class SearchCommand extends Command {
         .then(async (selectInteraction) => {
           if ((selectInteraction instanceof StringSelectMenuInteraction)) {
             await response.edit({ content: i18n.__("search.finished"), components: [] }).catch(console.error);
-            await bot.commands.get("play")!.execute(new CommandTrigger(selectInteraction), selectInteraction.values);
+            await bot.commandManager.executeCommand("play", new CommandTrigger(selectInteraction), selectInteraction.values)
             config.AUTO_DELETE && autoDelete(response);
           }
         });

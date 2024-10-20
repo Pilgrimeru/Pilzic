@@ -1,4 +1,4 @@
-import { CommandTrigger } from "../core/CommandTrigger.js";
+import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
@@ -19,7 +19,7 @@ export default class ResumeCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger) {
 
-    const player = bot.players.get(commandTrigger.guild.id)!;
+    const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
     if (player.status !== "autopaused" && player.status !== "paused") {
       return commandTrigger.reply(i18n.__mf("resume.error")).then(autoDelete);
     }
