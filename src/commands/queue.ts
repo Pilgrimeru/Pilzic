@@ -21,10 +21,10 @@ export default class QueueCommand extends Command {
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
-    player.queue.songs.slice(player.queue.index);
+    player.queue.tracks.slice(player.queue.index);
 
-    const followingSongs = player.queue.songs.slice(player.queue.index);
-    const previousSongs = player.queue.songs.slice(0, player.queue.index);
+    const followingSongs = player.queue.tracks.slice(player.queue.index);
+    const previousSongs = player.queue.tracks.slice(0, player.queue.index);
 
     const embeds = generateQueueEmbed(commandTrigger.guild, followingSongs, previousSongs);
 

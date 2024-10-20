@@ -43,12 +43,12 @@ export default class MoveCommand extends Command {
     let pos2 = !args[1] ? player.queue.index + 1 : Number(args[1]);
     if (isNaN(pos2)) pos2 = player.queue.index + 1;
 
-    const song = player.queue.songs[pos1];
+    const track = player.queue.tracks[pos1];
     player.queue.move((pos1 + player.queue.index), (pos2 + player.queue.index));
 
     commandTrigger.reply(
       i18n.__mf("move.result", {
-        title: song.title,
+        title: track.title,
         index: pos2
       })
     ).then(autoDelete);

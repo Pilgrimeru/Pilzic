@@ -12,7 +12,7 @@ import { Track } from "../Track.js";
 export class NowPlayingMsgManager {
 
   private msg: Promise<Message> | undefined;
-  private song: Track | undefined;
+  private track: Track | undefined;
   private player: Player;
   private state: "play" | "pause";
 
@@ -23,10 +23,10 @@ export class NowPlayingMsgManager {
   }
 
 
-  public async send(song: Track): Promise<void> {
+  public async send(track: Track): Promise<void> {
     if (this.msg) await this.delete();
-    this.song = song;
-    const embed = this.song.playingEmbed();
+    this.track = track;
+    const embed = this.track.playingEmbed();
     this.msg = this.player.textChannel.send({
       embeds: [embed.setTitle(`▶  ${embed.data.title}`)],
       components: [this.buildButtons()]
@@ -50,7 +50,7 @@ export class NowPlayingMsgManager {
   }
 
   public async edit(): Promise<void> {
-    if (!this.msg || !(await this.msg).editable || !this.song) return;
+    if (!this.msg || !(await this.msg).editable || !this.track) return;
     const playerPaused = this.player.status === "paused" || this.player.status === "autopaused";
 
     if (!playerPaused && this.player.status !== "playing") return;
@@ -61,7 +61,7 @@ export class NowPlayingMsgManager {
     const emoji = playerPaused ? "❚❚" : "▶";
     this.state = playerPaused ? "pause" : "play";
 
-    const embed = this.song.playingEmbed().setColor(color);
+    const embed = this.track.playingEmbed().setColor(color);
     embed.setTitle(`${emoji}  ${embed.data.title}`);
 
     (await this.msg).edit({

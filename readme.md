@@ -133,24 +133,24 @@ bun start
 
 - `-autoplay`: Enable automatic queue filling.
 - `-help (h)`: Display all available commands and their descriptions.
-- `-insert`: Add a song to the beginning of the queue.
+- `-insert`: Add a track to the beginning of the queue.
 - `-invite`: Send the bot's invitation link.
 - `-jumpto (jump)`: Jump to the selected position in the queue.
 - `-loop (l)`: Loop the currently playing music.
-- `-lyrics (ly)`: Get the lyrics of the currently playing song.
-- `-move (m)`: Move a song within the queue.
-- `-nowplaying (np)`: Display the currently playing song.
+- `-lyrics (ly)`: Get the lyrics of the currently playing track.
+- `-move (m)`: Move a track within the queue.
+- `-nowplaying (np)`: Display the currently playing track.
 - `-pause`: Pause the currently playing music.
 - `-ping`: Show the bot's ping.
 - `-play (p)`: Listen to music from YouTube and other sources.
 - `-previous`: Go back in the playback queue.
-- `-queue (q)`: Display the playback queue and the currently playing song.
-- `-remove (rm)`: Remove a song from the queue.
+- `-queue (q)`: Display the playback queue and the currently playing track.
+- `-remove (rm)`: Remove a track from the queue.
 - `-resume (r)`: Resume playback of the paused music.
 - `-search (sh)`: Search and select videos to listen to.
 - `-seek`: Jump to a specific point in the currently playing music.
 - `-shuffle`: Shuffle the queue.
-- `-skip (s)`: Skip the currently playing song.
+- `-skip (s)`: Skip the currently playing track.
 - `-stop`: Stop the music playback.
 - `-uptime (up)`: Check the bot's uptime.
 - `-volume (v)`: Adjust the volume of the currently playing music.

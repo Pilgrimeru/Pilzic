@@ -9,7 +9,7 @@
 		"embedDescription": "List of all commands."
 	},
 	"insert": {
-		"description": "Add a song to the beginning of the queue.",
+		"description": "Add a track to the beginning of the queue.",
 		"usageReply": "Usage: {prefix}insert <Video or audio URL | Video name>",
 		"fetchingPlaylist": "⌛ Fetching playlist...",
 		"options": {
@@ -39,7 +39,7 @@
 		}
 	},
 	"lyrics": {
-		"description": "Get the lyrics of the currently playing song.",
+		"description": "Get the lyrics of the currently playing track.",
 		"lyricsNotFound": "No lyrics found for {title}.",
 		"embedTitle": "{title} - Lyrics",
 		"options": {
@@ -47,7 +47,7 @@
 		}
 	},
 	"move": {
-		"description": "Move songs in the queue.",
+		"description": "Move tracks in the queue.",
 		"usagesReply": "Usage: {prefix}move <From queue index> <To queue index>.",
 		"result": "The track **\"{title}\"** has been moved to position {index} in the queue. ✅",
 		"options": {
@@ -56,7 +56,7 @@
 		}
 	},
 	"nowplaying": {
-		"description": "Display the currently playing song.",
+		"description": "Display the currently playing track.",
 		"embedTitle": "**Now Playing** ♪",
 		"live": " ◉ LIVE",
 		"timeRemaining": "Time remaining: {time}"
@@ -80,19 +80,19 @@
 		}
 	},
 	"previous": {
-		"description": "Go back to the previous song in the playback queue.",
-		"result": "Successfully returned to the previous song. ⏮",
+		"description": "Go back to the previous track in the playback queue.",
+		"result": "Successfully returned to the previous track. ⏮",
 		"error": "Unable to go back, there is no previous music."
 	},
 	"queue": {
-		"description": "Display the queue and the currently playing song.",
+		"description": "Display the queue and the currently playing track.",
 		"currentPage": "Current Page - ",
 		"embedTitle": "Server Queue:\n",
 		"embedCurrentSong": "**Current Track - [{title}]({url})**\n\n{info}",
 		"nothingMore": "There's nothing more after this."
 	},
 	"remove": {
-		"description": "Remove a song from the queue.",
+		"description": "Remove a track from the queue.",
 		"usageReply": "Usage: {prefix}remove <Number in the queue>",
 		"result": "**{title}** has been removed from the queue.",
 		"results": "**{titles}** have been removed from the queue.",
@@ -110,7 +110,7 @@
 		"description": "Search and select videos to listen to.",
 		"usageReply": "Usage: {prefix}{name} <Video name>",
 		"menuNothing": "Nothing selected",
-		"chooseSong": "Choose the song to play.",
+		"chooseSong": "Choose the track to play.",
 		"finished": "Search finished. 🔍",
 		"options": {
 			"search": "The desired search.",
@@ -132,8 +132,8 @@
 		"result": "Queue has been shuffled. 🔀"
 	},
 	"skip": {
-		"description": "Skip the currently playing song.",
-		"result": "Skipped the song. ⏭️"
+		"description": "Skip the currently playing track.",
+		"result": "Skipped the track. ⏭️"
 	},
 	"stop": {
 		"description": "Stop the music.",

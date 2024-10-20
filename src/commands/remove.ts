@@ -54,7 +54,7 @@ export default class RemoveCommand extends Command {
 
       return commandTrigger.reply(
         i18n.__mf("remove.results", {
-          titles: removed.map((song) => song.title).join(",\n")
+          titles: removed.map((track) => track.title).join(",\n")
         })
       ).then(autoDelete);
 

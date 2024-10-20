@@ -5,7 +5,7 @@ import { Track } from "./Track.js";
 import { DataFinder } from './helpers/DataFinder.js';
 
 type playlistAddedCallback = (playlist: Playlist) => any;
-type songAddedCallback = (song: Track) => any;
+type songAddedCallback = (track: Track) => any;
 
 export class Queue {
 
@@ -55,8 +55,8 @@ export class Queue {
   }
 
   public shuffle(): void {
-    let previousSongs = this.songs.slice(0, this.index);
-    let followingSongs = this.songs.slice(this.index);
+    let previousSongs = this.tracks.slice(0, this.index);
+    let followingSongs = this.tracks.slice(this.index);
 
     for (let i = followingSongs.length - 1; i > 1; i--) {
       let j = 1 + Math.floor(Math.random() * i);
@@ -71,8 +71,8 @@ export class Queue {
 
   public remove(...idsToRemove: number[]): Track[] {
     let removed: Track[] = [];
-    this._songs = this._songs.filter((song, songIndex) => {
-      if (idsToRemove.includes(songIndex)) removed.push(song);
+    this._songs = this._songs.filter((track, songIndex) => {
+      if (idsToRemove.includes(songIndex)) removed.push(track);
       else return true;
     });
     return removed;
@@ -107,7 +107,7 @@ export class Queue {
     return this._index;
   }
 
-  public get songs(): readonly Track[] {
+  public get tracks(): readonly Track[] {
     return this._songs;
   }
 
@@ -149,7 +149,7 @@ export class Queue {
   }
 
   private async autoAddNextSong(): Promise<void> {
-    const remainingTracks = this.songs.length - this.index - 1;
+    const remainingTracks = this.tracks.length - this.index - 1;
     if (remainingTracks > 2) return;
     const botUser = this.player.textChannel.guild.members.me?.user!;
 

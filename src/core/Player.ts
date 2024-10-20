@@ -177,16 +177,16 @@ export class Player {
   }
 
 
-  private async process(song: Track, seek?: number): Promise<void> {
+  private async process(track: Track, seek?: number): Promise<void> {
     const loadingMsg = this.textChannel.send(i18n.__("common.loading"));
     try {
-      this.resource = await song.makeResource(seek);
+      this.resource = await track.makeResource(seek);
       if (!this.resource.readable) throw new Error("Resource not readable.");
       this.resource.playbackDuration += (seek ?? 0) * 1000;
       this.resource.volume?.setVolumeLogarithmic(this._volume / 100);
       (await loadingMsg).delete().catch(() => null);
       this.audioPlayer.play(this.resource);
-      await this.nowPlayingMsgManager.send(song);
+      await this.nowPlayingMsgManager.send(track);
     } catch (error) {
       console.error(error);
       (await loadingMsg).delete().catch(() => null);
@@ -220,7 +220,7 @@ export class Player {
 
     this.audioPlayer.on(AudioPlayerStatus.AutoPaused, async () => {
       try {
-        await this.nowPlayingMsgManager.edit();
+        this.nowPlayingMsgManager.edit();
         if (!this._stopped) {
           this.connection.configureNetworking();
         }
@@ -246,8 +246,8 @@ export class Player {
 
   private async setupQueueListeners(): Promise<void> {
 
-    this.queue.onSongAdded(song => {
-      this.sendSongAddedMessage(song);
+    this.queue.onSongAdded(track => {
+      this.sendSongAddedMessage(track);
       if (this._stopped) {
         this._stopped = false;
         const current = this.queue.currentSong;
@@ -265,11 +265,11 @@ export class Player {
     });
   }
 
-  private sendSongAddedMessage(song: Track): void {
+  private sendSongAddedMessage(track: Track): void {
     const embed = {
       description: i18n.__mf("player.songAdded", {
-        title: song.title,
-        url: song.url
+        title: track.title,
+        url: track.url
       }),
       color: config.COLORS.MAIN
     };

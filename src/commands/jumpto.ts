@@ -37,7 +37,7 @@ export default class JumpCommand extends Command {
     const queue = player.queue;
     const position = Number(args[0]);
 
-    if (position < -queue.index || position >= queue.songs.length - queue.index)
+    if (position < -queue.index || position >= queue.tracks.length - queue.index)
       return commandTrigger
         .reply(i18n.__mf("jumpto.errorNotValid"))
         .then(autoDelete);

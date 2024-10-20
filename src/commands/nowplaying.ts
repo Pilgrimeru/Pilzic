@@ -24,29 +24,29 @@ export default class NowPlayingCommand extends Command {
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
-    const song = player.queue.currentSong!;
+    const track = player.queue.currentSong!;
     const seek = player.playbackDuration;
-    const left = song.duration - seek;
+    const left = track.duration - seek;
 
     let nowPlaying = new EmbedBuilder()
       .setTitle(`${player.status === "playing" ? "▶" : "⏸"} ${i18n.__("nowplaying.embedTitle")}`)
-      .setDescription(`[${song.title}](${song.url})`)
+      .setDescription(`[${track.title}](${track.url})`)
       .setColor(config.COLORS.MAIN)
-      .setThumbnail(song.thumbnail);
+      .setThumbnail(track.thumbnail);
 
     nowPlaying.addFields(
       {
         name: "\u200b",
         value: formatTime(seek) +
           " [" +
-          splitBar((song.duration == 0 ? seek : song.duration), seek, 15)[0] +
+          splitBar((track.duration == 0 ? seek : track.duration), seek, 15)[0] +
           "] " +
-          (song.duration == 0 ? i18n.__mf("nowplaying.live") : formatTime(song.duration)),
+          (track.duration == 0 ? i18n.__mf("nowplaying.live") : formatTime(track.duration)),
         inline: false
       }
     );
 
-    if (song.duration >= 1000) {
+    if (track.duration >= 1000) {
       nowPlaying.setFooter({
         text: i18n.__mf("nowplaying.timeRemaining", {
           time: formatTime(left)
