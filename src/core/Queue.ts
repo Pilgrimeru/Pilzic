@@ -29,21 +29,20 @@ export class Queue {
   public enqueue(item: Track | Playlist): void {
     if (item instanceof Playlist) {
       this._songs = this._songs.concat(item.tracks);
-      this.playlistAddedCallbacks.forEach(callback => callback(item));
-
+      this.emiPlaylistAdded(item);
     } else {
       this._songs.push(item);
-      this.songAddedCallbacks.forEach(callback => callback(item));
+      this.emitSongAdded(item)
     }
   }
 
   public insert(item: Track | Playlist): void {
     if (item instanceof Playlist) {
       this._songs.splice(this.index + 1, 0, ...item.tracks);
-      this.playlistAddedCallbacks.forEach(callback => callback(item));
+      this.emiPlaylistAdded(item);
     } else {
       this._songs.splice(this.index + 1, 0, item);
-      this.songAddedCallbacks.forEach(callback => callback(item));
+      this.emitSongAdded(item)
     }
   }
 
@@ -92,6 +91,14 @@ export class Queue {
 
   public onPlaylistAdded(callback: playlistAddedCallback) {
     this.playlistAddedCallbacks.push(callback);
+  }
+
+  public emitSongAdded(track: Track) {
+    this.songAddedCallbacks.forEach(callback => callback(track));
+  }
+
+  public emiPlaylistAdded(playlist: Playlist) {
+    this.playlistAddedCallbacks.forEach(callback => callback(playlist));
   }
 
   public canBack(): boolean {

@@ -1,10 +1,12 @@
 import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
-import youtube, { Playlist, Video } from "youtube-sr";
 import { config } from "../config.js";
 import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
+import { DataFinder } from "../core/helpers/DataFinder.js";
 import { i18n } from "../i18n.config.js";
 import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
+import type { PlaylistData } from "../types/extractor/PlaylistData.js";
+import type { TrackData } from "../types/extractor/TrackData.js";
 import { autoDelete } from "../utils/autoDelete.js";
 
 export default class SearchCommand extends Command {
@@ -55,19 +57,21 @@ export default class SearchCommand extends Command {
       args = args.slice(0, args.length - 1);
     }
 
-    let results: Video[] | Playlist[] = [];
 
     commandTrigger.loadingReply();
-
+    let results: PlaylistData[] | TrackData[];
     try {
-      results = await youtube.search(search, { limit: 10, type: searchMode as any });
+      if (searchMode === "playlist") {
+        results = await DataFinder.searchMultiplePlaylistsData(search, 10)
+      }  else {
+        results = await DataFinder.searchMultipleTracksData(search, 10)
+      }
     } catch (error: any) {
       console.error(error);
       return commandTrigger.reply(i18n.__("errors.command")).then(msg => autoDelete(msg));
     }
 
     const options = results
-      .filter((item) => item.title != undefined && item.title != "Private video" && item.title != "Deleted video")
       .map((item) => {
         return {
           label: item.title ?? "unnamed",

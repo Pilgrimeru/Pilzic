@@ -3,6 +3,6 @@ import { Event } from "../types/Event.js";
 
 export default new Event("interactionCreate", async (interaction) => {
   if (interaction.isChatInputCommand() || interaction.isButton()) {
-    bot.commandManager.handleIntercation(interaction);
+    bot.commandManager.handleInteraction(interaction);
   }
 });

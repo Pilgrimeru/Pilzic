@@ -10,12 +10,22 @@ export class DataFinder {
 
   public static async searchTrackData(query: string): Promise<TrackData> {
     const searchExtractor = new DataFinder.SearchExtractorClass(query, "track");
-    return searchExtractor.extract("track");
+    return searchExtractor.searchTrack();
   }
 
   public static async searchPlaylistData(query: string): Promise<PlaylistData> {
     const searchExtractor = new DataFinder.SearchExtractorClass(query, "playlist");
-    return searchExtractor.extract("playlist");
+    return searchExtractor.searchPlaylist();
+  }
+
+  public static async searchMultipleTracksData(query: string, limit: number): Promise<TrackData[]> {
+    const searchExtractor = new DataFinder.SearchExtractorClass(query, "track");
+    return searchExtractor.searchMultipleTracks(limit);
+  }
+
+  public static async searchMultiplePlaylistsData(query: string, limit: number, fetch: boolean = false ): Promise<PlaylistData[]> {
+    const searchExtractor = new DataFinder.SearchExtractorClass(query, "playlist");
+    return searchExtractor.searchMultiplePlaylists(limit, fetch);
   }
 
   public static async searchData(query: string, type: "track" | "playlist") {
@@ -42,7 +52,7 @@ export class DataFinder {
   }
 
   private static defineSearchSource() {
-    // only a search source so return youtube
+    // only one search source so return youtube
     return YouTubeSearchExtractor
   }
 }

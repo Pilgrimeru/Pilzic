@@ -1,29 +1,27 @@
-# syntax=docker/dockerfile:1
-
-### Étape 1: Utiliser une image légère avec Bun ###
+### Step 1: Use a lightweight image with Bun ###
 FROM oven/bun:alpine AS base
 
-# Installer ffmpeg via apk (Alpine package manager)
+# Install ffmpeg via apk (Alpine package manager)
 RUN apk add --no-cache ffmpeg
 
-# Répertoire de travail dans le conteneur
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copier les fichiers de dépendances
+# Copy dependency files
 COPY package.json bun.lockb ./
 
-# Installer les dépendances avec Bun (production uniquement)
+# Install dependencies with Bun (production only)
 RUN bun install --production
 
-# Copier le reste du code
+# Copy the rest of the code
 COPY . .
 
-# Créer un utilisateur non-root pour des raisons de sécurité
+# Create a non-root user for security purposes
 RUN adduser -D appuser
 USER appuser
 
-# Spécifier l'environnement en mode production
+# Set the environment to production mode
 ENV NODE_ENV=production
 
-# Commande pour démarrer l'application avec Bun
+# Command to start the application with Bun
 CMD ["bun", "start"]

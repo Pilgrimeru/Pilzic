@@ -9,10 +9,9 @@ import { PlayerManager } from "./managers/PlayerManager.js";
 
 export class Bot extends Client {
 
-  public static readonly useragent = "Mozilla/5.0 (Windows NT 11.0; Win64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5653.214 Safari/537.36";
-  public readonly prefix = config.PREFIX;
-  public playerManager = new PlayerManager();
-  public readonly commandManager = new CommandManager();
+  public readonly prefix: string;
+  public playerManager: PlayerManager;
+  public readonly commandManager: CommandManager;
 
   public constructor() {
     super({
@@ -30,21 +29,27 @@ export class Bot extends Client {
         GatewayIntentBits.DirectMessages
       ]
     });
+    this.prefix = config.PREFIX;
+    this.playerManager = new PlayerManager();
+    this.commandManager = new CommandManager();
+
     this.login(config.TOKEN);
+    
     this.on("warn", (info) => console.log("client warn : ", info));
     this.on("error", (e) => console.error("client : ", e));
+
     this.loadEvents();
     this.commandManager.loadCommands();
-    this.soundcloudApiConnect();
-    setToken({ useragent: [Bot.useragent] });
+    this.soundcloudApiConnect();    
   }
 
   private async soundcloudApiConnect(): Promise<void> {
     try {
       const clientID = await getFreeClientID();
       setToken({
+        useragent: [config.USERAGENT],
         soundcloud: {
-          client_id: clientID
+          client_id: clientID,
         }
       });
     } catch (error) {

@@ -4,9 +4,10 @@ export interface Config {
   MAX_PLAYLIST_SIZE: number;
   AUTO_DELETE: boolean;
   STAY_TIME: number;
-  AUDIO_QUALITY: 0 | 1 | 2,
   DEFAULT_VOLUME: number;
   LOCALE: string;
+  CACHE_SIZE: number;
+  USERAGENT: string;
   COLORS: {
     MAIN: number,
     PAUSE: number;

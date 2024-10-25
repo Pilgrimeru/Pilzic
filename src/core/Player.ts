@@ -77,8 +77,7 @@ export class Player {
     }
 
     this.nowPlayingMsgManager.delete();
-    // Send the "skip" request to the queue.
-    this.skipCallbacks.forEach(callback => callback());
+    this.emitSkip()
     const newCurrent = this.queue.currentSong;
     newCurrent ? this.process(newCurrent) : this.stop();
   }
@@ -87,8 +86,7 @@ export class Player {
     if (this._stopped) return;
     this.audioPlayer.pause(true);
     this.nowPlayingMsgManager.delete();
-    // Send the "jump" request to the queue.
-    this.jumpCallbacks.forEach(callback => callback(songId));
+    this.emitJump(songId);
     const newCurrent = this.queue.currentSong;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
@@ -97,8 +95,7 @@ export class Player {
     if (!this.queue.canBack()) return;
     this.audioPlayer.pause(true);
     this.nowPlayingMsgManager.delete();
-    // Send the "previous" request to the queue.
-    this.previousCallbacks.forEach(callback => callback());
+    this.emitPrevious();
     const newCurrent = this.queue.currentSong;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
@@ -156,6 +153,17 @@ export class Player {
     this.previousCallbacks.push(callback);
   }
 
+  private emitSkip() {
+    this.skipCallbacks.forEach(callback => callback());
+  }
+
+  private emitJump(songId: number) {
+    this.jumpCallbacks.forEach(callback => callback(songId));
+  }
+
+  private emitPrevious() {
+    this.previousCallbacks.forEach(callback => callback());
+  }
 
   public get volume(): number {
     return this._volume;

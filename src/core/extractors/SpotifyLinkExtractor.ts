@@ -1,9 +1,9 @@
 import fetch from 'isomorphic-unfetch';
 import { sp_validate } from 'play-dl';
+import { config } from '../../config';
 import { InvalidURLError, NoDataError, ServiceUnavailableError } from '../../errors/ExtractionErrors';
 import type { PlaylistData } from '../../types/extractor/PlaylistData';
 import type { TrackData } from '../../types/extractor/TrackData';
-import { Bot } from '../Bot';
 import { LinkExtractor } from './abstract/LinkExtractor';
 // @ts-ignore
 import spotifyUrlInfo from 'spotify-url-info';
@@ -33,7 +33,7 @@ export class SpotifyLinkExtractor extends LinkExtractor {
   protected async extractTrack(): Promise<TrackData> {
     let data;
     try {
-      data = await getPreview(this.url, { headers: { 'user-agent': Bot.useragent } });
+      data = await getPreview(this.url, { headers: { 'user-agent': config.USERAGENT } });
     } catch (error: any) {
       if (error.message?.includes("parse")) {
         throw new InvalidURLError();
@@ -48,8 +48,8 @@ export class SpotifyLinkExtractor extends LinkExtractor {
 
   protected async extractPlaylist(): Promise<PlaylistData> {
     try {
-      let playlistPreview = await getPreview(this.url, { headers: { 'user-agent': Bot.useragent } });
-      let playlistTracks = await getTracks(this.url, { headers: { 'user-agent': Bot.useragent } });
+      let playlistPreview = await getPreview(this.url, { headers: { 'user-agent': config.USERAGENT } });
+      let playlistTracks = await getTracks(this.url, { headers: { 'user-agent': config.USERAGENT } });
 
       const promiseTracksData: Promise<TrackData>[] = playlistTracks.map((track: any) => {
         const search = track.artist + " " + track.name;

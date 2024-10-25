@@ -27,7 +27,10 @@ export abstract class SearchExtractor extends Extractor {
     }
   }
 
-  protected abstract searchTrack(): Promise<TrackData>;
-  protected abstract searchPlaylist(): Promise<PlaylistData>;
+  public abstract searchTrack(): Promise<TrackData>;
+  public abstract searchPlaylist(): Promise<PlaylistData>;
+
+  public abstract searchMultipleTracks(limit: number): Promise<TrackData[]>;
+  public abstract searchMultiplePlaylists(limit: number, fetch: boolean): Promise<PlaylistData[]>;
 }
   

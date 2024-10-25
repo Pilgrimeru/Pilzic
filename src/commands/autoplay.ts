@@ -21,9 +21,9 @@ export default class AutoplayCommand extends Command {
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
     commandTrigger.loadingReply();
-    const autoqueue = await player.queue.toggleAutoqueue();
+    const autoqueueStatus = await player.queue.toggleAutoqueue();
 
-    const mode = autoqueue ? i18n.__mf("common.enabled") : i18n.__mf("common.disabled");
+    const mode = autoqueueStatus ? i18n.__mf("common.enabled") : i18n.__mf("common.disabled");
     return commandTrigger.editReply(i18n.__mf("autoplay.result", { mode: mode })).then(autoDelete);
   }
 }

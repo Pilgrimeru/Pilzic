@@ -81,7 +81,7 @@ export class Track {
       const response = await getStream(this.url, {
         htmldata: false,
         precache: 15,
-        quality: config.AUDIO_QUALITY
+        quality: 0
       });
       stream = response.stream;
       type = response.type;

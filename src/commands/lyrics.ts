@@ -1,12 +1,13 @@
 import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
-import { i18n } from "../i18n.config.js";
-import { bot } from "../index.js";
-// @ts-ignore
-import lyricsFinder from "lyrics-finder";
 import { config } from "../config.js";
 import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
+import { i18n } from "../i18n.config.js";
+import { bot } from "../index.js";
 import { Command, CommandConditions } from "../types/Command.js";
 import { autoDelete } from "../utils/autoDelete.js";
+// @ts-ignore
+import lyricsFinder from "lyrics-finder";
+
 export default class LyricsCommand extends Command {
   constructor() {
     super({
