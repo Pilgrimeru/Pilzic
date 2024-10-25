@@ -68,7 +68,7 @@ export default class InsertCommand extends Command {
       const { channel } = guildMember!.voice;
       if (!channel) return;
       
-      bot.playerManager.enqueue(item, commandTrigger.channel as BaseGuildTextChannel, channel)
+      bot.playerManager.insert(item, commandTrigger.channel as BaseGuildTextChannel, channel)
 
       commandTrigger.deleteReply();
     } catch (error) {
