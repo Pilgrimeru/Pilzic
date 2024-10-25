@@ -111,12 +111,12 @@ export class CommandManager {
     return permissions.has([PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages]);
   }
 
-  private async hasPermissions(command: Command, member: GuildMember, commandTrigger: CommandTrigger): Promise<boolean> {
+  private hasPermissions(command: Command, member: GuildMember, commandTrigger: CommandTrigger): boolean {
     if (command.conditions) {
       for (const condition of command.conditions) {
         const result = this.evaluateCondition(condition, member);
         if (result !== "passed") {
-          await commandTrigger.reply(result).then(autoDelete);
+          commandTrigger.reply(result).then(autoDelete);
           return false;
         }
       }
@@ -125,7 +125,7 @@ export class CommandManager {
     if (command.permissions) {
       const missing = member.permissions.missing(command.permissions as PermissionResolvable[]);
       if (missing.length) {
-        await commandTrigger.reply(`Missing permissions: ${missing.join(", ")}`).then(autoDelete);
+        commandTrigger.reply(`Missing permissions: ${missing.join(", ")}`).then(autoDelete);
         return false;
       }
     }
