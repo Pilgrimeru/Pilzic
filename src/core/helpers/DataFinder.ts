@@ -1,7 +1,7 @@
-import { InvalidURLError } from '../../errors/ExtractionErrors';
-import type { PlaylistData } from '../../types/extractor/PlaylistData';
-import type { TrackData } from '../../types/extractor/TrackData';
-import { YouTubeSearchExtractor } from '../extractors/YoutubeSearchExtractor';
+import { InvalidURLError } from '@errors/ExtractionErrors';
+import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
+import type { TrackData } from '@custom-types/extractor/TrackData';
+import { YouTubeSearchExtractor } from '@core/extractors/YoutubeSearchExtractor';
 import { ExtractorFactory } from './ExtractorFactory';
 
 export class DataFinder {
@@ -23,7 +23,7 @@ export class DataFinder {
     return searchExtractor.searchMultipleTracks(limit);
   }
 
-  public static async searchMultiplePlaylistsData(query: string, limit: number, fetch: boolean = false ): Promise<PlaylistData[]> {
+  public static async searchMultiplePlaylistsData(query: string, limit: number, fetch: boolean = false): Promise<PlaylistData[]> {
     const searchExtractor = new DataFinder.SearchExtractorClass(query, "playlist");
     return searchExtractor.searchMultiplePlaylists(limit, fetch);
   }
@@ -53,6 +53,6 @@ export class DataFinder {
 
   private static defineSearchSource() {
     // only one search source so return youtube
-    return YouTubeSearchExtractor
+    return YouTubeSearchExtractor;
   }
 }

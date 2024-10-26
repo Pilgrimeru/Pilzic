@@ -21,6 +21,18 @@
     // Some stricter flags
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": true
+    "noPropertyAccessFromIndexSignature": true,
+
+    // Alias configuration
+    "baseUrl": "./src",
+    "paths": {
+      "@commands/*": ["commands/*"],
+      "@core/*": ["core/*"],
+      "@events/*": ["events/*"],
+      "@utils/*": ["utils/*"],
+      "@custom-types/*": ["types/*"],
+      "@locales/*": ["locales/*"],
+      "@errors/*": ["errors/*"]
+    }
   }
 }

@@ -1,8 +1,8 @@
 import { arrayMoveImmutable } from 'array-move';
-import { Player } from './Player.js';
-import { Playlist } from "./Playlist.js";
-import { Track } from "./Track.js";
-import { DataFinder } from './helpers/DataFinder.js';
+import { Player } from './Player';
+import { Playlist } from './Playlist';
+import { Track } from './Track';
+import { DataFinder } from './helpers/DataFinder';
 
 type playlistAddedCallback = (playlist: Playlist) => any;
 type trackAddedCallback = (track: Track) => any;
@@ -32,7 +32,7 @@ export class Queue {
       this.emiPlaylistAdded(item);
     } else {
       this._tracks.push(item);
-      this.emitTrackAdded(item)
+      this.emitTrackAdded(item);
     }
   }
 
@@ -42,7 +42,7 @@ export class Queue {
       this.emiPlaylistAdded(item);
     } else {
       this._tracks.splice(this.index + 1, 0, item);
-      this.emitTrackAdded(item)
+      this.emitTrackAdded(item);
     }
   }
 

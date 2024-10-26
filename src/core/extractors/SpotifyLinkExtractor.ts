@@ -1,17 +1,19 @@
 import fetch from 'isomorphic-unfetch';
 import { sp_validate } from 'play-dl';
-import { config } from '../../config';
-import { InvalidURLError, NoDataError, ServiceUnavailableError } from '../../errors/ExtractionErrors';
-import type { PlaylistData } from '../../types/extractor/PlaylistData';
-import type { TrackData } from '../../types/extractor/TrackData';
+import { config } from 'config';
+import { InvalidURLError, NoDataError, ServiceUnavailableError } from '@errors/ExtractionErrors';
+import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
+import type { TrackData } from '@custom-types/extractor/TrackData';
 import { LinkExtractor } from './abstract/LinkExtractor';
+import { DataFinder } from '@core/helpers/DataFinder';
 // @ts-ignore
 import spotifyUrlInfo from 'spotify-url-info';
-import { DataFinder } from '../helpers/DataFinder';
+
 const { getPreview, getTracks } = spotifyUrlInfo(fetch);
 
 
 export class SpotifyLinkExtractor extends LinkExtractor {
+  
   private static readonly SP_LINK = /^https?:\/\/(?:open|play)\.spotify\.com\/?.+/;
   private static readonly SP_ARTIST = /^https?:\/\/(?:open|play)\.spotify\.com\/artist\/?.+/;
 

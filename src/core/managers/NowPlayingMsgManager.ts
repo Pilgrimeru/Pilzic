@@ -4,10 +4,9 @@ import {
   ButtonStyle,
   Message,
 } from "discord.js";
-import { config } from "../../config.js";
-import { Player } from "../Player.js";
-import { Track } from "../Track.js";
-
+import { config } from 'config';
+import { Player } from '@core/Player';
+import { Track } from '@core/Track';
 
 export class NowPlayingMsgManager {
 
@@ -16,12 +15,10 @@ export class NowPlayingMsgManager {
   private player: Player;
   private state: "play" | "pause";
 
-
   constructor(player: Player) {
     this.player = player;
     this.state = "play";
   }
-
 
   public async send(track: Track): Promise<void> {
     if (this.msg) await this.delete();

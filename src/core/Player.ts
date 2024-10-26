@@ -8,22 +8,21 @@ import {
   createAudioPlayer,
   entersState
 } from "@discordjs/voice";
-import { BaseGuildTextChannel } from "discord.js";
-import { config } from "../config.js";
-import { i18n } from "../i18n.config.js";
-import { bot } from "../index.js";
-import type { PlayerOptions } from "../types/PlayerOptions.js";
-import { autoDelete } from "../utils/autoDelete.js";
-import { formatTime } from "../utils/formatTime.js";
-import { NowPlayingMsgManager } from "./managers/NowPlayingMsgManager.js";
-import { Playlist } from "./Playlist.js";
-import { Queue } from "./Queue.js";
-import { Track } from "./Track.js";
+import { BaseGuildTextChannel } from 'discord.js';
+import { config } from 'config';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import type { PlayerOptions } from "@custom-types/PlayerOptions";
+import { autoDelete } from '@utils/autoDelete';
+import { formatTime } from '@utils/formatTime';
+import { NowPlayingMsgManager } from './managers/NowPlayingMsgManager';
+import { Playlist } from './Playlist';
+import { Queue } from './Queue';
+import { Track } from './Track';
 
 type skipCallback = () => any;
 type previousCallback = () => any;
 type jumpCallback = (trackId: number) => any;
-
 
 export class Player {
 
@@ -41,7 +40,6 @@ export class Player {
   private skipCallbacks: skipCallback[] = [];
   private previousCallbacks: previousCallback[] = [];
   private jumpCallbacks: jumpCallback[] = [];
-
 
   public constructor(options: PlayerOptions) {
     Object.assign(this, options);
@@ -64,7 +62,6 @@ export class Player {
     this.setupQueueListeners();
   }
 
-
   public async skip(): Promise<void> {
     if (this._stopped) return;
     if (!this.queue.canNext()) {
@@ -77,7 +74,7 @@ export class Player {
     }
 
     this.nowPlayingMsgManager.delete();
-    this.emitSkip()
+    this.emitSkip();
     const newCurrent = this.queue.currentTrack;
     newCurrent ? this.process(newCurrent) : this.stop();
   }

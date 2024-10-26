@@ -1,10 +1,9 @@
-import { ActivityType } from "discord.js";
-import { bot } from "../index.js";
-import { Event } from "../types/Event.js";
-
+import { ActivityType } from 'discord.js';
+import { bot } from 'index';
+import { Event } from '@custom-types/Event';
 
 export default new Event("ready", () => {
-  
+
   console.log(`${bot.user!.username} ready!`);
 
   bot.user!.setActivity(`${bot.prefix}help and ${bot.prefix}play`, { type: ActivityType.Listening });

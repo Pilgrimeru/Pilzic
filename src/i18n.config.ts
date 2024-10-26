@@ -1,8 +1,6 @@
 import i18n from 'i18n';
 import path from 'path';
-import { config } from './config.js';
-
-const __dirname = path.dirname(import.meta.filename);
+import { config } from './config';
 
 i18n.configure({
 

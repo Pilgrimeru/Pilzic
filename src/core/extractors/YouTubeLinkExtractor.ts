@@ -1,12 +1,13 @@
 import { video_basic_info, yt_validate } from 'play-dl';
 import YouTube, { Video } from 'youtube-sr';
-import { config } from "../../config.js";
-import { AgeRestrictedError, InvalidURLError, NoDataError, NothingFoundError, ServiceUnavailableError } from '../../errors/ExtractionErrors.js';
-import type { PlaylistData } from '../../types/extractor/PlaylistData.js';
-import type { TrackData } from '../../types/extractor/TrackData.js';
-import { LinkExtractor } from './abstract/LinkExtractor.js';
+import { config } from 'config';
+import { AgeRestrictedError, InvalidURLError, NoDataError, NothingFoundError, ServiceUnavailableError } from '@errors/ExtractionErrors';
+import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
+import type { TrackData } from '@custom-types/extractor/TrackData';
+import { LinkExtractor } from './abstract/LinkExtractor';
 
 export class YouTubeLinkExtractor extends LinkExtractor {
+  
   private static readonly YT_LINK = /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))\/.+$/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {

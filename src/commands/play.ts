@@ -1,11 +1,11 @@
-import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from "discord.js";
-import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
-import { ExtractorFactory } from "../core/helpers/ExtractorFactory.js";
-import { ExtractionError } from "../errors/ExtractionErrors.js";
-import { i18n } from "../i18n.config.js";
-import { bot } from "../index.js";
-import { Command, CommandConditions } from "../types/Command.js";
-import { autoDelete } from "../utils/autoDelete.js";
+import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from 'discord.js';
+import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { ExtractorFactory } from '@core/helpers/ExtractorFactory';
+import { ExtractionError } from '@errors/ExtractionErrors';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { Command, CommandConditions } from '@custom-types/Command';
+import { autoDelete } from '@utils/autoDelete';
 
 export default class PlayCommand extends Command {
 
@@ -40,6 +40,7 @@ export default class PlayCommand extends Command {
   }
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
+    
     if (!args.length && !(commandTrigger.attachments?.size)) {
       return commandTrigger.reply(i18n.__mf("play.usageReply", { prefix: bot.prefix })).then(autoDelete);
     }
@@ -71,7 +72,7 @@ export default class PlayCommand extends Command {
       const { channel } = guildMember!.voice;
       if (!channel) return;
 
-      bot.playerManager.enqueue(item, commandTrigger.channel as BaseGuildTextChannel, channel)
+      bot.playerManager.enqueue(item, commandTrigger.channel as BaseGuildTextChannel, channel);
 
       commandTrigger.deleteReply();
 

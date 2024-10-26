@@ -1,12 +1,13 @@
 import axios from 'axios';
 import { deezer, DeezerAlbum, DeezerPlaylist, DeezerTrack, dz_validate } from 'play-dl';
-import { InvalidURLError, NoDataError, ServiceUnavailableError } from '../../errors/ExtractionErrors';
-import type { PlaylistData } from '../../types/extractor/PlaylistData';
-import type { TrackData } from '../../types/extractor/TrackData';
-import { DataFinder } from '../helpers/DataFinder';
+import { InvalidURLError, NoDataError, ServiceUnavailableError } from '@errors/ExtractionErrors';
+import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
+import type { TrackData } from '@custom-types/extractor/TrackData';
+import { DataFinder } from '@core/helpers/DataFinder';
 import { LinkExtractor } from './abstract/LinkExtractor';
 
 export class DeezerLinkExtractor extends LinkExtractor {
+  
   private static readonly DZ_LINK = /^https?:\/\/(?:www\.)?(?:deezer\.com|deezer\.page\.link)\/?.+/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
@@ -14,11 +15,11 @@ export class DeezerLinkExtractor extends LinkExtractor {
       let response = await axios.head(url).catch(() => null);
 
       if (!response?.request?._redirectable?._options) return false;
-  
+
       let path = response.request._redirectable._options.pathname;
-  
+
       if (!path) return false;
-      
+
       if (path.match(/^\/(?:\w{2})\/track/)) return "track";
       if (path.match(/^\/(?:\w{2})\/album/)) return "playlist";
       if (path.match(/^\/(?:\w{2})\/playlist/)) return "playlist";

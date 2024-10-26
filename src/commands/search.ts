@@ -1,15 +1,16 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
-import { config } from "../config.js";
-import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
-import { DataFinder } from "../core/helpers/DataFinder.js";
-import { i18n } from "../i18n.config.js";
-import { bot } from "../index.js";
-import { Command, CommandConditions } from "../types/Command.js";
-import type { PlaylistData } from "../types/extractor/PlaylistData.js";
-import type { TrackData } from "../types/extractor/TrackData.js";
-import { autoDelete } from "../utils/autoDelete.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
+import { config } from 'config';
+import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { DataFinder } from '@core/helpers/DataFinder';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { Command, CommandConditions } from '@custom-types/Command';
+import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
+import type { TrackData } from "@custom-types/extractor/TrackData";
+import { autoDelete } from '@utils/autoDelete';
 
 export default class SearchCommand extends Command {
+  
   constructor() {
     super({
       name: "search",
@@ -62,9 +63,9 @@ export default class SearchCommand extends Command {
     let results: PlaylistData[] | TrackData[];
     try {
       if (searchMode === "playlist") {
-        results = await DataFinder.searchMultiplePlaylistsData(search, 10)
-      }  else {
-        results = await DataFinder.searchMultipleTracksData(search, 10)
+        results = await DataFinder.searchMultiplePlaylistsData(search, 10);
+      } else {
+        results = await DataFinder.searchMultipleTracksData(search, 10);
       }
     } catch (error: any) {
       console.error(error);
@@ -104,7 +105,7 @@ export default class SearchCommand extends Command {
         .then(async (selectInteraction) => {
           if ((selectInteraction instanceof StringSelectMenuInteraction)) {
             await response.edit({ content: i18n.__("search.finished"), components: [] }).catch(console.error);
-            await bot.commandManager.executeCommand("play", new CommandTrigger(selectInteraction), selectInteraction.values)
+            await bot.commandManager.executeCommand("play", new CommandTrigger(selectInteraction), selectInteraction.values);
             config.AUTO_DELETE && autoDelete(response);
           }
         });

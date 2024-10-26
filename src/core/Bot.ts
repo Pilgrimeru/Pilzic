@@ -1,11 +1,11 @@
-import { Client, type ClientEvents, GatewayIntentBits } from "discord.js";
-import { readdirSync } from "fs";
-import { join } from "path";
-import { getFreeClientID, setToken } from "play-dl";
-import { config } from "../config.js";
-import { Event } from "../types/Event.js";
-import { CommandManager } from "./managers/CommandManager.js";
-import { PlayerManager } from "./managers/PlayerManager.js";
+import { Client, type ClientEvents, GatewayIntentBits } from 'discord.js';
+import { readdirSync } from 'fs';
+import { join } from 'path';
+import { getFreeClientID, setToken } from 'play-dl';
+import { config } from 'config';
+import { Event } from '@custom-types/Event';
+import { CommandManager } from './managers/CommandManager';
+import { PlayerManager } from './managers/PlayerManager';
 
 export class Bot extends Client {
 
@@ -34,13 +34,13 @@ export class Bot extends Client {
     this.commandManager = new CommandManager();
 
     this.login(config.TOKEN);
-    
+
     this.on("warn", (info) => console.log("client warn : ", info));
     this.on("error", (e) => console.error("client : ", e));
 
     this.loadEvents();
     this.commandManager.loadCommands();
-    this.soundcloudApiConnect();    
+    this.soundcloudApiConnect();
   }
 
   private async soundcloudApiConnect(): Promise<void> {

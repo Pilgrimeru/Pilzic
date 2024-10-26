@@ -1,12 +1,13 @@
 import { LRUCache } from 'lru-cache';
-import { config } from '../../config';
-import type { PlaylistData } from '../../types/extractor/PlaylistData';
-import type { TrackData } from '../../types/extractor/TrackData';
+import { config } from 'config';
+import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
+import type { TrackData } from '@custom-types/extractor/TrackData';
 
 type CacheKey = string;
 type CacheValue = TrackData | PlaylistData;
 
 class CacheManager {
+  
   private cache: LRUCache<CacheKey, CacheValue>;
   private maxSize: number;
   private ttl: number;
@@ -20,7 +21,7 @@ class CacheManager {
       maxSize: this.maxSize,
       sizeCalculation: this.maxSize ? this.calculateSize : undefined,
       ttl: this.ttl,
-      ttlAutopurge: true 
+      ttlAutopurge: true
     });
   }
 

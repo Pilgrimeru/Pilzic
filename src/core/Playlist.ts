@@ -1,10 +1,11 @@
 import { User } from 'discord.js';
-import { config } from '../config.js';
-import type { PlaylistData } from '../types/extractor/PlaylistData.js';
-import type { TrackData } from '../types/extractor/TrackData.js';
-import { Track } from "./Track.js";
+import { config } from 'config';
+import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
+import type { TrackData } from '@custom-types/extractor/TrackData';
+import { Track } from './Track';
 
 export class Playlist {
+  
   public readonly title: string;
   public readonly url: string;
   public readonly tracks: Track[];

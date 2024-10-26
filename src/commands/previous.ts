@@ -1,10 +1,11 @@
-import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
-import { i18n } from "../i18n.config.js";
-import { bot } from "../index.js";
-import { Command, CommandConditions } from "../types/Command.js";
-import { autoDelete } from "../utils/autoDelete.js";
+import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { Command, CommandConditions } from '@custom-types/Command';
+import { autoDelete } from '@utils/autoDelete';
 
 export default class PreviousCommand extends Command {
+
   constructor() {
     super({
       name: "previous",
@@ -17,12 +18,13 @@ export default class PreviousCommand extends Command {
   }
 
   async execute(commandTrigger: CommandTrigger) {
+    
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     if (!player.queue.canBack()) {
       return commandTrigger.reply(i18n.__mf("previous.error")).then(autoDelete);
     }
-    
+
     if (player.queue.loop === "track") player.queue.loop = "disabled";
     player.previous();
 

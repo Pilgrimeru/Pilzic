@@ -1,6 +1,6 @@
-import { AudioResource, StreamType, createAudioResource } from "@discordjs/voice";
+import { AudioResource, StreamType, createAudioResource } from '@discordjs/voice';
 import axios from 'axios';
-import { EmbedBuilder, User } from "discord.js";
+import { EmbedBuilder, User } from 'discord.js';
 import {
   stream as getStream,
   so_validate,
@@ -8,13 +8,14 @@ import {
   yt_validate
 } from "play-dl";
 import ytstream from 'yt-stream';
-import { config } from "../config.js";
-import { i18n } from "../i18n.config.js";
-import type { TrackData } from "../types/extractor/TrackData.js";
-import { formatTime } from "../utils/formatTime.js";
-import { DataFinder } from "./helpers/DataFinder.js";
+import { config } from 'config';
+import { i18n } from 'i18n.config';
+import type { TrackData } from "@custom-types/extractor/TrackData";
+import { formatTime } from '@utils/formatTime';
+import { DataFinder } from './helpers/DataFinder';
 
 export class Track {
+  
   public readonly url!: string;
   public readonly title!: string;
   public readonly duration!: number;

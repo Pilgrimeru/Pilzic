@@ -1,4 +1,4 @@
-import { InvalidURLError } from '../../errors/ExtractionErrors';
+import { InvalidURLError } from '@errors/ExtractionErrors';
 import type { Extractor } from '../extractors/abstract/Extractor';
 import type { LinkExtractor } from '../extractors/abstract/LinkExtractor';
 import { DeezerLinkExtractor } from '../extractors/DeezerLinkExtractor';
@@ -9,6 +9,7 @@ import { YouTubeLinkExtractor } from '../extractors/YouTubeLinkExtractor';
 import { DataFinder } from './DataFinder';
 
 export class ExtractorFactory {
+  
   private static linkExtractors = [
     YouTubeLinkExtractor,
     SoundCloudLinkExtractor,
@@ -18,7 +19,7 @@ export class ExtractorFactory {
   ];
 
   public static async createExtractor(
-    query: string, 
+    query: string,
     defaultSearchType: "track" | "playlist" = "track"
   ): Promise<Extractor> {
     const url = query.split(" ")[0];

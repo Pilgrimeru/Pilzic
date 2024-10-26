@@ -1,9 +1,10 @@
-import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
-import { i18n } from "../i18n.config.js";
-import { bot } from "../index.js";
-import { Command } from "../types/Command.js";
+import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { Command } from '@custom-types/Command';
 
 export default class UptimeCommand extends Command {
+  
   constructor() {
     super({
       name: "uptime",

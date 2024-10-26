@@ -1,9 +1,10 @@
 
-import type { PlaylistData } from "../../../types/extractor/PlaylistData";
-import type { TrackData } from "../../../types/extractor/TrackData";
-import { Extractor } from "./Extractor";
+import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
+import type { TrackData } from "@custom-types/extractor/TrackData";
+import { Extractor } from './Extractor';
 
 export abstract class SearchExtractor extends Extractor {
+  
   protected readonly query: string;
 
   constructor(query: string, type: 'track' | 'playlist') {
@@ -33,4 +34,3 @@ export abstract class SearchExtractor extends Extractor {
   public abstract searchMultipleTracks(limit: number): Promise<TrackData[]>;
   public abstract searchMultiplePlaylists(limit: number, fetch: boolean): Promise<PlaylistData[]>;
 }
-  

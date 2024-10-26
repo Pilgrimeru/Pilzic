@@ -9,15 +9,16 @@ import {
   type GuildBasedChannel,
   type PermissionResolvable
 } from "discord.js";
-import { readdirSync } from "fs";
-import { join } from "path";
-import { i18n } from "../../i18n.config.js";
-import { bot } from "../../index.js";
-import { Command, CommandConditions } from "../../types/Command";
-import { autoDelete } from "../../utils/autoDelete";
-import { CommandTrigger } from "../helpers/CommandTrigger";
+import { readdirSync } from 'fs';
+import { join } from 'path';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { Command, CommandConditions } from '@custom-types/Command';
+import { autoDelete } from '@utils/autoDelete';
+import { CommandTrigger } from '@core/helpers/CommandTrigger';
 
 export class CommandManager {
+  
   public commands = new Collection<string, Command>();
 
   public async loadCommands(): Promise<void> {

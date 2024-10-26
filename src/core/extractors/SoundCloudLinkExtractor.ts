@@ -1,8 +1,8 @@
 import { so_validate, soundcloud, SoundCloudPlaylist, SoundCloudTrack } from 'play-dl';
-import { config } from '../../config';
-import { InvalidURLError, NoDataError, ServiceUnavailableError } from '../../errors/ExtractionErrors';
-import type { PlaylistData } from '../../types/extractor/PlaylistData';
-import type { TrackData } from '../../types/extractor/TrackData';
+import { config } from 'config';
+import { InvalidURLError, NoDataError, ServiceUnavailableError } from '@errors/ExtractionErrors';
+import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
+import type { TrackData } from '@custom-types/extractor/TrackData';
 import { LinkExtractor } from './abstract/LinkExtractor';
 
 export class SoundCloudLinkExtractor extends LinkExtractor {

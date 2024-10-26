@@ -1,13 +1,14 @@
-import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from "discord.js";
-import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
-import { ExtractorFactory } from "../core/helpers/ExtractorFactory.js";
-import { ExtractionError } from "../errors/ExtractionErrors.js";
-import { i18n } from "../i18n.config.js";
-import { bot } from "../index.js";
-import { Command, CommandConditions } from "../types/Command.js";
-import { autoDelete } from "../utils/autoDelete.js";
+import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from 'discord.js';
+import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { ExtractorFactory } from '@core/helpers/ExtractorFactory';
+import { ExtractionError } from '@errors/ExtractionErrors';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { Command, CommandConditions } from '@custom-types/Command';
+import { autoDelete } from '@utils/autoDelete';
 
 export default class InsertCommand extends Command {
+
   constructor() {
     super({
       name: "insert",
@@ -36,6 +37,7 @@ export default class InsertCommand extends Command {
       ],
     });
   }
+  
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     if (!args.length && !(commandTrigger.attachments?.size))
@@ -62,13 +64,13 @@ export default class InsertCommand extends Command {
       if (extractor.type === "playlist") {
         commandTrigger.editReply(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
       }
-      
+
       let item = await extractor.extractAndBuild(requester);
       const guildMember = commandTrigger.member!;
       const { channel } = guildMember!.voice;
       if (!channel) return;
-      
-      bot.playerManager.insert(item, commandTrigger.channel as BaseGuildTextChannel, channel)
+
+      bot.playerManager.insert(item, commandTrigger.channel as BaseGuildTextChannel, channel);
 
       commandTrigger.deleteReply();
     } catch (error) {

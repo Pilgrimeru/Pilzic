@@ -1,12 +1,13 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild, Message } from "discord.js";
-import { config } from "../config.js";
-import { CommandTrigger } from "../core/helpers/CommandTrigger.js";
-import { Track } from "../core/Track.js";
-import { i18n } from "../i18n.config.js";
-import { bot } from "../index.js";
-import { Command, CommandConditions } from "../types/Command.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild, Message } from 'discord.js';
+import { config } from 'config';
+import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { Track } from '@core/Track';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { Command, CommandConditions } from '@custom-types/Command';
 
 export default class QueueCommand extends Command {
+  
   constructor() {
     super({
       name: "queue",
