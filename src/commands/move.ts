@@ -11,7 +11,7 @@ export default class MoveCommand extends Command {
     super({
       name: "move",
       aliases: ["l"],
-      description: i18n.__("loop.description"),
+      description: i18n.__("move.description"),
       conditions: [
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
