@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { deezer, DeezerAlbum, DeezerPlaylist, DeezerTrack } from 'play-dl';
+import { deezer, DeezerAlbum, DeezerPlaylist, DeezerTrack, dz_validate } from 'play-dl';
 import { InvalidURLError, NoDataError, ServiceUnavailableError } from '../../errors/ExtractionErrors';
 import type { PlaylistData } from '../../types/extractor/PlaylistData';
 import type { TrackData } from '../../types/extractor/TrackData';
@@ -11,15 +11,23 @@ export class DeezerLinkExtractor extends LinkExtractor {
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
     if (url.match(DeezerLinkExtractor.DZ_LINK)) {
-      let r = await axios.head(url).catch(() => null);
-      if (!r) return false;
-      let patch = r.request?.socket?._httpMessage?.path;
-      if (!patch) return false;
-      if (patch.match(/^\/(?:\w{2})\/track/)) return "track";
-      if (patch.match(/^\/(?:\w{2})\/album/)) return "playlist";
-      if (patch.match(/^\/(?:\w{2})\/playlist/)) return "playlist";
+      let response = await axios.head(url).catch(() => null);
+
+      if (!response?.request?._redirectable?._options) return false;
+  
+      let path = response.request._redirectable._options.pathname;
+  
+      if (!path) return false;
+      
+      if (path.match(/^\/(?:\w{2})\/track/)) return "track";
+      if (path.match(/^\/(?:\w{2})\/album/)) return "playlist";
+      if (path.match(/^\/(?:\w{2})\/playlist/)) return "playlist";
+      return false;
     }
-    return false;
+    const validate = await dz_validate(url);
+    if (validate === 'album') return "playlist";
+    if (validate === 'search') return false;
+    return validate;
   }
 
   protected async extractTrack(): Promise<TrackData> {
@@ -54,8 +62,8 @@ export class DeezerLinkExtractor extends LinkExtractor {
       }
       playlist = (playlist as DeezerPlaylist | DeezerAlbum);
 
-      const promiseTracksData: Promise<TrackData>[] = playlist.tracks.map((track: any) => {
-        const search = track.artist + " " + track.name;
+      const promiseTracksData: Promise<TrackData>[] = playlist.tracks.map((track) => {
+        const search = track.artist.name + " " + track.title;
         return DataFinder.searchTrackData(search);
       });
 
