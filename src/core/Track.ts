@@ -57,9 +57,9 @@ export class Track {
     if (this.related) return this.related;
     let url = this.url;
     if (yt_validate(url) !== "video") {
-      const songInfo = await DataFinder.searchTrackData(this.title);
-      if (!songInfo) return [];
-      url = songInfo.url;
+      const trackInfo = await DataFinder.searchTrackData(this.title);
+      if (!trackInfo) return [];
+      url = trackInfo.url;
     }
     const info = await video_basic_info(url, { htmldata: false });
     this.related = info.related_videos;

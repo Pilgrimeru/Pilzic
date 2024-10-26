@@ -22,7 +22,7 @@ import { Track } from "./Track.js";
 
 type skipCallback = () => any;
 type previousCallback = () => any;
-type jumpCallback = (songId: number) => any;
+type jumpCallback = (trackId: number) => any;
 
 
 export class Player {
@@ -78,16 +78,16 @@ export class Player {
 
     this.nowPlayingMsgManager.delete();
     this.emitSkip()
-    const newCurrent = this.queue.currentSong;
+    const newCurrent = this.queue.currentTrack;
     newCurrent ? this.process(newCurrent) : this.stop();
   }
 
-  public async jumpTo(songId: number): Promise<void> {
+  public async jumpTo(trackId: number): Promise<void> {
     if (this._stopped) return;
     this.audioPlayer.pause(true);
     this.nowPlayingMsgManager.delete();
-    this.emitJump(songId);
-    const newCurrent = this.queue.currentSong;
+    this.emitJump(trackId);
+    const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
 
@@ -96,14 +96,14 @@ export class Player {
     this.audioPlayer.pause(true);
     this.nowPlayingMsgManager.delete();
     this.emitPrevious();
-    const newCurrent = this.queue.currentSong;
+    const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
 
   public async seek(time: number): Promise<void> {
     this.nowPlayingMsgManager.delete();
     this.audioPlayer.pause(true);
-    const current = this.queue.currentSong;
+    const current = this.queue.currentTrack;
     return current ? this.process(current, time) : this.stop();
   }
 
@@ -157,8 +157,8 @@ export class Player {
     this.skipCallbacks.forEach(callback => callback());
   }
 
-  private emitJump(songId: number) {
-    this.jumpCallbacks.forEach(callback => callback(songId));
+  private emitJump(trackId: number) {
+    this.jumpCallbacks.forEach(callback => callback(trackId));
   }
 
   private emitPrevious() {
@@ -254,11 +254,11 @@ export class Player {
 
   private async setupQueueListeners(): Promise<void> {
 
-    this.queue.onSongAdded(track => {
-      this.sendSongAddedMessage(track);
+    this.queue.onTrackAdded(track => {
+      this.sendTrackAddedMessage(track);
       if (this._stopped) {
         this._stopped = false;
-        const current = this.queue.currentSong;
+        const current = this.queue.currentTrack;
         return current ? this.process(current) : this.stop();
       }
     });
@@ -267,15 +267,15 @@ export class Player {
       this.sendPlaylistAddedMessage(playlist);
       if (this._stopped) {
         this._stopped = false;
-        const current = this.queue.currentSong;
+        const current = this.queue.currentTrack;
         return current ? this.process(current) : this.stop();
       }
     });
   }
 
-  private sendSongAddedMessage(track: Track): void {
+  private sendTrackAddedMessage(track: Track): void {
     const embed = {
-      description: i18n.__mf("player.songAdded", {
+      description: i18n.__mf("player.trackAdded", {
         title: track.title,
         url: track.url
       }),

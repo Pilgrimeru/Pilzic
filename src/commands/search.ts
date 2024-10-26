@@ -92,7 +92,7 @@ export default class SearchCommand extends Command {
     );
 
     const response = await commandTrigger.editReply({
-      content: i18n.__("search.chooseSong"),
+      content: i18n.__("search.chooseTrack"),
       components: [row]
     });
 

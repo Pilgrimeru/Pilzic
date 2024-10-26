@@ -88,7 +88,7 @@
 		"description": "Display the queue and the currently playing track.",
 		"currentPage": "Current Page - ",
 		"embedTitle": "Server Queue:\n",
-		"embedCurrentSong": "**Current Track - [{title}]({url})**\n\n{info}",
+		"embedCurrentTrack": "**Current Track - [{title}]({url})**\n\n{info}",
 		"nothingMore": "There's nothing more after this."
 	},
 	"remove": {
@@ -110,7 +110,7 @@
 		"description": "Search and select videos to listen to.",
 		"usageReply": "Usage: {prefix}{name} <Video name>",
 		"menuNothing": "Nothing selected",
-		"chooseSong": "Choose the track to play.",
+		"chooseTrack": "Choose the track to play.",
 		"finished": "Search finished. 🔍",
 		"options": {
 			"search": "The desired search.",
@@ -161,7 +161,7 @@
 		"errorWritePermission": "You must have write permission in this channel to interact."
 	},
 	"player": {
-		"songAdded": "✅ [**{title}**]({url}) has been added to the queue.",
+		"trackAdded": "✅ [**{title}**]({url}) has been added to the queue.",
 		"playlistAdded": "✅ Playlist [**{title}**]({url}) containing {length} tracks with a total duration of {duration} has been added to the queue.",
 		"queueEnded": "Queue has ended.",
 		"leaveChannel": "I'm leaving the voice channel.",

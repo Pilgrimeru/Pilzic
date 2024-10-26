@@ -33,7 +33,7 @@ export default class LyricsCommand extends Command {
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
-    const title = args.length === 0 ? player.queue.currentSong!.title : args.join(" ");
+    const title = args.length === 0 ? player.queue.currentTrack!.title : args.join(" ");
 
     commandTrigger.loadingReply();
 

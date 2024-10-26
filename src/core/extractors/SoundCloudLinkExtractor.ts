@@ -20,13 +20,13 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
 
   protected async extractTrack(): Promise<TrackData> {
     try {
-      let songInfo = (await soundcloud(this.url)) as SoundCloudTrack;
+      let trackInfo = (await soundcloud(this.url)) as SoundCloudTrack;
 
       return {
-        url: songInfo.url,
-        title: songInfo.name,
-        duration: songInfo.durationInMs,
-        thumbnail: songInfo.thumbnail,
+        url: trackInfo.url,
+        title: trackInfo.name,
+        duration: trackInfo.durationInMs,
+        thumbnail: trackInfo.thumbnail,
       };
     } catch (error: any) {
       if (error.message?.includes("out of scope")) {

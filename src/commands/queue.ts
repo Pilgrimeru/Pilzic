@@ -23,12 +23,12 @@ export default class QueueCommand extends Command {
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
     player.queue.tracks.slice(player.queue.index);
 
-    const followingSongs = player.queue.tracks.slice(player.queue.index);
-    const previousSongs = player.queue.tracks.slice(0, player.queue.index);
+    const followingTracks = player.queue.tracks.slice(player.queue.index);
+    const previousTracks = player.queue.tracks.slice(0, player.queue.index);
 
-    const embeds = generateQueueEmbed(commandTrigger.guild, followingSongs, previousSongs);
+    const embeds = generateQueueEmbed(commandTrigger.guild, followingTracks, previousTracks);
 
-    let currentPage = Math.ceil(previousSongs.length / 10);
+    let currentPage = Math.ceil(previousTracks.length / 10);
     const wantedPage = Number(args[0]);
     if (!isNaN(wantedPage) && wantedPage > 0 && wantedPage <= embeds.length) {
       currentPage = wantedPage - 1;
@@ -94,7 +94,7 @@ export default class QueueCommand extends Command {
   }
 }
 
-function generateQueueEmbed(guild: Guild, followingSongs: Track[], previousSongs: Track[]): EmbedBuilder[] {
+function generateQueueEmbed(guild: Guild, followingTracks: Track[], previousTracks: Track[]): EmbedBuilder[] {
   let embeds: EmbedBuilder[] = [];
 
   function buildEmbed(info: string): EmbedBuilder {
@@ -103,15 +103,15 @@ function generateQueueEmbed(guild: Guild, followingSongs: Track[], previousSongs
       .setThumbnail(guild.iconURL())
       .setColor(config.COLORS.MAIN)
       .setDescription(
-        i18n.__mf("queue.embedCurrentSong", { title: followingSongs[0].title, url: followingSongs[0].url, info: info })
+        i18n.__mf("queue.embedCurrentTrack", { title: followingTracks[0].title, url: followingTracks[0].url, info: info })
       )
       .setTimestamp();
   }
 
-  previousSongs.reverse();
+  previousTracks.reverse();
   let current: Track[];
-  for (let i = 0; i < previousSongs.length; i += 10) {
-    current = previousSongs.slice(i, i + 10);
+  for (let i = 0; i < previousTracks.length; i += 10) {
+    current = previousTracks.slice(i, i + 10);
     let j = -i - 1;
 
     const info = current.map((track) => `${j--} - [${track.title}](${track.url})`).join("\n");
@@ -120,12 +120,12 @@ function generateQueueEmbed(guild: Guild, followingSongs: Track[], previousSongs
   }
   embeds.reverse();
 
-  if (followingSongs.length === 1) {
+  if (followingTracks.length === 1) {
     embeds.push(buildEmbed(i18n.__mf("queue.nothingMore")));
   }
 
-  for (let i = 1; i < followingSongs.length; i += 10) {
-    current = followingSongs.slice(i, i + 10);
+  for (let i = 1; i < followingTracks.length; i += 10) {
+    current = followingTracks.slice(i, i + 10);
     let j = i;
 
     const info = current.map((track) => `${j++} - [${track.title}](${track.url})`).join("\n");

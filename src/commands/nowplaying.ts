@@ -24,7 +24,7 @@ export default class NowPlayingCommand extends Command {
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
-    const track = player.queue.currentSong!;
+    const track = player.queue.currentTrack!;
     const seek = player.playbackDuration;
     const left = track.duration - seek;
 

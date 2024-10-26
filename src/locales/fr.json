@@ -88,7 +88,7 @@
     "description": "Affiche la file d'attente et la musique en cours de lecture.",
     "currentPage": "Page actuelle - ",
     "embedTitle": "File d'attente du serveur :\n",
-    "embedCurrentSong": "**Musique actuelle - [{title}]({url})**\n\n{info}",
+    "embedCurrentTrack": "**Musique actuelle - [{title}]({url})**\n\n{info}",
     "nothingMore": "Il n'y a plus rien ensuite."
   },
   "remove": {
@@ -109,7 +109,7 @@
     "description": "Recherche et sélectionne des vidéos à écouter.",
     "usageReply": "Utilisation : {prefix}{name} <Nom de la vidéo>",
     "menuNothing": "Rien de sélectionné",
-    "chooseSong": "Choisissez le morceau à jouer.",
+    "chooseTrack": "Choisissez le morceau à jouer.",
     "finished": "Recherche terminée. 🔍",
     "options": {
       "search": "La recherche souhaitée.",
@@ -160,7 +160,7 @@
     "errorWritePermission": "Vous devez pouvoir écrire dans ce salon pour interagir."
   },
   "player": {
-    "songAdded": "✅ [**{title}**]({url}) a été ajouté à la file d'attente.",
+    "trackAdded": "✅ [**{title}**]({url}) a été ajouté à la file d'attente.",
     "playlistAdded": "✅ La playlist [**{title}**]({url}) contenant {length} pistes d'une durée totale de {duration} a été ajoutée à la file d'attente.",
     "queueEnded": "La file d'attente est terminée.",
     "leaveChannel": "Je quitte le salon vocal.",

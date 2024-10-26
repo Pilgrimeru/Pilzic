@@ -38,9 +38,9 @@ export default class SeekCommand extends Command {
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
-    const currentSong = player.queue.currentSong;
+    const currentTrack = player.queue.currentTrack;
 
-    if (!currentSong || yt_validate(currentSong.url) !== "video") {
+    if (!currentTrack || yt_validate(currentTrack.url) !== "video") {
       return commandTrigger
         .reply(i18n.__mf("seek.errorSource"))
         .then(autoDelete);
@@ -58,9 +58,9 @@ export default class SeekCommand extends Command {
       seekTime = Number(args[0]) + Math.floor(player.playbackDuration / 1000);
     }
 
-    if (seekTime < 0 || seekTime * 1000 >= (currentSong?.duration ?? 0)) {
+    if (seekTime < 0 || seekTime * 1000 >= (currentTrack?.duration ?? 0)) {
       return commandTrigger
-        .reply(i18n.__mf("seek.errorNotValid", { prefix: bot.prefix, duration: Math.floor(currentSong?.duration! / 1000) }))
+        .reply(i18n.__mf("seek.errorNotValid", { prefix: bot.prefix, duration: Math.floor(currentTrack?.duration! / 1000) }))
         .then(autoDelete);
     }
 

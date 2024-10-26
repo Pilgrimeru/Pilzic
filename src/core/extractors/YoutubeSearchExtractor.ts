@@ -47,12 +47,12 @@ export class YouTubeSearchExtractor extends SearchExtractor {
   }
 
   public async searchTrack(): Promise<TrackData> {
-    let songInfo = await YouTube.searchOne(this.query, "video", true).catch(console.error);
-    if (!songInfo || !songInfo.title) {
+    let trackInfo = await YouTube.searchOne(this.query, "video", true).catch(console.error);
+    if (!trackInfo || !trackInfo.title) {
       throw new NothingFoundError();
     }
 
-    return this.formatYoutubeVideoToTrackData(songInfo);
+    return this.formatYoutubeVideoToTrackData(trackInfo);
   }
 
   public async searchPlaylist(): Promise<PlaylistData> {

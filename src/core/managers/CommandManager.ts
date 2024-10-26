@@ -138,7 +138,7 @@ export class CommandManager {
     switch (condition) {
       case CommandConditions.QUEUE_EXISTS:
         const player = bot.playerManager.getPlayer(member.guild.id);
-        if (!player || !player.queue.currentSong) {
+        if (!player || !player.queue.currentTrack) {
           return i18n.__("errors.notQueue");
         }
         break;
