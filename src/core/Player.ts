@@ -69,7 +69,9 @@ export class Player {
       return this.stop();
     }
     if (this.audioPlayer.state.status === "playing") {
-      this.audioPlayer.stop();
+      this.resource?.playStream?.destroy();
+      this.resource = undefined;
+      this.audioPlayer.stop(true);
       return;
     }
 
@@ -119,8 +121,9 @@ export class Player {
     this._stopped = true;
     this.queue.clear();
     this.nowPlayingMsgManager.delete();
-    this.audioPlayer.stop();
     this.resource?.playStream?.destroy();
+    this.resource = undefined;
+    this.audioPlayer.stop(true);
 
     setTimeout(() => {
       if (this._stopped) {
@@ -133,6 +136,8 @@ export class Player {
     this.stop();
     if (this.connection.state.status != VoiceConnectionStatus.Destroyed) {
       this.connection.destroy();
+      this.connection.removeAllListeners();
+      this.audioPlayer.removeAllListeners();
       this.textChannel.send(i18n.__("player.leaveChannel")).then(autoDelete);
     }
     bot.playerManager.removePlayer(this.textChannel.guildId);
