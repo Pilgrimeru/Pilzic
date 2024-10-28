@@ -1,17 +1,12 @@
-import { AudioResource, StreamType, createAudioResource } from '@discordjs/voice';
-import axios from 'axios';
+import type { TrackData } from "@custom-types/extractor/TrackData";
+import { formatTime } from '@utils/formatTime';
+import { config } from 'config';
 import { EmbedBuilder, User } from 'discord.js';
+import { i18n } from 'i18n.config';
 import {
-  stream as getStream,
-  so_validate,
   video_basic_info,
   yt_validate
 } from "play-dl";
-import ytstream from 'yt-stream';
-import { config } from 'config';
-import { i18n } from 'i18n.config';
-import type { TrackData } from "@custom-types/extractor/TrackData";
-import { formatTime } from '@utils/formatTime';
 import { DataFinder } from './helpers/DataFinder';
 
 export class Track {
@@ -66,55 +61,6 @@ export class Track {
     this.related = info.related_videos;
     return info.related_videos;
   }
-
-  public async makeResource(seek?: number): Promise<AudioResource<Track>> {
-    let stream;
-    let type: StreamType;
-
-    if (seek) {
-      if (yt_validate(this.url) !== "video") {
-        throw new Error("The seek feature is not available with this fix, I'm working on it.");
-      }
-
-      throw new Error("The seek feature is not available with this fix, I'm working on it.");
-
-    } else if (this.url.startsWith("https") && await so_validate(this.url) === "track") {
-      const response = await getStream(this.url, {
-        htmldata: false,
-        precache: 15,
-        quality: 0
-      });
-      stream = response.stream;
-      type = response.type;
-    } else if (this.url.startsWith("https") && yt_validate(this.url) === "video") {
-      const reponse = await ytstream.stream(this.url, {
-        quality: 'high',
-        type: 'audio',
-        highWaterMark: 1048576 * 32,
-        download: true
-      });
-      stream = reponse.stream;
-      type = reponse.type as any;
-    }
-    else {
-      const response = await axios.get(this.url, {
-        responseType: 'stream',
-      });
-      stream = response.data;
-      type = StreamType.Arbitrary;
-    }
-
-    if (!stream) {
-      throw new Error("Unable to retrieve the audio stream.");
-    }
-
-    return createAudioResource(stream, {
-      metadata: this,
-      inputType: type,
-      inlineVolume: true,
-    });
-  }
-
 
   public get data(): TrackData {
     return {

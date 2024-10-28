@@ -1,3 +1,4 @@
+import type { PlayerOptions } from "@custom-types/PlayerOptions";
 import {
   AudioPlayer,
   AudioPlayerStatus,
@@ -8,13 +9,13 @@ import {
   createAudioPlayer,
   entersState
 } from "@discordjs/voice";
-import { BaseGuildTextChannel } from 'discord.js';
-import { config } from 'config';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
-import type { PlayerOptions } from "@custom-types/PlayerOptions";
 import { autoDelete } from '@utils/autoDelete';
 import { formatTime } from '@utils/formatTime';
+import { config } from 'config';
+import { BaseGuildTextChannel } from 'discord.js';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { audioResourceFactory } from "./AudioResourceFactory";
 import { NowPlayingMsgManager } from './managers/NowPlayingMsgManager';
 import { Playlist } from './Playlist';
 import { Queue } from './Queue';
@@ -190,7 +191,7 @@ export class Player {
   private async process(track: Track, seek?: number): Promise<void> {
     const loadingMsg = this.textChannel.send(i18n.__("common.loading"));
     try {
-      this.resource = await track.makeResource(seek);
+      this.resource = await audioResourceFactory.createResource(track, seek);
       if (!this.resource.readable) throw new Error("Resource not readable.");
       this.resource.playbackDuration += (seek ?? 0) * 1000;
       this.resource.volume?.setVolumeLogarithmic(this._volume / 100);
