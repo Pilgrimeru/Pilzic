@@ -20,9 +20,8 @@ export default class ShuffleCommand extends Command {
   async execute(commandTrigger: CommandTrigger) {
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
-    const queue = player.queue;
-
-    queue.shuffle();
+    
+    player.queue.shuffle();
 
     commandTrigger.reply(i18n.__mf("shuffle.result")).then(autoDelete);
   }
