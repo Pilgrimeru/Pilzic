@@ -1,9 +1,9 @@
-import type { User } from "discord.js";
-import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
-import type { TrackData } from "@custom-types/extractor/TrackData";
 import { Playlist } from '@core/Playlist';
 import { Track } from '@core/Track';
-import cacheManager from "@core/managers/CacheManager";
+import { cacheManager } from "@core/managers/CacheManager";
+import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
+import type { TrackData } from "@custom-types/extractor/TrackData";
+import type { User } from "discord.js";
 
 export abstract class Extractor {
   

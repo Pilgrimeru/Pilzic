@@ -1,9 +1,9 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
-import { config } from 'config';
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { Command } from '@custom-types/Command';
+import { config } from 'config';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
-import { Command } from '@custom-types/Command';
 
 export default class HelpCommand extends Command {
 
@@ -19,7 +19,7 @@ export default class HelpCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger) {
 
-    let commands = Array.from(bot.commandManager.commands.values());
+    const commands = Array.from(bot.commandManager.commands.values());
     const commandsPerPage = 15;
 
     let page = 1;

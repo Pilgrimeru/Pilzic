@@ -1,12 +1,12 @@
-import { EmbedBuilder } from 'discord.js';
-import { splitBar } from 'string-progressbar';
-import { config } from 'config';
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { autoDelete } from '@utils/autoDelete';
 import { formatTime } from '@utils/formatTime';
+import { config } from 'config';
+import { EmbedBuilder } from 'discord.js';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { splitBar } from 'string-progressbar';
 
 export default class NowPlayingCommand extends Command {
   constructor() {
@@ -28,7 +28,7 @@ export default class NowPlayingCommand extends Command {
     const seek = player.playbackDuration;
     const left = track.duration - seek;
 
-    let nowPlaying = new EmbedBuilder()
+    const nowPlaying = new EmbedBuilder()
       .setTitle(`${player.status === "playing" ? "▶" : "⏸"} ${i18n.__("nowplaying.embedTitle")}`)
       .setDescription(`[${track.title}](${track.url})`)
       .setColor(config.COLORS.MAIN)

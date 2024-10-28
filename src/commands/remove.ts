@@ -1,9 +1,9 @@
-import { ApplicationCommandOptionType } from 'discord.js';
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { autoDelete } from '@utils/autoDelete';
+import { ApplicationCommandOptionType } from 'discord.js';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
 
 const pattern = /^[1-9][0-9]{0,2}(\s*,\s*[1-9][0-9]{0,2})*$/;
 
@@ -40,7 +40,7 @@ export default class RemoveCommand extends Command {
     if (pattern.test(removeArgs)) {
 
       const indexs = removeArgs.split(",").map((arg) => Number(arg) + player.queue.index);
-      let removed = player.queue.remove(...indexs);
+      const removed = player.queue.remove(...indexs);
 
       if (removed.length === 0) {
         return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);

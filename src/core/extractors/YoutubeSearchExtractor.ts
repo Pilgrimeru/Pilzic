@@ -1,7 +1,7 @@
-import YouTube, { type Video } from 'youtube-sr';
-import { NothingFoundError } from '@errors/ExtractionErrors';
 import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
 import type { TrackData } from '@custom-types/extractor/TrackData';
+import { NothingFoundError } from '@errors/ExtractionErrors';
+import YouTube, { type Video } from 'youtube-sr';
 import { SearchExtractor } from './abstract/SearchExtractor';
 import { YouTubeLinkExtractor } from './YouTubeLinkExtractor';
 
@@ -46,7 +46,7 @@ export class YouTubeSearchExtractor extends SearchExtractor {
   }
 
   public async searchTrack(): Promise<TrackData> {
-    let trackInfo = await YouTube.searchOne(this.query, "video", true).catch(console.error);
+    const trackInfo = await YouTube.searchOne(this.query, "video", true).catch(console.error);
     if (!trackInfo || !trackInfo.title) {
       throw new NothingFoundError();
     }

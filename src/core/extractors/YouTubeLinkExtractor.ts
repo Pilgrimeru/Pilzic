@@ -1,9 +1,9 @@
-import { video_basic_info, yt_validate } from 'play-dl';
-import YouTube, { Video } from 'youtube-sr';
-import { config } from 'config';
-import { AgeRestrictedError, InvalidURLError, NoDataError, NothingFoundError, ServiceUnavailableError } from '@errors/ExtractionErrors';
 import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
 import type { TrackData } from '@custom-types/extractor/TrackData';
+import { AgeRestrictedError, InvalidURLError, NoDataError, NothingFoundError, ServiceUnavailableError } from '@errors/ExtractionErrors';
+import { config } from 'config';
+import { video_basic_info, yt_validate } from 'play-dl';
+import YouTube, { Video } from 'youtube-sr';
 import { LinkExtractor } from './abstract/LinkExtractor';
 
 export class YouTubeLinkExtractor extends LinkExtractor {
@@ -12,7 +12,7 @@ export class YouTubeLinkExtractor extends LinkExtractor {
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
     if (url.match(YouTubeLinkExtractor.YT_LINK)) {
-      let result = yt_validate(url);
+      const result = yt_validate(url);
       if (result == "search") return false;
       if (result == "video") return "track";
       return result;
@@ -50,7 +50,7 @@ export class YouTubeLinkExtractor extends LinkExtractor {
   }
 
   protected async extractPlaylist(): Promise<PlaylistData> {
-    let playlist = await YouTube.getPlaylist(this.url, {
+    const playlist = await YouTube.getPlaylist(this.url, {
       fetchAll: true,
       limit: config.MAX_PLAYLIST_SIZE
     });
@@ -59,15 +59,15 @@ export class YouTubeLinkExtractor extends LinkExtractor {
       throw new InvalidURLError();
     }
 
-    const tracks = await YouTubeLinkExtractor.buildTracksData(playlist.videos);
+    const playlistTracks = await YouTubeLinkExtractor.buildTracksData(playlist.videos);
 
-    if (!tracks) {
+    if (!playlistTracks) {
       throw new NoDataError();
     }
 
-    const duration = tracks.reduce((total, track) => total + track.duration, 0);
+    const duration = playlistTracks.reduce((total, track) => total + track.duration, 0);
 
-    return { title: playlist.title, url: playlist.url, tracks, duration };
+    return { title: playlist.title, url: playlist.url, tracks: playlistTracks, duration };
   }
 
   private static async buildTracksData(videos: Video[]): Promise<TrackData[]> {

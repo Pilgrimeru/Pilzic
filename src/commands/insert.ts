@@ -1,11 +1,11 @@
-import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from 'discord.js';
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
 import { ExtractorFactory } from '@core/helpers/ExtractorFactory';
+import { Command, CommandConditions } from '@custom-types/Command';
 import { ExtractionError } from '@errors/ExtractionErrors';
+import { autoDelete } from '@utils/autoDelete';
+import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from 'discord.js';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
-import { Command, CommandConditions } from '@custom-types/Command';
-import { autoDelete } from '@utils/autoDelete';
 
 export default class InsertCommand extends Command {
 
@@ -60,12 +60,12 @@ export default class InsertCommand extends Command {
     const requester: User = commandTrigger.member!.user;
 
     try {
-      let extractor = await ExtractorFactory.createExtractor(query, searchForPlaylist ? "playlist" : "track");
+      const extractor = await ExtractorFactory.createExtractor(query, searchForPlaylist ? "playlist" : "track");
       if (extractor.type === "playlist") {
         commandTrigger.editReply(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
       }
 
-      let item = await extractor.extractAndBuild(requester);
+      const item = await extractor.extractAndBuild(requester);
       const guildMember = commandTrigger.member!;
       const { channel } = guildMember!.voice;
       if (!channel) return;

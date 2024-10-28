@@ -1,7 +1,7 @@
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { Command } from '@custom-types/Command';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
-import { Command } from '@custom-types/Command';
 
 export default class UptimeCommand extends Command {
   
@@ -14,14 +14,11 @@ export default class UptimeCommand extends Command {
   }
 
   async execute(commandTrigger: CommandTrigger) {
-    let seconds = Math.floor(bot.uptime! / 1000);
-    let minutes = Math.floor(seconds / 60);
-    let hours = Math.floor(minutes / 60);
-    let days = Math.floor(hours / 24);
-
-    seconds %= 60;
-    minutes %= 60;
-    hours %= 24;
+    const totalSeconds = Math.floor(bot.uptime ?? 0 / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
 
     return commandTrigger
       .reply({ content: i18n.__mf("uptime.result", { days: days, hours: hours, minutes: minutes, seconds: seconds }), ephemeral: true })

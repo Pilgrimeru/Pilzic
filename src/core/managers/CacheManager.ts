@@ -1,7 +1,7 @@
-import { LRUCache } from 'lru-cache';
-import { config } from 'config';
 import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
 import type { TrackData } from '@custom-types/extractor/TrackData';
+import { config } from 'config';
+import { LRUCache } from 'lru-cache';
 
 type CacheKey = string;
 type CacheValue = TrackData | PlaylistData;
@@ -48,4 +48,4 @@ class CacheManager {
 }
 
 const cacheManager = new CacheManager(config.CACHE_SIZE);
-export default cacheManager;
+export { cacheManager };

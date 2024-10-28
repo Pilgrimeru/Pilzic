@@ -54,11 +54,11 @@ export class Queue {
   }
 
   public shuffle(): void {
-    let previousTracks = this.tracks.slice(0, this.index);
-    let followingTracks = this.tracks.slice(this.index);
+    const previousTracks = this.tracks.slice(0, this.index);
+    const followingTracks = this.tracks.slice(this.index);
 
     for (let i = followingTracks.length - 1; i > 1; i--) {
-      let j = 1 + Math.floor(Math.random() * i);
+      const j = 1 + Math.floor(Math.random() * i);
       [followingTracks[i], followingTracks[j]] = [followingTracks[j], followingTracks[i]];
     }
     this._tracks = previousTracks.concat(followingTracks);
@@ -167,7 +167,7 @@ export class Queue {
     const trackData = await DataFinder.getTrackDataFromLink(related_videos[0]).catch(console.error);
     if (!trackData) return;
 
-    let relatedTrack = Track.from(trackData, botUser);
+    const relatedTrack = Track.from(trackData, botUser);
     this._tracks.push(relatedTrack);
   }
 }

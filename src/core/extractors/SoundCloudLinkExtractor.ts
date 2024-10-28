@@ -1,8 +1,8 @@
-import { so_validate, soundcloud, SoundCloudPlaylist, SoundCloudTrack } from 'play-dl';
-import { config } from 'config';
-import { InvalidURLError, NoDataError, ServiceUnavailableError } from '@errors/ExtractionErrors';
 import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
 import type { TrackData } from '@custom-types/extractor/TrackData';
+import { InvalidURLError, NoDataError, ServiceUnavailableError } from '@errors/ExtractionErrors';
+import { config } from 'config';
+import { so_validate, soundcloud, SoundCloudTrack } from 'play-dl';
 import { LinkExtractor } from './abstract/LinkExtractor';
 
 export class SoundCloudLinkExtractor extends LinkExtractor {
@@ -11,7 +11,7 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
     if (url.match(SoundCloudLinkExtractor.SO_LINK)) {
-      let result = await so_validate(url);
+      const result = await so_validate(url);
       if (result == "search") return false;
       return result;
     }
@@ -40,18 +40,14 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
 
   protected async extractPlaylist(): Promise<PlaylistData> {
     try {
-      let scTracks: SoundCloudTrack[] = [];
 
-      let playlist = await soundcloud(this.url);
-      if (!playlist) {
+      const playlist = await soundcloud(this.url);
+      if (!playlist || playlist instanceof SoundCloudTrack) {
         throw new NoDataError();
       }
+      const playlistTracks = await playlist.all_tracks();
 
-      if (playlist.type === "playlist") {
-        scTracks = await (playlist as SoundCloudPlaylist).all_tracks();
-      }
-
-      const tracks = await SoundCloudLinkExtractor.buildTracksData(scTracks);
+      const tracks = await SoundCloudLinkExtractor.buildTracksData(playlistTracks);
       const duration = tracks.reduce((total, track) => total + track.duration, 0);
 
       return { title: playlist.name, url: this.url, tracks: tracks, duration };
