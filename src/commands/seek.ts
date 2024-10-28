@@ -1,16 +1,16 @@
-import { ApplicationCommandOptionType } from 'discord.js';
-import { yt_validate } from 'play-dl';
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { autoDelete } from '@utils/autoDelete';
 import { formatTime } from '@utils/formatTime';
+import { ApplicationCommandOptionType } from 'discord.js';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
+import { yt_validate } from 'play-dl';
 
 const timeRegEx = /^(?:[0-9]|[0-5]\d):[0-5]\d(:[0-5]\d)?$/;
 
 export default class SeekCommand extends Command {
-  
+
   constructor() {
     super({
       name: "seek",

@@ -1,7 +1,7 @@
-import { InvalidURLError } from '@errors/ExtractionErrors';
+import { YouTubeSearchExtractor } from '@core/extractors/YoutubeSearchExtractor';
 import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
 import type { TrackData } from '@custom-types/extractor/TrackData';
-import { YouTubeSearchExtractor } from '@core/extractors/YoutubeSearchExtractor';
+import { InvalidURLError } from '@errors/ExtractionErrors';
 import { ExtractorFactory } from './ExtractorFactory';
 
 export class DataFinder {

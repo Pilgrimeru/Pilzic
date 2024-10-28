@@ -1,12 +1,12 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { autoDelete } from '@utils/autoDelete';
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
 
 export default class LoopCommand extends Command {
-  
+
   constructor() {
     super({
       name: "loop",

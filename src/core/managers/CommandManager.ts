@@ -1,3 +1,6 @@
+import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { Command, CommandConditions } from '@custom-types/Command';
+import { autoDelete } from '@utils/autoDelete';
 import {
   ButtonInteraction,
   ChatInputCommandInteraction,
@@ -10,15 +13,12 @@ import {
   type PermissionResolvable
 } from "discord.js";
 import { readdirSync } from 'fs';
-import { join } from 'path';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
-import { Command, CommandConditions } from '@custom-types/Command';
-import { autoDelete } from '@utils/autoDelete';
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import { join } from 'path';
 
 export class CommandManager {
-  
+
   public commands = new Collection<string, Command>();
 
   public async loadCommands(): Promise<void> {
@@ -35,7 +35,7 @@ export class CommandManager {
     this.registerSlashCommands();
   }
 
-  public registerSlashCommands(): void {
+  private registerSlashCommands(): void {
     const slashCommands: ApplicationCommandDataResolvable[] = this.commands.map(command => ({
       name: command.name,
       description: command.description,

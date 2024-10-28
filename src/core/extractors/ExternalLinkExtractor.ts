@@ -1,8 +1,8 @@
+import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
+import type { TrackData } from '@custom-types/extractor/TrackData';
 import axios, { type AxiosResponse } from 'axios';
 import ffprobe from 'ffprobe-static';
 import ffmpeg from 'fluent-ffmpeg';
-import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
-import type { TrackData } from '@custom-types/extractor/TrackData';
 import { LinkExtractor } from './abstract/LinkExtractor';
 
 ffmpeg.setFfprobePath(ffprobe.path);
@@ -13,7 +13,7 @@ type ExternalStreamInfo = {
 };
 
 export class ExternalLinkExtractor extends LinkExtractor {
-  
+
   private static readonly AUDIO_LINK = /https?:\/\/.+\.(mp3|wav|flac|ogg)(\?.*)?$/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {

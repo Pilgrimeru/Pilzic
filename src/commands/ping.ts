@@ -1,10 +1,10 @@
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { i18n } from 'i18n.config';
 import { Command } from '@custom-types/Command';
 import { autoDelete } from '@utils/autoDelete';
+import { i18n } from 'i18n.config';
 
 export default class PingCommand extends Command {
-  
+
   constructor() {
     super({
       name: "ping",

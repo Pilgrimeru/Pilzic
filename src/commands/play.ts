@@ -40,7 +40,7 @@ export default class PlayCommand extends Command {
   }
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
-    
+
     if (!args.length && !(commandTrigger.attachments?.size)) {
       return commandTrigger.reply(i18n.__mf("play.usageReply", { prefix: bot.prefix })).then(autoDelete);
     }

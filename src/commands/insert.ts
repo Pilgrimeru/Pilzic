@@ -37,7 +37,7 @@ export default class InsertCommand extends Command {
       ],
     });
   }
-  
+
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     if (!args.length && !(commandTrigger.attachments?.size))

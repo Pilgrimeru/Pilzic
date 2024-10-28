@@ -62,7 +62,7 @@ export class YouTubeSearchExtractor extends SearchExtractor {
     const youTubeExtractor = new YouTubeLinkExtractor(result.url, "playlist");
     return youTubeExtractor.extract("playlist");
   }
-  
+
 
   private async formatYoutubeVideoToTrackData(video: Video): Promise<TrackData> {
     return {

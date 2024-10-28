@@ -7,7 +7,7 @@ type CacheKey = string;
 type CacheValue = TrackData | PlaylistData;
 
 class CacheManager {
-  
+
   private cache: LRUCache<CacheKey, CacheValue>;
   private maxSize: number;
   private ttl: number;
@@ -49,3 +49,4 @@ class CacheManager {
 
 const cacheManager = new CacheManager(config.CACHE_SIZE);
 export { cacheManager };
+

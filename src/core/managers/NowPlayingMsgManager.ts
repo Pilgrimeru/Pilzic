@@ -1,12 +1,12 @@
+import { Player } from '@core/Player';
+import { Track } from '@core/Track';
+import { config } from 'config';
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   Message,
 } from "discord.js";
-import { config } from 'config';
-import { Player } from '@core/Player';
-import { Track } from '@core/Track';
 
 export class NowPlayingMsgManager {
 

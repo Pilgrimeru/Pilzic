@@ -1,5 +1,5 @@
-import { config as dotenvConfig } from 'dotenv';
 import type { Config } from '@custom-types/Config';
+import { config as dotenvConfig } from 'dotenv';
 
 dotenvConfig({ path: 'config.env' });
 

@@ -4,7 +4,7 @@ import type { TrackData } from "@custom-types/extractor/TrackData";
 import { Extractor } from './Extractor';
 
 export abstract class SearchExtractor extends Extractor {
-  
+
   protected readonly query: string;
 
   constructor(query: string, type: 'track' | 'playlist') {

@@ -3,7 +3,7 @@ import type { TrackData } from "@custom-types/extractor/TrackData";
 import { Extractor } from './Extractor';
 
 export abstract class LinkExtractor extends Extractor {
-  
+
   protected readonly url: string;
 
   constructor(url: string, type: 'track' | 'playlist') {

@@ -1,11 +1,11 @@
-import { joinVoiceChannel, VoiceConnection } from '@discordjs/voice';
-import { BaseGuildTextChannel, Collection, type VoiceBasedChannel } from 'discord.js';
 import { Player } from '@core/Player';
 import type { Playlist } from "@core/Playlist";
 import type { Track } from "@core/Track";
+import { joinVoiceChannel, VoiceConnection } from '@discordjs/voice';
+import { BaseGuildTextChannel, Collection, type VoiceBasedChannel } from 'discord.js';
 
 export class PlayerManager {
-  
+
   private players: Collection<string, Player> = new Collection();
 
   public enqueue(item: Track | Playlist, textChannel: BaseGuildTextChannel, voiceChannel: VoiceBasedChannel): void {

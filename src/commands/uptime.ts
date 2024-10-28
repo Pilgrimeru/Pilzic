@@ -4,7 +4,7 @@ import { i18n } from 'i18n.config';
 import { bot } from 'index';
 
 export default class UptimeCommand extends Command {
-  
+
   constructor() {
     super({
       name: "uptime",

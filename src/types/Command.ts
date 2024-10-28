@@ -1,5 +1,5 @@
-import type { ApplicationCommandDataResolvable, ApplicationCommandOptionData, PermissionResolvable } from "discord.js";
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
+import type { ApplicationCommandDataResolvable, ApplicationCommandOptionData, PermissionResolvable } from "discord.js";
 
 export enum CommandConditions {
   QUEUE_EXISTS,
@@ -16,7 +16,7 @@ type ExtendedCommandDataResolvable = (ApplicationCommandDataResolvable & {
 });
 
 export abstract class Command {
-  
+
   public readonly name!: string;
   public readonly description!: string;
   public readonly aliases?: string[];

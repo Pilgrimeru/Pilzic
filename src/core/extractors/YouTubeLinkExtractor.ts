@@ -7,7 +7,7 @@ import YouTube, { Video } from 'youtube-sr';
 import { LinkExtractor } from './abstract/LinkExtractor';
 
 export class YouTubeLinkExtractor extends LinkExtractor {
-  
+
   private static readonly YT_LINK = /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))\/.+$/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {

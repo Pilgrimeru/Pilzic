@@ -7,7 +7,7 @@ import { deezer, DeezerTrack, dz_validate } from 'play-dl';
 import { LinkExtractor } from './abstract/LinkExtractor';
 
 export class DeezerLinkExtractor extends LinkExtractor {
-  
+
   private static readonly DZ_LINK = /^https?:\/\/(?:www\.)?(?:deezer\.com|deezer\.page\.link)\/?.+/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {

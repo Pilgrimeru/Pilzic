@@ -7,7 +7,7 @@ import { i18n } from 'i18n.config';
 import { bot } from 'index';
 
 export default class QueueCommand extends Command {
-  
+
   constructor() {
     super({
       name: "queue",

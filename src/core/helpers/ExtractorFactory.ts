@@ -9,7 +9,7 @@ import { YouTubeLinkExtractor } from '../extractors/YouTubeLinkExtractor';
 import { DataFinder } from './DataFinder';
 
 export class ExtractorFactory {
-  
+
   private static linkExtractors = [
     YouTubeLinkExtractor,
     SoundCloudLinkExtractor,

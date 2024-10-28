@@ -1,16 +1,16 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
-import { config } from 'config';
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
 import { DataFinder } from '@core/helpers/DataFinder';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
 import { Command, CommandConditions } from '@custom-types/Command';
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import { autoDelete } from '@utils/autoDelete';
+import { config } from 'config';
+import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
 
 export default class SearchCommand extends Command {
-  
+
   constructor() {
     super({
       name: "search",

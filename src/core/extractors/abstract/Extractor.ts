@@ -6,7 +6,7 @@ import type { TrackData } from "@custom-types/extractor/TrackData";
 import type { User } from "discord.js";
 
 export abstract class Extractor {
-  
+
   public readonly type: 'track' | 'playlist';
 
   constructor(type: 'track' | 'playlist') {

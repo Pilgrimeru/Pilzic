@@ -1,9 +1,9 @@
-import { ApplicationCommandOptionType } from 'discord.js';
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { autoDelete } from '@utils/autoDelete';
+import { ApplicationCommandOptionType } from 'discord.js';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
 
 export default class JumpCommand extends Command {
 
@@ -28,7 +28,7 @@ export default class JumpCommand extends Command {
   }
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
-    
+
     if (!args.length || isNaN(Number(args[0])))
       return commandTrigger
         .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix }))

@@ -1,9 +1,9 @@
+import { Event } from '@custom-types/Event';
+import { config } from 'config';
 import { Client, type ClientEvents, GatewayIntentBits } from 'discord.js';
 import { readdirSync } from 'fs';
 import { join } from 'path';
 import { getFreeClientID, setToken } from 'play-dl';
-import { config } from 'config';
-import { Event } from '@custom-types/Event';
 import { CommandManager } from './managers/CommandManager';
 import { PlayerManager } from './managers/PlayerManager';
 

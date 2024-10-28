@@ -13,7 +13,7 @@ const { getPreview, getTracks } = spotifyUrlInfo(fetch);
 
 
 export class SpotifyLinkExtractor extends LinkExtractor {
-  
+
   private static readonly SP_LINK = /^https?:\/\/(?:open|play)\.spotify\.com\/?.+/;
   private static readonly SP_ARTIST = /^https?:\/\/(?:open|play)\.spotify\.com\/artist\/?.+/;
 

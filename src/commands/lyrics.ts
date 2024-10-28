@@ -1,15 +1,15 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
-import { config } from 'config';
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { autoDelete } from '@utils/autoDelete';
+import { config } from 'config';
+import { ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
+import { i18n } from 'i18n.config';
+import { bot } from 'index';
 // @ts-ignore
 import lyricsFinder from "lyrics-finder";
 
 export default class LyricsCommand extends Command {
-  
+
   constructor() {
     super({
       name: "lyrics",

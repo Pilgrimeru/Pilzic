@@ -10,7 +10,7 @@ import {
 import { DataFinder } from './helpers/DataFinder';
 
 export class Track {
-  
+
   public readonly url!: string;
   public readonly title!: string;
   public readonly duration!: number;

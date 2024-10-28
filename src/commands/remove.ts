@@ -8,7 +8,7 @@ import { bot } from 'index';
 const pattern = /^[1-9][0-9]{0,2}(\s*,\s*[1-9][0-9]{0,2})*$/;
 
 export default class RemoveCommand extends Command {
-  
+
   constructor() {
     super({
       name: "remove",
