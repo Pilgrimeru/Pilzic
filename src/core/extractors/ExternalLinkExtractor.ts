@@ -24,12 +24,12 @@ export class ExternalLinkExtractor extends LinkExtractor {
   }
 
   protected async extractTrack(): Promise<TrackData> {
-    const info = await this.getExternalStreamInfo(this.url);
+    const data = await this.getExternalStreamInfo(this.url);
 
     return {
       url: this.url,
-      title: info.fileName,
-      duration: info.durationInMs,
+      title: data.fileName,
+      duration: data.durationInMs,
       thumbnail: null,
     };
   }

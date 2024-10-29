@@ -33,9 +33,12 @@ export class SpotifyLinkExtractor extends LinkExtractor {
   }
 
   protected async extractTrack(): Promise<TrackData> {
-    let data;
     try {
-      data = await getPreview(this.url, { headers: { 'user-agent': config.USERAGENT } });
+      const data = await getPreview(this.url, { headers: { 'user-agent': config.USERAGENT } });
+      if (!data.type) throw new NoDataError();
+
+      const search = data.artist + " " + data.track;
+      return DataFinder.searchTrackData(search);
     } catch (error: any) {
       if (error.message?.includes("parse")) {
         throw new InvalidURLError();
@@ -43,9 +46,6 @@ export class SpotifyLinkExtractor extends LinkExtractor {
         throw new ServiceUnavailableError();
       }
     }
-    if (!data.type) throw new NoDataError();
-    const search = data.artist + " " + data.track;
-    return DataFinder.searchTrackData(search);
   }
 
   protected async extractPlaylist(): Promise<PlaylistData> {

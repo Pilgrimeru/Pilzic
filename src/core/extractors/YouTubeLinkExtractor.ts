@@ -21,9 +21,20 @@ export class YouTubeLinkExtractor extends LinkExtractor {
   }
 
   protected async extractTrack(): Promise<TrackData> {
-    let trackInfo;
     try {
-      trackInfo = await video_basic_info(this.url);
+      const trackInfo = await video_basic_info(this.url, { htmldata: false });
+
+      if (!trackInfo.video_details.title || !trackInfo.video_details.url) {
+        throw new NothingFoundError();
+      }
+
+      return {
+        url: trackInfo.video_details.url,
+        title: trackInfo.video_details.title,
+        duration: trackInfo.video_details.durationInSec * 1000,
+        thumbnail: trackInfo.video_details.thumbnails[0].url,
+        related: trackInfo.related_videos
+      }
     } catch (error: any) {
       if (error.message?.includes("confirm your age")) {
         throw new AgeRestrictedError();
@@ -36,17 +47,6 @@ export class YouTubeLinkExtractor extends LinkExtractor {
       }
       throw error;
     }
-    if (!trackInfo.video_details.title || !trackInfo.video_details.url) {
-      throw new NothingFoundError();
-    }
-
-    return {
-      url: trackInfo.video_details.url,
-      title: trackInfo.video_details.title,
-      duration: trackInfo.video_details.durationInSec * 1000,
-      thumbnail: trackInfo.video_details.thumbnails[0].url,
-      related: trackInfo.related_videos
-    };
   }
 
   protected async extractPlaylist(): Promise<PlaylistData> {

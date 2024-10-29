@@ -20,13 +20,16 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
 
   protected async extractTrack(): Promise<TrackData> {
     try {
-      let trackInfo = (await soundcloud(this.url)) as SoundCloudTrack;
+      const data = await soundcloud(this.url);
+      if (!data || !(data instanceof SoundCloudTrack)) {
+        throw new NoDataError();
+      }
 
       return {
-        url: trackInfo.url,
-        title: trackInfo.name,
-        duration: trackInfo.durationInMs,
-        thumbnail: trackInfo.thumbnail,
+        url: data.url,
+        title: data.name,
+        duration: data.durationInMs,
+        thumbnail: data.thumbnail,
       };
     } catch (error: any) {
       if (error.message?.includes("out of scope")) {
@@ -40,17 +43,16 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
 
   protected async extractPlaylist(): Promise<PlaylistData> {
     try {
-
-      const playlist = await soundcloud(this.url);
-      if (!playlist || playlist instanceof SoundCloudTrack) {
+      const data = await soundcloud(this.url);
+      if (!data || data instanceof SoundCloudTrack) {
         throw new NoDataError();
       }
-      const playlistTracks = await playlist.all_tracks();
+      const playlistTracks = await data.all_tracks();
 
       const tracks = await SoundCloudLinkExtractor.buildTracksData(playlistTracks);
       const duration = tracks.reduce((total, track) => total + track.duration, 0);
 
-      return { title: playlist.name, url: this.url, tracks: tracks, duration };
+      return { title: data.name, url: this.url, tracks: tracks, duration };
     } catch (error: any) {
       if (error.message?.includes("out of scope")) {
         throw new InvalidURLError();

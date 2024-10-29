@@ -32,9 +32,15 @@ export class DeezerLinkExtractor extends LinkExtractor {
   }
 
   protected async extractTrack(): Promise<TrackData> {
-    let data;
     try {
-      data = await deezer(this.url);
+      const data = await deezer(this.url);
+      if (!data || !(data instanceof DeezerTrack)) {
+        throw new NoDataError();
+      }
+  
+      const search = data.artist.name + " " + data.title;
+      return DataFinder.searchTrackData(search);
+
     } catch (error: any) {
       if (error.message?.includes("not a Deezer")) {
         throw new InvalidURLError();
@@ -43,26 +49,17 @@ export class DeezerLinkExtractor extends LinkExtractor {
       }
       throw error;
     }
-
-    let track: DeezerTrack | undefined;
-    if (data && data.type === "track") {
-      track = data as DeezerTrack;
-    } else {
-      throw new NoDataError();
-    }
-    const search = track.artist.name + " " + track.title;
-    return DataFinder.searchTrackData(search);
   }
 
   protected async extractPlaylist(): Promise<PlaylistData> {
     try {
-      const playlist = await deezer(this.url);
+      const data = await deezer(this.url).catch(console.error);
 
-      if (!playlist || playlist instanceof DeezerTrack) {
+      if (!data || data instanceof DeezerTrack) {
         throw new NoDataError();
       }
 
-      const promiseTracksData: Promise<TrackData>[] = playlist.tracks.map((track) => {
+      const promiseTracksData: Promise<TrackData>[] = data.tracks.map((track) => {
         const search = track.artist.name + " " + track.title;
         return DataFinder.searchTrackData(search);
       });
@@ -70,7 +67,7 @@ export class DeezerLinkExtractor extends LinkExtractor {
       const tracks = await Promise.all(promiseTracksData);
       const duration = tracks.reduce((total, track) => total + track.duration, 0);
 
-      return { title: playlist.title, url: playlist.url, tracks, duration };
+      return { title: data.title, url: data.url, tracks, duration };
     } catch (error: any) {
       if (error.message?.includes("not a Deezer")) {
         throw new InvalidURLError();
