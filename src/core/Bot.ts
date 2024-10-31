@@ -1,6 +1,6 @@
 import { Event } from '@custom-types/Event';
 import { config } from 'config';
-import { Client, type ClientEvents, GatewayIntentBits } from 'discord.js';
+import { Client, type ClientEvents, GatewayIntentBits, Options } from 'discord.js';
 import { readdirSync } from 'fs';
 import { join } from 'path';
 import { getFreeClientID, setToken } from 'play-dl';
@@ -24,10 +24,30 @@ export class Bot extends Client {
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMessageReactions,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.DirectMessages
-      ]
+        GatewayIntentBits.MessageContent
+      ],
+      makeCache: Options.cacheWithLimits({
+        ...Options.DefaultMakeCacheSettings,
+        MessageManager: 10,
+        GuildEmojiManager: 0,
+        ReactionManager: 0,
+        ThreadManager: 0,
+        StageInstanceManager: 0,
+        PresenceManager: 0,
+        GuildInviteManager: 5,
+        AutoModerationRuleManager: 0,
+        GuildScheduledEventManager: 0,
+      }),
+      sweepers: {
+        messages: {
+          interval: 1800,
+          lifetime: 600,
+        },
+        users: {
+          interval: 1800,
+          filter: () => user => user.bot && user.id !== user.client.user.id,
+        },
+      },
     });
     this.prefix = config.PREFIX;
     this.playerManager = new PlayerManager();

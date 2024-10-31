@@ -7,3 +7,4 @@ docker-compose.yml
 README.md
 LICENSE
 config.env.example
+bun.lockb

@@ -8,7 +8,7 @@ RUN apk add --no-cache ffmpeg
 WORKDIR /app
 
 # Copy dependency files
-COPY package.json bun.lockb ./
+COPY package.json ./
 
 # Install dependencies with Bun (production only)
 RUN bun install --production
