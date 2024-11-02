@@ -15,7 +15,7 @@ export default class JumpCommand extends Command {
       options: [
         {
           name: "position",
-          description: i18n.__mf("jumpto.options.position"),
+          description: i18n.__("jumpto.options.position"),
           type: ApplicationCommandOptionType.Number,
           required: true,
         }
@@ -31,7 +31,7 @@ export default class JumpCommand extends Command {
 
     if (!args.length || isNaN(Number(args[0])))
       return commandTrigger
-        .reply(i18n.__mf("jumpto.usageReply", { prefix: bot.prefix }))
+        .reply(i18n.__("jumpto.usageReply", { prefix: bot.prefix }))
         .then(autoDelete);
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
@@ -41,7 +41,7 @@ export default class JumpCommand extends Command {
 
     if (position < -queue.index || position >= queue.tracks.length - queue.index)
       return commandTrigger
-        .reply(i18n.__mf("jumpto.errorNotValid"))
+        .reply(i18n.__("jumpto.errorNotValid"))
         .then(autoDelete);
 
     if (player.queue.loop === "track") player.queue.loop = "disabled";

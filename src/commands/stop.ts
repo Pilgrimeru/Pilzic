@@ -24,9 +24,9 @@ export default class StopCommand extends Command {
     player.stop();
 
     if (commandTrigger.type === "ButtonInteraction") {
-      return commandTrigger.send(i18n.__mf("stop.result")).then(autoDelete);
+      return commandTrigger.send(i18n.__("stop.result")).then(autoDelete);
     }
 
-    return commandTrigger.reply(i18n.__mf("stop.result")).then(autoDelete);
+    return commandTrigger.reply(i18n.__("stop.result")).then(autoDelete);
   }
 }

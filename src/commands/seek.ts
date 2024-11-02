@@ -18,7 +18,7 @@ export default class SeekCommand extends Command {
       options: [
         {
           name: "time",
-          description: i18n.__mf("seek.options.time"),
+          description: i18n.__("seek.options.time"),
           type: ApplicationCommandOptionType.String,
           required: true,
         }
@@ -34,7 +34,7 @@ export default class SeekCommand extends Command {
 
     if (!args.length || (isNaN(Number(args[0])) && !args[0].match(timeRegEx)))
       return commandTrigger
-        .reply(i18n.__mf("seek.usageReply", { prefix: bot.prefix }))
+        .reply(i18n.__("seek.usageReply", { prefix: bot.prefix }))
         .then(autoDelete);
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
@@ -43,7 +43,7 @@ export default class SeekCommand extends Command {
 
     if (!currentTrack || yt_validate(currentTrack.url) !== "video") {
       return commandTrigger
-        .reply(i18n.__mf("seek.errorSource"))
+        .reply(i18n.__("seek.errorSource"))
         .then(autoDelete);
     }
 
@@ -61,7 +61,7 @@ export default class SeekCommand extends Command {
 
     if (seekTime < 0 || seekTime * 1000 >= (currentTrack?.duration ?? 0)) {
       return commandTrigger
-        .reply(i18n.__mf("seek.errorNotValid", { prefix: bot.prefix, duration: Math.floor(currentTrack?.duration! / 1000) }))
+        .reply(i18n.__("seek.errorNotValid", { prefix: bot.prefix, duration: Math.floor(currentTrack?.duration! / 1000) }))
         .then(autoDelete);
     }
 

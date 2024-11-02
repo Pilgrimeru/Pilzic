@@ -15,7 +15,7 @@ export default class VolumeCommand extends Command {
       options: [
         {
           name: "level",
-          description: i18n.__mf("volume.options.level"),
+          description: i18n.__("volume.options.level"),
           type: ApplicationCommandOptionType.String,
           required: true,
         }

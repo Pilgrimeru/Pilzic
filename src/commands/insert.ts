@@ -3,7 +3,9 @@ import { ExtractorFactory } from '@core/helpers/ExtractorFactory';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { ExtractionError } from '@errors/ExtractionErrors';
 import { autoDelete } from '@utils/autoDelete';
-import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from 'discord.js';
+import { processSearchAutocomplete } from '@utils/processSearchAutocomplete';
+import { config } from 'config';
+import { ApplicationCommandOptionType, AutocompleteInteraction, BaseGuildTextChannel, PermissionsBitField, User } from 'discord.js';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
 
@@ -16,13 +18,13 @@ export default class InsertCommand extends Command {
       options: [
         {
           name: "query",
-          description: i18n.__mf("insert.options.query"),
+          description: i18n.__("insert.options.query"),
           type: ApplicationCommandOptionType.String,
           required: true,
         },
         {
           name: "playlist",
-          description: i18n.__mf("insert.options.playlist"),
+          description: i18n.__("insert.options.playlist"),
           type: ApplicationCommandOptionType.Boolean,
           required: false,
         },
@@ -32,6 +34,7 @@ export default class InsertCommand extends Command {
         PermissionsBitField.Flags.Speak
       ],
       conditions: [
+        CommandConditions.IS_CONNECTED_TO_CHANNEL,
         CommandConditions.QUEUE_EXISTS,
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
@@ -62,7 +65,7 @@ export default class InsertCommand extends Command {
     try {
       const extractor = await ExtractorFactory.createExtractor(query, searchForPlaylist ? "playlist" : "track");
       if (extractor.type === "playlist") {
-        commandTrigger.editReply(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
+        commandTrigger.editReply(i18n.__("play.fetchingPlaylist")).catch(() => null);
       }
 
       const item = await extractor.extractAndBuild(requester);

@@ -19,13 +19,13 @@ export default class SearchCommand extends Command {
       options: [
         {
           name: 'search',
-          description: i18n.__mf("search.options.search"),
+          description: i18n.__("search.options.search"),
           type: ApplicationCommandOptionType.String,
           required: true,
         },
         {
           name: "playlist",
-          description: i18n.__mf("search.options.playlist"),
+          description: i18n.__("search.options.playlist"),
           type: ApplicationCommandOptionType.Boolean,
           required: false,
         },
@@ -41,7 +41,7 @@ export default class SearchCommand extends Command {
 
     if (!args.length)
       return commandTrigger
-        .reply(i18n.__mf("search.usageReply", { prefix: bot.prefix, name: module.exports.name }))
+        .reply(i18n.__("search.usageReply", { prefix: bot.prefix, name: module.exports.name }))
         .then(autoDelete);
 
     const search = args.join(" ");

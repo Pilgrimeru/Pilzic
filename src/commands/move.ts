@@ -19,13 +19,13 @@ export default class MoveCommand extends Command {
       options: [
         {
           name: "position",
-          description: i18n.__mf("move.options.position"),
+          description: i18n.__("move.options.position"),
           type: ApplicationCommandOptionType.String,
           required: true,
         },
         {
           name: "new_position",
-          description: i18n.__mf("move.options.new_position"),
+          description: i18n.__("move.options.new_position"),
           type: ApplicationCommandOptionType.String,
           required: false,
         }
@@ -36,7 +36,7 @@ export default class MoveCommand extends Command {
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     if (!args.length || isNaN(Number(args[0])) || Number(args[0]) < 1)
-      return commandTrigger.reply(i18n.__mf("move.usagesReply", { prefix: bot.prefix })).then(autoDelete);
+      return commandTrigger.reply(i18n.__("move.usagesReply", { prefix: bot.prefix })).then(autoDelete);
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 

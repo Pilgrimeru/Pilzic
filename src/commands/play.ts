@@ -3,7 +3,9 @@ import { ExtractorFactory } from '@core/helpers/ExtractorFactory';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { ExtractionError } from '@errors/ExtractionErrors';
 import { autoDelete } from '@utils/autoDelete';
-import { ApplicationCommandOptionType, BaseGuildTextChannel, PermissionsBitField, User } from 'discord.js';
+import { processSearchAutocomplete } from '@utils/processSearchAutocomplete';
+import { config } from 'config';
+import { ApplicationCommandOptionType, AutocompleteInteraction, BaseGuildTextChannel, PermissionsBitField, User } from 'discord.js';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
 
@@ -17,13 +19,14 @@ export default class PlayCommand extends Command {
       options: [
         {
           name: "query",
-          description: i18n.__mf("play.options.query"),
+          description: i18n.__("play.options.query"),
           type: ApplicationCommandOptionType.String,
           required: true,
+          autocomplete: config.AUTOCOMPLETE
         },
         {
           name: "playlist",
-          description: i18n.__mf("play.options.playlist"),
+          description: i18n.__("play.options.playlist"),
           type: ApplicationCommandOptionType.Boolean,
           required: false,
         },
@@ -40,7 +43,6 @@ export default class PlayCommand extends Command {
   }
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
-
     if (!args.length && !(commandTrigger.attachments?.size)) {
       return commandTrigger.reply(i18n.__mf("play.usageReply", { prefix: bot.prefix })).then(autoDelete);
     }
@@ -64,7 +66,7 @@ export default class PlayCommand extends Command {
     try {
       const extractor = await ExtractorFactory.createExtractor(query, searchForPlaylist ? "playlist" : "track");
       if (extractor.type === "playlist") {
-        commandTrigger.editReply(i18n.__mf("play.fetchingPlaylist")).catch(() => null);
+        commandTrigger.editReply(i18n.__("play.fetchingPlaylist")).catch(() => null);
       }
       const item = await extractor.extractAndBuild(requester);
 

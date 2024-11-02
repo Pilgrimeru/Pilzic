@@ -23,7 +23,7 @@ export default class AutoplayCommand extends Command {
     commandTrigger.loadingReply();
     const autoqueueStatus = await player.queue.toggleAutoqueue();
 
-    const mode = autoqueueStatus ? i18n.__mf("common.enabled") : i18n.__mf("common.disabled");
+    const mode = autoqueueStatus ? i18n.__("common.enabled") : i18n.__("common.disabled");
     return commandTrigger.editReply(i18n.__mf("autoplay.result", { mode: mode })).then(autoDelete);
   }
 }

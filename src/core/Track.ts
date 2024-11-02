@@ -4,8 +4,8 @@ import { config } from 'config';
 import { EmbedBuilder, User } from 'discord.js';
 import { i18n } from 'i18n.config';
 import {
-  video_basic_info,
-  yt_validate
+    video_basic_info,
+    yt_validate
 } from "play-dl";
 import { DataFinder } from './helpers/DataFinder';
 
@@ -29,13 +29,13 @@ export class Track {
 
   public formatedTime(): string {
     return this.duration === 0
-      ? i18n.__mf("nowplayingMsg.live")
+      ? i18n.__("nowplayingMsg.live")
       : formatTime(this.duration);
   }
 
   public playingEmbed(): EmbedBuilder {
     return new EmbedBuilder({
-      title: i18n.__mf("nowplayingMsg.startedPlaying"),
+      title: i18n.__("nowplayingMsg.startedPlaying"),
       description: `[${this.title}](${this.url})
       ${i18n.__mf("nowplayingMsg.duration", { duration: this.formatedTime() })}`,
       thumbnail: {

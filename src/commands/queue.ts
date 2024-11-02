@@ -47,7 +47,7 @@ export default class QueueCommand extends Command {
       );
 
       response = await commandTrigger.reply({
-        content: `**${i18n.__mf("queue.currentPage")} ${currentPage + 1}/${embeds.length}**`,
+        content: `**${i18n.__("queue.currentPage")} ${currentPage + 1}/${embeds.length}**`,
         embeds: [embeds[currentPage]],
         components: [row]
       });
@@ -64,7 +64,7 @@ export default class QueueCommand extends Command {
         if (currentPage !== 0) {
           currentPage--;
           response.edit({
-            content: `**${i18n.__mf("queue.currentPage")} ${currentPage + 1}/${embeds.length}**`,
+            content: `**${i18n.__("queue.currentPage")} ${currentPage + 1}/${embeds.length}**`,
             embeds: [embeds[currentPage]]
           });
         }
@@ -73,7 +73,7 @@ export default class QueueCommand extends Command {
         if (currentPage < embeds.length - 1) {
           currentPage++;
           response.edit({
-            content: `**${i18n.__mf("queue.currentPage")} ${currentPage + 1}/${embeds.length}**`,
+            content: `**${i18n.__("queue.currentPage")} ${currentPage + 1}/${embeds.length}**`,
             embeds: [embeds[currentPage]]
           });
         }
@@ -122,7 +122,7 @@ function generateQueueEmbed(guild: Guild, followingTracks: Track[], previousTrac
   embeds.reverse();
 
   if (followingTracks.length === 1) {
-    embeds.push(buildEmbed(i18n.__mf("queue.nothingMore")));
+    embeds.push(buildEmbed(i18n.__("queue.nothingMore")));
   }
 
   for (let i = 1; i < followingTracks.length; i += 10) {

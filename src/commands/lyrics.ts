@@ -18,7 +18,7 @@ export default class LyricsCommand extends Command {
       options: [
         {
           name: 'title',
-          description: i18n.__mf("lyrics.options.title"),
+          description: i18n.__("lyrics.options.title"),
           type: ApplicationCommandOptionType.String,
           required: false,
         }
@@ -38,23 +38,22 @@ export default class LyricsCommand extends Command {
 
     commandTrigger.loadingReply();
 
-    let lyrics = null;
     try {
-      lyrics = await lyricsFinder(title, "");
-      if (!lyrics) lyrics = i18n.__mf("lyrics.lyricsNotFound", { title: title });
+      const lyrics: string = await lyricsFinder(title, "");
+
+      if (!lyrics) {
+        commandTrigger.editReply(i18n.__mf("lyrics.lyricsNotFound", { title: title })).then(autoDelete);
+      }
+
+      const lyricsEmbed = new EmbedBuilder()
+        .setTitle(i18n.__mf("lyrics.embedTitle", { title: title }))
+        .setDescription(lyrics.length >= 4096 ? `${lyrics.slice(0, 4093)}...` : lyrics)
+        .setColor(config.COLORS.MAIN)
+        .setTimestamp();
+
+      return commandTrigger.editReply({ content: "", embeds: [lyricsEmbed] }).then(msg => autoDelete(msg, true));
     } catch (error) {
-      lyrics = i18n.__mf("lyrics.lyricsNotFound", { title: title });
+      commandTrigger.editReply(i18n.__mf("lyrics.lyricsNotFound", { title: title })).then(autoDelete);
     }
-
-    let lyricsEmbed = new EmbedBuilder()
-      .setTitle(i18n.__mf("lyrics.embedTitle", { title: title }))
-      .setDescription(lyrics)
-      .setColor(config.COLORS.MAIN)
-      .setTimestamp();
-
-    if (lyricsEmbed.data.description!.length >= 4096)
-      lyricsEmbed.setDescription(`${lyricsEmbed.data.description!.slice(0, 4093)}...`);
-
-    return commandTrigger.editReply({ content: "", embeds: [lyricsEmbed] }).then(msg => autoDelete(msg, true));
   }
 }

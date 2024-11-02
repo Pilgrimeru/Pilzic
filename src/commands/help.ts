@@ -30,7 +30,7 @@ export default class HelpCommand extends Command {
       const endIndex = startIndex + commandsPerPage;
 
       const helpEmbed = new EmbedBuilder()
-        .setTitle(i18n.__mf('help.embedTitle', { botname: commandTrigger.guild.client.user!.username }))
+        .setTitle(i18n.__mf("help.embedTitle", { botname: commandTrigger.guild.client.user!.username }))
         .setDescription(`${i18n.__('help.embedDescription')} (${page}/${totalPages})`)
         .setColor(config.COLORS.MAIN);
 

@@ -1,17 +1,17 @@
 import {
-  Attachment,
-  BaseInteraction,
-  type BaseMessageOptions,
-  ButtonInteraction,
-  Collection,
-  CommandInteraction,
-  Guild, GuildMember,
-  type GuildTextBasedChannel,
-  type InteractionEditReplyOptions,
-  type InteractionReplyOptions,
-  Message,
-  MessageComponentInteraction,
-  type Snowflake
+    Attachment,
+    BaseInteraction,
+    type BaseMessageOptions,
+    ButtonInteraction,
+    Collection,
+    CommandInteraction,
+    Guild, GuildMember,
+    type GuildTextBasedChannel,
+    type InteractionEditReplyOptions,
+    type InteractionReplyOptions,
+    Message,
+    MessageComponentInteraction,
+    type Snowflake
 } from "discord.js";
 import { i18n } from 'i18n.config';
 
@@ -83,13 +83,13 @@ export class CommandTrigger {
       if (!this.interaction.replied && !this.interaction.deferred) {
         this.response = this.interaction.deferReply({ ephemeral, fetchReply: true });
       } else {
-        await this.interaction.editReply(i18n.__mf("common.loading"));
+        await this.interaction.editReply(i18n.__("common.loading"));
       }
     } else if (this.message) {
       if (!this.response) {
-        this.response = this.message.reply(i18n.__mf("common.loading"));
+        this.response = this.message.reply(i18n.__("common.loading"));
       } else {
-        await (await this.response).edit(i18n.__mf("common.loading"));
+        await (await this.response).edit(i18n.__("common.loading"));
       }
     }
     return this.response!;

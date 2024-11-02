@@ -41,7 +41,7 @@ export default class NowPlayingCommand extends Command {
           " [" +
           splitBar((track.duration == 0 ? seek : track.duration), seek, 15)[0] +
           "] " +
-          (track.duration == 0 ? i18n.__mf("nowplaying.live") : formatTime(track.duration)),
+          (track.duration == 0 ? i18n.__("nowplaying.live") : formatTime(track.duration)),
         inline: false
       }
     );

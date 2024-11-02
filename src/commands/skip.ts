@@ -26,9 +26,9 @@ export default class SkipCommand extends Command {
     player.skip();
 
     if (commandTrigger.type === "ButtonInteraction") {
-      return commandTrigger.send(i18n.__mf("skip.result")).then(autoDelete);
+      return commandTrigger.send(i18n.__("skip.result")).then(autoDelete);
     }
 
-    return commandTrigger.reply(i18n.__mf("skip.result")).then(autoDelete);
+    return commandTrigger.reply(i18n.__("skip.result")).then(autoDelete);
   }
 }

@@ -21,7 +21,7 @@ export default class RemoveCommand extends Command {
       options: [
         {
           name: "position",
-          description: i18n.__mf("remove.options.position"),
+          description: i18n.__("remove.options.position"),
           type: ApplicationCommandOptionType.String,
           required: true,
         }
@@ -31,7 +31,7 @@ export default class RemoveCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    if (!args.length) return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);
+    if (!args.length) return commandTrigger.reply(i18n.__("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
@@ -43,12 +43,12 @@ export default class RemoveCommand extends Command {
       const removed = player.queue.remove(...indexs);
 
       if (removed.length === 0) {
-        return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);
+        return commandTrigger.reply(i18n.__("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);
       }
 
       if (removed.length === 1) {
         return commandTrigger.reply(
-          i18n.__mf("remove.result", {
+          i18n.__("remove.result", {
             title: removed[0].title
           })
         ).then(autoDelete);
@@ -61,7 +61,7 @@ export default class RemoveCommand extends Command {
       ).then(autoDelete);
 
     } else {
-      return commandTrigger.reply(i18n.__mf("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);
+      return commandTrigger.reply(i18n.__("remove.usageReply", { prefix: bot.prefix })).then(autoDelete);
     }
   }
 }
