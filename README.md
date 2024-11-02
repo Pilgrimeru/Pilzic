@@ -2,20 +2,18 @@
 
 ![banner](https://i.imgur.com/y73VY4q.jpg)
 
-**Pilzic** is a feature-rich Discord bot designed to provide a seamless music experience in your Discord server. Play tracks from various sources like YouTube, Spotify, SoundCloud, Deezer, and direct links. Manage your music queue effortlessly and enjoy interactive controls with ease.
+Say hello to **Pilzic** – the fastest, most reliable music bot for Discord! With instant setup, crash-free performance, and good YouTube compatibility, Pilzic makes music control smooth and easy. Get started with quality playback right away!
 
 ## Features 🚀
 
-- 🎵 **Multi-Media Control Buttons:** Easily control your music with interactive buttons.
-- 🌐 **Multi-Language Support:** Supports both English and French.
+- ⏯ **Multi-Media Control Buttons:** Easily control your music with interactive buttons.
 - 🎶 **Source Variety:** Play music from YouTube, Spotify, SoundCloud, Deezer, and direct links.
+- 🔍 **Command Autocompletion:** Features autocompletion on the play and insert commands.
 - 📎 **Attachment Playback:** Play audio attachments directly.
-- ⏱️ **Automatic Disconnect:** Automatically disconnects if left alone in a voice channel.
 - 🗨️ **Slash Commands and Prefix Commands:** Use either slash commands or traditional prefix commands.
+- 🌐 **Multi-Language Support:** Supports both English and French.
 - 🧹 **Auto Message Cleanup:** Automatically removes bot messages for a cleaner chat.
-- 💪 **Strongly Typed Code:** Coded in TypeScript for robust and error-free operation.
-- ⚡ **Asynchronous Operations:** Ensures accelerated bot responsiveness.
-- 🤖 **Powered by discord.js and play-dl:** Utilizes reliable modules for consistent functionality.
+- ⏱️ **Automatic Disconnect:** Automatically disconnects if left alone in a voice channel.
 
 ## Getting Started 📋
 
@@ -47,19 +45,7 @@ cd Pilzic
 
 2. Open `config.env` in a text editor and fill in the necessary values:
 
-   ```env
-   TOKEN="your-discord-bot-token" # Your Discord bot token
-   MAX_PLAYLIST_SIZE=500
-   PREFIX="!"
-   AUTO_DELETE=true
-   LOCALE="en"
-   STAY_TIME=30
-   AUDIO_QUALITY=0
-   DEFAULT_VOLUME=100
-   MAIN_COLOR="#69ADC7"
-   ```
-
-   > **Note:** You can also pass the `TOKEN` directly via Docker run command, which will override the value in `config.env`.
+   > **Note:** You can also pass the `TOKEN` or any other directly via Docker run command, which will override the value in `config.env`.
 
 #### Step 3: Build the Docker Image
 
@@ -70,22 +56,10 @@ docker build -t pilzic .
 #### Step 4: Run the Docker Container
 
 ```bash
-docker run -d --name pilzic \
-  --restart=always \
-  -e TOKEN="your-discord-bot-token" \
-  pilzic
+docker run -d --name pilzic --restart=always pilzic
 ```
-
 - **`-e TOKEN="your-discord-bot-token"`**: Passes the Discord token directly.
-- **`--restart=always`**: Ensures the container restarts automatically on system reboot or if it crashes.
-
-#### Step 5: Verify the Bot is Running
-
-Check the logs to ensure the bot started successfully:
-
-```bash
-docker logs -f pilzic
-```
+- **`--restart=always`**: Makes sure the container bounces back on reboot or if it *ever* crashes… but come on, we all know it's built like a tank!
 
 ### Option 2: Manual Installation 🛠️
 
@@ -94,7 +68,6 @@ If you prefer not to use Docker, follow these steps:
 #### Prerequisites
 
 - **Bun:** Version 1.1.31 or higher. [Install Bun](https://bun.sh/)
-- **FFmpeg:** Required for audio processing. [Download FFmpeg](https://ffmpeg.org/download.html)
 - **Discord API Token:** Obtain from the [Discord Developer Portal](https://discord.com/developers/applications).
 
 #### Step 1: Clone the Repository
