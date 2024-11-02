@@ -26,6 +26,7 @@ const config: Config = {
   DEFAULT_VOLUME: parseEnvInt(process.env['DEFAULT_VOLUME'], 100),
   LOCALE: process.env['LOCALE'] ?? "en",
   CACHE_SIZE: parseEnvInt(process.env['CACHE_SIZE'], 0),
+  AUTOCOMPLETE: process.env['AUTOCOMPLETE'] == "true" ? true : false,
   USERAGENT: process.env['LOCALE'] ?? "Mozilla/5.0 (Windows NT 11.0; Win64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5653.214 Safari/537.36",
   COLORS: {
     MAIN: parseEnvColor(process.env['MAIN_COLOR'], 0x69ADC7),

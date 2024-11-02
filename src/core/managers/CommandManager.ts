@@ -2,6 +2,7 @@ import { CommandTrigger } from '@core/helpers/CommandTrigger';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { autoDelete } from '@utils/autoDelete';
 import {
+  AutocompleteInteraction,
   ButtonInteraction,
   ChatInputCommandInteraction,
   Collection,
@@ -64,8 +65,14 @@ export class CommandManager {
     }
   }
 
-  public async handleInteraction(interaction: ChatInputCommandInteraction | ButtonInteraction): Promise<void> {
+  public async handleInteraction(interaction: ChatInputCommandInteraction | ButtonInteraction | AutocompleteInteraction): Promise<void> {
     if (!interaction.guild) return;
+
+    if (interaction.isAutocomplete()) {
+      const command = this.commands.get(interaction.commandName);
+      command?.autocomplete(interaction);
+      return;
+    }
 
     if (interaction.isButton() && !interaction.customId.startsWith("cmd-")) return;
 

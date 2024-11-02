@@ -8,7 +8,7 @@ import { YouTubeLinkExtractor } from './YouTubeLinkExtractor';
 export class YouTubeSearchExtractor extends SearchExtractor {
 
   public async searchMultipleTracks(limit: number): Promise<TrackData[]> {
-    const results = await YouTube.search(this.query, { limit, type: "video", safeSearch: true });
+    const results = await YouTube.search(this.query, { limit, type: "video" });
 
     const trackPromises = results.map(video =>
       this.formatYoutubeVideoToTrackData(video).catch(() => undefined)
@@ -20,11 +20,11 @@ export class YouTubeSearchExtractor extends SearchExtractor {
   }
 
   public async searchMultiplePlaylists(limit: number, fetch: boolean = false): Promise<PlaylistData[]> {
-    const results = await YouTube.search(this.query, { limit, type: "playlist", safeSearch: true });
+    const results = await YouTube.search(this.query, { limit, type: "playlist" });
 
     const playlistPromises = results.map(async (playlist) => {
       try {
-        if (!playlist?.url) {
+        if (!playlist?.url || !playlist?.title) {
           throw new NothingFoundError();
         }
         if (fetch) {
@@ -54,13 +54,17 @@ export class YouTubeSearchExtractor extends SearchExtractor {
     return this.formatYoutubeVideoToTrackData(trackInfo);
   }
 
-  public async searchPlaylist(): Promise<PlaylistData> {
+  public async searchPlaylist(fetch: boolean = false): Promise<PlaylistData> {
     const result = await YouTube.searchOne(this.query, "playlist", true);
-    if (!result.url) {
+    if (!result?.url || !result?.title) {
       throw new NothingFoundError();
     }
-    const youTubeExtractor = new YouTubeLinkExtractor(result.url, "playlist");
-    return youTubeExtractor.extract("playlist");
+    if (fetch) {
+      const extractor = new YouTubeLinkExtractor(result.url, "playlist");
+      return await extractor.extract("playlist");
+    } else {
+      return { title: result.title, url: result.url, tracks: [], duration: 0 };
+    }
   }
 
 

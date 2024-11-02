@@ -13,9 +13,9 @@ export class DataFinder {
     return searchExtractor.searchTrack();
   }
 
-  public static async searchPlaylistData(query: string): Promise<PlaylistData> {
+  public static async searchPlaylistData(query: string, fetch: boolean = false): Promise<PlaylistData> {
     const searchExtractor = new DataFinder.SearchExtractorClass(query, "playlist");
-    return searchExtractor.searchPlaylist();
+    return searchExtractor.searchPlaylist(fetch);
   }
 
   public static async searchMultipleTracksData(query: string, limit: number): Promise<TrackData[]> {

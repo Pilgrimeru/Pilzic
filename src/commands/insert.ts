@@ -21,6 +21,7 @@ export default class InsertCommand extends Command {
           description: i18n.__("insert.options.query"),
           type: ApplicationCommandOptionType.String,
           required: true,
+          autocomplete: config.AUTOCOMPLETE
         },
         {
           name: "playlist",
@@ -39,6 +40,11 @@ export default class InsertCommand extends Command {
         CommandConditions.IS_IN_SAME_CHANNEL
       ],
     });
+  }
+  
+  async autocomplete(interaction: AutocompleteInteraction) {
+    if (!config.AUTOCOMPLETE) return;
+    processSearchAutocomplete(interaction);
   }
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {

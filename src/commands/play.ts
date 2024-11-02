@@ -43,6 +43,11 @@ export default class PlayCommand extends Command {
     });
   }
 
+  async autocomplete(interaction: AutocompleteInteraction) {
+    if (!config.AUTOCOMPLETE) return;
+    processSearchAutocomplete(interaction);
+  }
+
   async execute(commandTrigger: CommandTrigger, args: string[]) {
     if (!args.length && !(commandTrigger.attachments?.size)) {
       return commandTrigger.reply(i18n.__mf("play.usageReply", { prefix: bot.prefix })).then(autoDelete);

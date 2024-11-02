@@ -1,5 +1,5 @@
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import type { ApplicationCommandDataResolvable, ApplicationCommandOptionData, PermissionResolvable } from "discord.js";
+import type { ApplicationCommandDataResolvable, ApplicationCommandOptionData, AutocompleteInteraction, PermissionResolvable } from "discord.js";
 
 export enum CommandConditions {
   QUEUE_EXISTS,
@@ -29,4 +29,8 @@ export abstract class Command {
   }
 
   abstract execute(commandTrigger: CommandTrigger, args?: string[]): any;
+
+  public async autocomplete(_interaction: AutocompleteInteraction) {
+    return;
+  }
 }
