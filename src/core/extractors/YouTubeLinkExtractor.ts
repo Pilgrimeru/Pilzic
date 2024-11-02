@@ -39,7 +39,7 @@ export class YouTubeLinkExtractor extends LinkExtractor {
       if (error.message?.includes("confirm your age")) {
         throw new AgeRestrictedError();
       }
-      if (error.message?.includes("you are a bot")) {
+      if (error.message?.includes("not a bot")) {
         throw new ServiceUnavailableError();
       }
       if (error.message?.includes("Private video") || error.message?.includes("Video unavailable")) {
