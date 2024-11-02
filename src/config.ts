@@ -21,7 +21,7 @@ const config: Config = {
   TOKEN: process.env['TOKEN'] ?? "",
   PREFIX: process.env['PREFIX'] ?? "!",
   MAX_PLAYLIST_SIZE: parseEnvInt(process.env['MAX_PLAYLIST_SIZE'], 10),
-  AUTO_DELETE: Boolean(process.env['AUTO_DELETE']),
+  AUTO_DELETE: process.env['AUTO_DELETE'] == "true" ? true : false,
   STAY_TIME: parseEnvInt(process.env['STAY_TIME'], 30),
   DEFAULT_VOLUME: parseEnvInt(process.env['DEFAULT_VOLUME'], 100),
   LOCALE: process.env['LOCALE'] ?? "en",
