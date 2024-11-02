@@ -36,6 +36,7 @@ export default class PlayCommand extends Command {
         PermissionsBitField.Flags.Speak
       ],
       conditions: [
+        CommandConditions.IS_CONNECTED_TO_CHANNEL,
         CommandConditions.CAN_BOT_CONNECT_TO_CHANNEL,
         CommandConditions.CAN_BOT_SPEAK
       ],

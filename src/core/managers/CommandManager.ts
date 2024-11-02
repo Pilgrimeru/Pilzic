@@ -137,6 +137,11 @@ export class CommandManager {
   private evaluateCondition(condition: CommandConditions, member: GuildMember): string {
     const voiceChannel = member.voice.channel;
     switch (condition) {
+      case CommandConditions.IS_CONNECTED_TO_CHANNEL:
+        if (!voiceChannel) {
+          return i18n.__("errors.notChannel");
+        }
+        break;
       case CommandConditions.QUEUE_EXISTS:
         const player = bot.playerManager.getPlayer(member.guild.id);
         if (!player || !player.queue.currentTrack) {
