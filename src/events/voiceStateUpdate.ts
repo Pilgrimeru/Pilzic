@@ -4,6 +4,7 @@ import { VoiceState } from 'discord.js';
 import { bot } from 'index';
 
 export default new Event("voiceStateUpdate", async (voice: VoiceState) => {
+  if (config.STAY_TIME === 0) return;
   setTimeout(() => {
     const clientChannel = voice.guild.members.me!.voice.channelId;
     if (voice.channel?.id === clientChannel) {
