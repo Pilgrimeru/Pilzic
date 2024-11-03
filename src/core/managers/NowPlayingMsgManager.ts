@@ -5,12 +5,14 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  EmbedBuilder,
   Message,
 } from "discord.js";
+import { i18n } from 'i18n.config';
 
 export class NowPlayingMsgManager {
 
-  private msg: Promise<Message> | undefined;
+  private msg: Message | undefined;
   private track: Track | undefined;
   private player: Player;
   private state: "play" | "pause";
@@ -21,23 +23,38 @@ export class NowPlayingMsgManager {
   }
 
   public async send(track: Track): Promise<void> {
-    if (this.msg) await this.delete();
+    if (this.msg) await this.clear();
     this.track = track;
-    const embed = this.track.playingEmbed();
-    this.msg = this.player.textChannel.send({
-      embeds: [embed.setTitle(`▶  ${embed.data.title}`)],
+
+    const embed = this.buildPlayingEmbed(track, "▶");
+    this.msg = await this.player.textChannel.send({
+      embeds: [embed],
       components: [this.buildButtons()]
     });
   }
 
-  public async delete(): Promise<void> {
+  public async update(): Promise<void> {
+    if (!this.msg || !this.msg.editable || !this.track) return;
+
+    const currentState = this.getPlayerState();
+    if (this.state === currentState) return;
+
+    this.state = currentState;
+
+    const embed = this.buildPlayingEmbed(this.track, currentState === "pause" ? "❚❚" : "▶");
+    await this.msg.edit({
+      embeds: [embed],
+      components: [this.buildButtons()]
+    });
+  }
+
+  public async clear(): Promise<void> {
     if (!this.msg) return;
     try {
-      const message = await this.msg;
       if (config.AUTO_DELETE) {
-        message.delete().catch(() => null);
+        await this.msg.delete().catch(() => null);
       } else {
-        message.edit({ components: [] });
+        await this.msg.edit({ components: [] });
       }
     } catch (error) {
       console.error(error);
@@ -45,33 +62,32 @@ export class NowPlayingMsgManager {
       this.msg = undefined;
     }
   }
+  
 
-  public async edit(): Promise<void> {
-    if (!this.msg || !(await this.msg).editable || !this.track) return;
-    const playerPaused = this.player.status === "paused" || this.player.status === "autopaused";
+  private getPlayerState(): "play" | "pause" {
+    const isPaused = this.player.status === "paused" || this.player.status === "autopaused";
+    return isPaused ? "pause" : "play";
+  }
 
-    if (!playerPaused && this.player.status !== "playing") return;
-    if (this.state === "pause" && playerPaused) return;
-    if (this.state === "play" && !playerPaused) return;
-
-    const color = playerPaused ? config.COLORS.PAUSE : config.COLORS.MAIN;
-    const emoji = playerPaused ? "❚❚" : "▶";
-    this.state = playerPaused ? "pause" : "play";
-
-    const embed = this.track.playingEmbed().setColor(color);
-    embed.setTitle(`${emoji}  ${embed.data.title}`);
-
-    (await this.msg).edit({
-      embeds: [embed],
-      components: [this.buildButtons()]
+  private buildPlayingEmbed(track: Track, emoji: string): EmbedBuilder {
+    return new EmbedBuilder({
+      title: `${emoji}  ${i18n.__("nowplayingMsg.startedPlaying")}`,
+      description: `[${track.title}](${track.url})\n${i18n.__mf("nowplayingMsg.duration", { duration: track.formatedTime() })}`,
+      thumbnail: {
+        url: track.thumbnail
+      },
+      color: this.state === "pause" ? config.COLORS.PAUSE : config.COLORS.MAIN,
+      footer: {
+        text: i18n.__mf("nowplayingMsg.requestedBy", { name: track.requester?.displayName ?? "unknown" }),
+        icon_url: track.requester?.avatarURL() ?? undefined
+      }
     });
   }
 
-
   private buildButtons(): ActionRowBuilder<ButtonBuilder> {
-    const isPaused = this.player.status === "paused" || this.player.status === "autopaused";
+    const isPaused = this.getPlayerState() === "pause";
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId("cmd-stop")
         .setEmoji("⏹")
@@ -93,6 +109,5 @@ export class NowPlayingMsgManager {
         .setEmoji("⏭")
         .setStyle(ButtonStyle.Secondary)
     );
-    return row;
   }
 }

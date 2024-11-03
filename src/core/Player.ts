@@ -76,7 +76,7 @@ export class Player {
       return;
     }
 
-    this.nowPlayingMsgManager.delete();
+    this.nowPlayingMsgManager.clear();
     this.emitSkip();
     const newCurrent = this.queue.currentTrack;
     newCurrent ? this.process(newCurrent) : this.stop();
@@ -85,7 +85,7 @@ export class Player {
   public async jumpTo(trackId: number): Promise<void> {
     if (this._stopped) return;
     this.audioPlayer.pause(true);
-    this.nowPlayingMsgManager.delete();
+    this.nowPlayingMsgManager.clear();
     this.emitJump(trackId);
     const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
@@ -94,14 +94,14 @@ export class Player {
   public async previous(): Promise<void> {
     if (!this.queue.canBack()) return;
     this.audioPlayer.pause(true);
-    this.nowPlayingMsgManager.delete();
+    this.nowPlayingMsgManager.clear();
     this.emitPrevious();
     const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
 
   public async seek(time: number): Promise<void> {
-    this.nowPlayingMsgManager.delete();
+    this.nowPlayingMsgManager.clear();
     this.audioPlayer.pause(true);
     const current = this.queue.currentTrack;
     return current ? this.process(current, time) : this.stop();
@@ -109,7 +109,7 @@ export class Player {
 
   public async pause(): Promise<boolean> {
     const result = this.audioPlayer.pause();
-    await this.nowPlayingMsgManager.edit();
+    await this.nowPlayingMsgManager.update();
     return result;
   }
 
@@ -121,7 +121,7 @@ export class Player {
     if (this._stopped) return;
     this._stopped = true;
     this.queue.clear();
-    this.nowPlayingMsgManager.delete();
+    this.nowPlayingMsgManager.clear();
     this.resource?.playStream?.destroy();
     this.resource = undefined;
     this.audioPlayer.stop(true);
@@ -231,7 +231,7 @@ export class Player {
 
     this.audioPlayer.on(AudioPlayerStatus.AutoPaused, async () => {
       try {
-        this.nowPlayingMsgManager.edit();
+        this.nowPlayingMsgManager.update();
         if (!this._stopped) {
           this.connection.configureNetworking();
         }
@@ -245,7 +245,7 @@ export class Player {
     });
 
     this.audioPlayer.on(AudioPlayerStatus.Playing, async () => {
-      this.nowPlayingMsgManager.edit();
+      this.nowPlayingMsgManager.update();
     });
 
     this.audioPlayer.on("error", (error) => {
