@@ -61,7 +61,7 @@ export default class SeekCommand extends Command {
 
     if (seekTime < 0 || seekTime * 1000 >= (currentTrack?.duration ?? 0)) {
       return commandTrigger
-        .reply(i18n.__("seek.errorNotValid", { prefix: bot.prefix, duration: Math.floor(currentTrack?.duration! / 1000) }))
+        .reply(i18n.__mf("seek.errorNotValid", { prefix: bot.prefix, duration: Math.floor(currentTrack?.duration! / 1000) }))
         .then(autoDelete);
     }
 
