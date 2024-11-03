@@ -107,7 +107,7 @@
   },
   "search": {
     "description": "Recherche et sélectionne des vidéos à écouter.",
-    "usageReply": "Utilisation : {prefix}{name} <Nom de la vidéo>",
+    "usageReply": "Utilisation : {prefix}search <Nom de la vidéo>",
     "menuNothing": "Rien de sélectionné",
     "chooseTrack": "Choisissez le morceau à jouer.",
     "finished": "Recherche terminée. 🔍",

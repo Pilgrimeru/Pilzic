@@ -108,7 +108,7 @@
 	},
 	"search": {
 		"description": "Search and select videos to listen to.",
-		"usageReply": "Usage: {prefix}{name} <Video name>",
+		"usageReply": "Usage: {prefix}search <Video name>",
 		"menuNothing": "Nothing selected",
 		"chooseTrack": "Choose the track to play.",
 		"finished": "Search finished. 🔍",

@@ -41,7 +41,7 @@ export default class SearchCommand extends Command {
 
     if (!args.length)
       return commandTrigger
-        .reply(i18n.__("search.usageReply", { prefix: bot.prefix, name: module.exports.name }))
+        .reply(i18n.__("search.usageReply", { prefix: bot.prefix }))
         .then(autoDelete);
 
     const search = args.join(" ");
@@ -80,7 +80,7 @@ export default class SearchCommand extends Command {
       });
 
     if (options.length === 0)
-      return commandTrigger.reply(i18n.__("errors.command")).then(autoDelete);
+      return commandTrigger.reply(i18n.__("errors.nothingFound")).then(autoDelete);
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()
