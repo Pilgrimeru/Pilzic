@@ -14,14 +14,17 @@ export default class UptimeCommand extends Command {
   }
 
   async execute(commandTrigger: CommandTrigger) {
-    const totalSeconds = Math.floor(bot.uptime ?? 0 / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    const uptimeInSeconds = Math.floor((bot.uptime ?? 0) / 1000);
 
-    return commandTrigger
-      .reply({ content: i18n.__mf("uptime.result", { days: days, hours: hours, minutes: minutes, seconds: seconds }), ephemeral: true })
-      .catch(console.error);
+    const timeUnits = {
+      days: Math.floor(uptimeInSeconds / 86400),
+      hours: Math.floor((uptimeInSeconds % 86400) / 3600),
+      minutes: Math.floor((uptimeInSeconds % 3600) / 60),
+      seconds: uptimeInSeconds % 60,
+    };
+
+    commandTrigger.reply({
+      content: i18n.__mf("uptime.result", timeUnits),
+      ephemeral: true}).catch(console.error);
   }
 }
