@@ -88,8 +88,7 @@ export default class PlayCommand extends Command {
       if (error instanceof ExtractionError) {
         return commandTrigger.editReply(i18n.__(error.i18n())).then(autoDelete);
       }
-      console.error(error);
-      return commandTrigger.editReply(i18n.__("errors.command")).then(autoDelete);
+      throw error;
     }
   }
 }

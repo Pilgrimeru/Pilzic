@@ -68,8 +68,7 @@ export default class SearchCommand extends Command {
         results = await DataFinder.searchMultipleTracksData(search, 10);
       }
     } catch (error: any) {
-      console.error(error);
-      return commandTrigger.reply(i18n.__("errors.command")).then(msg => autoDelete(msg));
+      throw error;
     }
 
     const options = results
