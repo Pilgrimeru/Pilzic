@@ -1,5 +1,6 @@
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
 import { Command } from '@custom-types/Command';
+import { autoDelete } from '@utils/autoDelete';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
 
@@ -25,6 +26,6 @@ export default class UptimeCommand extends Command {
 
     commandTrigger.reply({
       content: i18n.__mf("uptime.result", timeUnits),
-      ephemeral: true}).catch(console.error);
+      ephemeral: true}).then(autoDelete);
   }
 }
