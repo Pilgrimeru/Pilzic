@@ -1,17 +1,18 @@
 import {
-    Attachment,
-    BaseInteraction,
-    type BaseMessageOptions,
-    ButtonInteraction,
-    Collection,
-    CommandInteraction,
-    Guild, GuildMember,
-    type GuildTextBasedChannel,
-    type InteractionEditReplyOptions,
-    type InteractionReplyOptions,
-    Message,
-    MessageComponentInteraction,
-    type Snowflake
+  Attachment,
+  BaseInteraction,
+  ButtonInteraction,
+  Collection,
+  CommandInteraction,
+  Guild,
+  GuildMember,
+  Message,
+  MessageComponentInteraction,
+  type BaseMessageOptions,
+  type GuildTextBasedChannel,
+  type InteractionEditReplyOptions,
+  type InteractionReplyOptions,
+  type Snowflake,
 } from "discord.js";
 import { i18n } from 'i18n.config';
 
@@ -20,23 +21,23 @@ export class CommandTrigger {
   public readonly member: GuildMember;
   public readonly channel: GuildTextBasedChannel;
   public readonly isInteraction: boolean;
-  private readonly interaction: CommandInteraction | MessageComponentInteraction | undefined;
-  private readonly message: Message | undefined;
-  private response: Promise<Message> | undefined;
-
+  private readonly interaction?: CommandInteraction | MessageComponentInteraction;
+  private readonly message?: Message;
+  private response?: Promise<Message>;
 
   constructor(trigger: CommandInteraction | Message | MessageComponentInteraction) {
-
     if (trigger instanceof BaseInteraction) {
       this.interaction = trigger;
-      this.member = this.interaction.guild?.members.cache.get(this.interaction.user.id)!;
-      this.channel = this.interaction.channel as GuildTextBasedChannel;
+      this.message = undefined;
+      this.member = trigger.member as GuildMember;
+      this.channel = trigger.channel as GuildTextBasedChannel;
     } else {
       this.message = trigger;
-      this.member = this.message.member!;
-      this.channel = this.message.channel as GuildTextBasedChannel;
+      this.interaction = undefined;
+      this.member = trigger.member!;
+      this.channel = trigger.channel as GuildTextBasedChannel;
     }
-    this.isInteraction = Boolean(this.interaction);
+    this.isInteraction = !!this.interaction;
   }
 
   public async reply(content: string | InteractionReplyOptions): Promise<Message> {
@@ -120,14 +121,16 @@ export class CommandTrigger {
     return this.response!;
   }
 
-  public async send(content: string | BaseMessageOptions): Promise<Message> {
-    if (this.interaction) {
-      if (this.interaction instanceof MessageComponentInteraction && !this.interaction.replied && !this.interaction.deferred)
-        this.interaction.deferUpdate();
-      return this.channel.send(content);
-    } else {
-      return this.channel.send(content);
+  public send(content: string | BaseMessageOptions): Promise<Message> {
+    if (
+      this.interaction &&
+      this.interaction instanceof MessageComponentInteraction &&
+      !this.interaction.replied &&
+      !this.interaction.deferred
+    ) {
+      this.interaction.deferUpdate().catch(() => null);
     }
+    return this.channel.send(content);
   }
 
 
