@@ -24,12 +24,12 @@ export abstract class SearchExtractor extends Extractor {
     if (this.type === 'track') {
       return this.searchTrack();
     } else {
-      return this.searchPlaylist();
+      return this.searchPlaylist(true);
     }
   }
 
   public abstract searchTrack(): Promise<TrackData>;
-  public abstract searchPlaylist(): Promise<PlaylistData>;
+  public abstract searchPlaylist(fetch: boolean): Promise<PlaylistData>;
 
   public abstract searchMultipleTracks(limit: number): Promise<TrackData[]>;
   public abstract searchMultiplePlaylists(limit: number, fetch: boolean): Promise<PlaylistData[]>;
