@@ -69,7 +69,7 @@ export class AudioResourceFactory {
         inlineVolume: true,
       });
     } catch (error: any) {
-      throw new Error(`Error retrieving stream: ${error.message}`);
+      throw new Error(`Error retrieving stream: ${error}`);
     }
   }
 }
