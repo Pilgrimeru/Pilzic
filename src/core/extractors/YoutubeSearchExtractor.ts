@@ -46,7 +46,7 @@ export class YouTubeSearchExtractor extends SearchExtractor {
   }
 
   public async searchTrack(): Promise<TrackData> {
-    const trackInfo = await YouTube.searchOne(this.query, "video", true).catch(console.error);
+    const trackInfo = await YouTube.searchOne(this.query, "video").catch(console.error);
     if (!trackInfo || !trackInfo.title) {
       throw new NothingFoundError();
     }
@@ -55,7 +55,7 @@ export class YouTubeSearchExtractor extends SearchExtractor {
   }
 
   public async searchPlaylist(fetch: boolean = false): Promise<PlaylistData> {
-    const result = await YouTube.searchOne(this.query, "playlist", true);
+    const result = await YouTube.searchOne(this.query, "playlist");
     if (!result?.url || !result?.title) {
       throw new NothingFoundError();
     }
