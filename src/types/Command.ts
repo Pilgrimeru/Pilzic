@@ -24,7 +24,7 @@ export abstract class Command {
   public readonly options?: ApplicationCommandOptionData[];
   public readonly conditions?: CommandConditions[];
 
-  constructor(data: ExtendedCommandDataResolvable) {
+  protected constructor(data: ExtendedCommandDataResolvable) {
     Object.assign(this, data);
   }
 

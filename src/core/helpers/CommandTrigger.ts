@@ -21,7 +21,7 @@ export class CommandTrigger {
   public readonly member: GuildMember;
   public readonly channel: GuildTextBasedChannel;
   public readonly isInteraction: boolean;
-  private readonly interaction?: CommandInteraction | MessageComponentInteraction;
+  private readonly interaction?: CommandInteraction | MessageComponentInteraction | ButtonInteraction;
   private readonly message?: Message;
   private response?: Promise<Message>;
 
@@ -70,7 +70,7 @@ export class CommandTrigger {
   public async deferUpdate(): Promise<void> {
     if (this.interaction) {
       if (this.interaction instanceof MessageComponentInteraction) {
-        this.interaction.deferUpdate();
+        void this.interaction.deferUpdate();
       } else {
         await this.loadingReply().then((rep: Message) =>
           rep.delete().catch(() => null)

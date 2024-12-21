@@ -45,9 +45,9 @@ export default class JumpCommand extends Command {
         .then(autoDelete);
 
     if (player.queue.loop === "track") player.queue.loop = "disabled";
-    player.jumpTo(queue.index + position);
+    await player.jumpTo(queue.index + position);
 
-    return commandTrigger
+    return await commandTrigger
       .reply(i18n.__mf("jumpto.result", { number: position }))
       .then(autoDelete);
   }

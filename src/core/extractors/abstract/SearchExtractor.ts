@@ -13,7 +13,7 @@ export abstract class SearchExtractor extends Extractor {
   }
 
   public static override async validate(query: string): Promise<boolean> {
-    return !query.match(/^https?:\/\/\S+$/);
+    return !RegExp(/^https?:\/\/\S+$/).exec(query);
   }
 
   protected getCacheKey(): string {

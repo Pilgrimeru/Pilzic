@@ -11,7 +11,7 @@ export class DeezerLinkExtractor extends LinkExtractor {
   private static readonly DZ_LINK = /^https?:\/\/(?:www\.)?(?:deezer\.com|deezer\.page\.link)\/?.+/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
-    if (url.match(DeezerLinkExtractor.DZ_LINK)) {
+    if (RegExp(DeezerLinkExtractor.DZ_LINK).exec(url)) {
       const response = await axios.head(url).catch(() => null);
 
       if (!response?.request?._redirectable?._options) return false;
@@ -20,9 +20,9 @@ export class DeezerLinkExtractor extends LinkExtractor {
 
       if (!path) return false;
 
-      if (path.match(/^\/(?:\w{2})\/track/)) return "track";
-      if (path.match(/^\/(?:\w{2})\/album/)) return "playlist";
-      if (path.match(/^\/(?:\w{2})\/playlist/)) return "playlist";
+      if (path.match(/^\/\w{2}\/track/)) return "track";
+      if (path.match(/^\/\w{2}\/album/)) return "playlist";
+      if (path.match(/^\/\w{2}\/playlist/)) return "playlist";
       return false;
     }
     const validate = await dz_validate(url);

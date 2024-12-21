@@ -20,15 +20,15 @@ export default class SkipCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger) {
 
-    const player = bot.playerManager.getPlayer(commandTrigger.guild!.id)!;
+    const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     if (player.queue.loop === "track") player.queue.loop = "disabled";
-    player.skip();
+    await player.skip();
 
     if (commandTrigger.type === "ButtonInteraction") {
-      return commandTrigger.send(i18n.__("skip.result")).then(autoDelete);
+      return await commandTrigger.send(i18n.__("skip.result")).then(autoDelete);
     }
 
-    return commandTrigger.reply(i18n.__("skip.result")).then(autoDelete);
+    return await commandTrigger.reply(i18n.__("skip.result")).then(autoDelete);
   }
 }

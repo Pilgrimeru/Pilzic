@@ -22,15 +22,15 @@ export default class PauseCommand extends Command {
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     if (player.status === "autopaused" || player.status === "paused") {
-      return commandTrigger.reply(i18n.__("pause.error")).then(autoDelete);
+      return await commandTrigger.reply(i18n.__("pause.error")).then(autoDelete);
     }
 
     await player.pause();
 
     if (commandTrigger.type === "ButtonInteraction") {
-      return commandTrigger.send(i18n.__("pause.result")).then(autoDelete);
+      return await commandTrigger.send(i18n.__("pause.result")).then(autoDelete);
     }
 
-    return commandTrigger.reply(i18n.__("pause.result")).then(autoDelete);
+    return await commandTrigger.reply(i18n.__("pause.result")).then(autoDelete);
   }
 }

@@ -24,7 +24,7 @@ export default class UptimeCommand extends Command {
       seconds: uptimeInSeconds % 60,
     };
 
-    commandTrigger.reply({
+    await commandTrigger.reply({
       content: i18n.__mf("uptime.result", timeUnits),
       ephemeral: true}).then(autoDelete);
   }

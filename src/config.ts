@@ -21,13 +21,13 @@ const config: Config = {
   TOKEN: process.env['TOKEN'] ?? "",
   PREFIX: process.env['PREFIX'] ?? "!",
   MAX_PLAYLIST_SIZE: parseEnvInt(process.env['MAX_PLAYLIST_SIZE'], 10),
-  AUTO_DELETE: process.env['AUTO_DELETE'] == "true" ? true : false,
+  AUTO_DELETE: process.env['AUTO_DELETE'] == "true",
   STAY_TIME: parseEnvInt(process.env['STAY_TIME'], 30),
   DEFAULT_VOLUME: parseEnvInt(process.env['DEFAULT_VOLUME'], 100),
   LOCALE: process.env['LOCALE'] ?? "en",
   CACHE_SIZE: parseEnvInt(process.env['CACHE_SIZE'], 0),
-  AUTOCOMPLETE: process.env['AUTOCOMPLETE'] == "true" ? true : false,
-  USERAGENT: process.env['LOCALE'] ?? "Mozilla/5.0 (Windows NT 11.0; Win64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5653.214 Safari/537.36",
+  AUTOCOMPLETE: process.env['AUTOCOMPLETE'] == "true",
+  USERAGENT: process.env['LOCALE'] ?? "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.3",
   COLORS: {
     MAIN: parseEnvColor(process.env['MAIN_COLOR'], 0x69ADC7),
     PAUSE: 0xC0C0C0

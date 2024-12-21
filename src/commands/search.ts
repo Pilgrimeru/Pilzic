@@ -4,8 +4,9 @@ import { Command, CommandConditions } from '@custom-types/Command';
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import { autoDelete } from '@utils/autoDelete';
+import { parseArgsAndCheckForPlaylist } from "@utils/MusicCommandUtils.ts";
 import { config } from 'config';
-import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder, StringSelectMenuInteraction } from 'discord.js';
+import { ActionRowBuilder, ApplicationCommandOptionType, StringSelectMenuBuilder } from 'discord.js';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
 
@@ -40,29 +41,18 @@ export default class SearchCommand extends Command {
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     if (!args.length)
-      return commandTrigger
+      return await commandTrigger
         .reply(i18n.__("search.usageReply", { prefix: bot.prefix }))
         .then(autoDelete);
 
-    const search = args.join(" ");
-    const isInteraction = commandTrigger.isInteraction;
+    const { newArgs, searchForPlaylist } = parseArgsAndCheckForPlaylist(commandTrigger, args);
 
-    let searchMode = "video";
-    if (!isInteraction && args.length >= 2 && args[0].toLowerCase() === "playlist") {
-      args = args.slice(1);
-      searchMode = "playlist";
-    } else if (isInteraction && args.at(-1) === "true") {
-      args = args.slice(0, args.length - 1);
-      searchMode = "playlist";
-    } else if (isInteraction && args.at(-1) === "false") {
-      args = args.slice(0, args.length - 1);
-    }
+    const search = newArgs.join(" ");
 
-
-    commandTrigger.loadingReply();
+    void commandTrigger.loadingReply();
     let results: PlaylistData[] | TrackData[];
     try {
-      if (searchMode === "playlist") {
+      if (searchForPlaylist) {
         results = await DataFinder.searchMultiplePlaylistsData(search, 10);
       } else {
         results = await DataFinder.searchMultipleTracksData(search, 10);
@@ -80,7 +70,7 @@ export default class SearchCommand extends Command {
       });
 
     if (options.length === 0)
-      return commandTrigger.reply(i18n.__("errors.nothingFound")).then(autoDelete);
+      return await commandTrigger.reply(i18n.__("errors.nothingFound")).then(autoDelete);
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()
@@ -96,20 +86,17 @@ export default class SearchCommand extends Command {
       components: [row]
     });
 
-    try {
-      response
+    await response
         .awaitMessageComponent({
           time: 30000
         })
         .then(async (selectInteraction) => {
-          if ((selectInteraction instanceof StringSelectMenuInteraction)) {
+          if (selectInteraction.isStringSelectMenu()) {
             await response.edit({ content: i18n.__("search.finished"), components: [] }).catch(console.error);
             await bot.commandManager.executeCommand("play", new CommandTrigger(selectInteraction), selectInteraction.values);
-            config.AUTO_DELETE && autoDelete(response);
+            config.AUTO_DELETE && void autoDelete(response);
           }
-        });
-    } catch (error) {
-      commandTrigger.deleteReply();
-    }
+        })
+        .catch(() => commandTrigger.deleteReply())
   }
 }

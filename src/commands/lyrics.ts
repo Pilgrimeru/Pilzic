@@ -36,7 +36,7 @@ export default class LyricsCommand extends Command {
 
     const title = args.length === 0 ? player.queue.currentTrack!.title : args.join(" ");
 
-    commandTrigger.loadingReply();
+    void commandTrigger.loadingReply();
 
     try {
       const lyrics: string = await lyricsFinder(title, "");
@@ -53,7 +53,7 @@ export default class LyricsCommand extends Command {
 
       return commandTrigger.editReply({ content: "", embeds: [lyricsEmbed] }).then(msg => autoDelete(msg, true));
     } catch (error) {
-      commandTrigger.editReply(i18n.__mf("lyrics.lyricsNotFound", { title: title })).then(autoDelete);
+      await commandTrigger.editReply(i18n.__mf("lyrics.lyricsNotFound", { title: title })).then(autoDelete);
     }
   }
 }

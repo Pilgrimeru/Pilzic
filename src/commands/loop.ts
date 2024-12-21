@@ -1,7 +1,7 @@
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
 import { Command, CommandConditions } from '@custom-types/Command';
 import { autoDelete } from '@utils/autoDelete';
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
 
@@ -69,17 +69,15 @@ export default class LoopCommand extends Command {
       await response
         .awaitMessageComponent({ time: 30000 })
         .then(async (selectInteraction) => {
-          if ((selectInteraction instanceof ButtonInteraction)) {
-            const customId = selectInteraction.customId;
-            if (customId === "queue" || customId === "track" || customId === "disabled") {
-              player.queue.loop = customId;
-            }
+          const customId = selectInteraction.customId;
+          if (customId === "queue" || customId === "track" || customId === "disabled") {
+            player.queue.loop = customId;
           }
           await selectInteraction.update({ content: i18n.__mf("loop.result", { loop: player.queue.loop }), components: [] });
-          autoDelete(response);
+          void autoDelete(response);
         });
     } catch (error) {
-      commandTrigger.deleteReply();
+      void commandTrigger.deleteReply();
     }
   }
 }

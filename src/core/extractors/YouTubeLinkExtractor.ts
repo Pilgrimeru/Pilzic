@@ -8,10 +8,10 @@ import { LinkExtractor } from './abstract/LinkExtractor';
 
 export class YouTubeLinkExtractor extends LinkExtractor {
 
-  private static readonly YT_LINK = /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))\/.+$/;
+  private static readonly YT_LINK = /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?(youtube\.com|youtu.be)\/.+$/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
-    if (url.match(YouTubeLinkExtractor.YT_LINK)) {
+    if (RegExp(YouTubeLinkExtractor.YT_LINK).exec(url)) {
       const result = yt_validate(url);
       if (result == "search") return false;
       if (result == "video") return "track";
@@ -55,7 +55,7 @@ export class YouTubeLinkExtractor extends LinkExtractor {
       limit: config.MAX_PLAYLIST_SIZE
     });
 
-    if (!playlist || !playlist.title || !playlist.url) {
+    if (!playlist?.title || !playlist.url) {
       throw new InvalidURLError();
     }
 
@@ -72,7 +72,7 @@ export class YouTubeLinkExtractor extends LinkExtractor {
 
   private static async buildTracksData(videos: Video[]): Promise<TrackData[]> {
     const validVideos = videos.filter((video) =>
-      video && video.title && video.title !== "Private video" && video.title !== "Deleted video" && !video.nsfw
+      video?.title && video.title !== "Private video" && video.title !== "Deleted video" && !video.nsfw
     );
 
     return validVideos.slice(0, config.MAX_PLAYLIST_SIZE - 1).map((video) => ({

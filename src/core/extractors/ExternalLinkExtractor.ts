@@ -17,7 +17,7 @@ export class ExternalLinkExtractor extends LinkExtractor {
   private static readonly AUDIO_LINK = /https?:\/\/.+\.(mp3|wav|flac|ogg)(\?.*)?$/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
-    if (url.match(ExternalLinkExtractor.AUDIO_LINK)) {
+    if (RegExp(ExternalLinkExtractor.AUDIO_LINK).exec(url)) {
       return 'track';
     }
     return false;
@@ -72,24 +72,27 @@ export class ExternalLinkExtractor extends LinkExtractor {
 
     const data: any = await new Promise((resolve, reject) => {
       ffmpeg(audioStream).ffprobe((err, data) => {
-        if (err) reject(err);
-        else resolve(data);
+        if (err) {
+          reject(new Error(`FFmpeg error: ${err.message}`));
+        } else {
+          resolve(data);
+        }
       });
     });
 
     const duration = parseFloat(data.format.duration);
     if (!isNaN(duration)) {
-      return duration * 1000;
+      return duration * 1000; // Convert seconds to milliseconds
     }
 
     const bitRate = parseInt(data.format.bit_rate);
     const fileSize = parseInt(headers['content-length']);
 
-
     if (!isNaN(bitRate) && !isNaN(fileSize)) {
       return (fileSize * 8 * 1000) / bitRate;
     }
 
-    throw new Error('Could not determine the duration.');
+    throw new Error('Could not determine the duration.'); // Proper error handling
   }
+
 }

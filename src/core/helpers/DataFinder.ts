@@ -52,7 +52,7 @@ export class DataFinder {
   }
 
   private static defineSearchSource() {
-    // only one search source so return youtube
+    // only one search source so return YouTube
     return YouTubeSearchExtractor;
   }
 }

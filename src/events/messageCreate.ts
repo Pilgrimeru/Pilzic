@@ -3,5 +3,5 @@ import { Message } from 'discord.js';
 import { bot } from 'index';
 
 export default new Event("messageCreate", async (message: Message) => {
-  bot.commandManager.handleMessage(message);
+  void bot.commandManager.handleMessage(message);
 });

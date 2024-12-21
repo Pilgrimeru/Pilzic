@@ -6,7 +6,7 @@ import { BaseGuildTextChannel, Collection, type VoiceBasedChannel } from 'discor
 
 export class PlayerManager {
 
-  private players: Collection<string, Player> = new Collection();
+  private readonly players: Collection<string, Player> = new Collection();
 
   public enqueue(item: Track | Playlist, textChannel: BaseGuildTextChannel, voiceChannel: VoiceBasedChannel): void {
     const player = this.getOrCreatePlayer(textChannel, voiceChannel);

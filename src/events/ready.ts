@@ -9,5 +9,5 @@ export default new Event("ready", () => {
   bot.user!.setActivity(`${bot.prefix}help and ${bot.prefix}play`, { type: ActivityType.Listening });
   setInterval(() => {
     bot.user!.setActivity(`${bot.prefix}help and ${bot.prefix}play`, { type: ActivityType.Listening });
-  }, 1 * 3600 * 1000);
+  }, 3600 * 1000);
 });

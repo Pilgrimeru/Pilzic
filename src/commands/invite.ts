@@ -14,12 +14,12 @@ export default class InviteCommand extends Command {
   async execute(commandTrigger: CommandTrigger) {
 
     try {
-      await commandTrigger.member!.send(
-        `https://discord.com/oauth2/authorize?client_id=${commandTrigger.guild.client.user!.id}&permissions=274897914880&scope=bot`
+      await commandTrigger.member.send(
+        `https://discord.com/oauth2/authorize?client_id=${commandTrigger.guild.client.user.id}&permissions=274897914880&scope=bot`
       );
       commandTrigger.reply(i18n.__("invite.result")).then(autoDelete);
     } catch (message) {
-      return console.error(message);
+      console.error(message);
     }
   }
 }

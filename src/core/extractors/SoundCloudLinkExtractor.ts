@@ -10,7 +10,7 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
   private static readonly SO_LINK = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/.+$/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
-    if (url.match(SoundCloudLinkExtractor.SO_LINK)) {
+    if (RegExp(SoundCloudLinkExtractor.SO_LINK).exec(url)) {
       const result = await so_validate(url);
       if (result == "search") return false;
       return result;

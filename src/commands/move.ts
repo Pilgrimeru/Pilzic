@@ -36,7 +36,7 @@ export default class MoveCommand extends Command {
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
     if (!args.length || isNaN(Number(args[0])) || Number(args[0]) < 1)
-      return commandTrigger.reply(i18n.__("move.usagesReply", { prefix: bot.prefix })).then(autoDelete);
+      return await commandTrigger.reply(i18n.__("move.usagesReply", { prefix: bot.prefix })).then(autoDelete);
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
@@ -47,7 +47,7 @@ export default class MoveCommand extends Command {
     const track = player.queue.tracks[pos1];
     player.queue.move((pos1 + player.queue.index), (pos2 + player.queue.index));
 
-    commandTrigger.reply(
+    await commandTrigger.reply(
       i18n.__mf("move.result", {
         title: track.title,
         index: pos2

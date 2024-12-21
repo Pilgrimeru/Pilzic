@@ -1,7 +1,7 @@
 import { i18n } from 'i18n.config';
 
 export abstract class ExtractionError extends Error {
-  constructor(message: string) {
+  protected constructor(message: string) {
     super(message);
   }
   public abstract i18n(): string;
@@ -50,14 +50,5 @@ export class AgeRestrictedError extends ExtractionError {
   }
   public i18n() {
     return "errors.ageRestricted";
-  }
-}
-
-export class YoutubeMixesError extends ExtractionError {
-  constructor() {
-    super(i18n.__("errors.youtubeMixes"));
-  }
-  public i18n() {
-    return "errors.youtubeMixes";
   }
 }

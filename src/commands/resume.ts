@@ -22,15 +22,15 @@ export default class ResumeCommand extends Command {
 
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
     if (player.status !== "autopaused" && player.status !== "paused") {
-      return commandTrigger.reply(i18n.__("resume.error")).then(autoDelete);
+      return await commandTrigger.reply(i18n.__("resume.error")).then(autoDelete);
     }
 
     player.resume();
 
     if (commandTrigger.type === "ButtonInteraction") {
-      return commandTrigger.send(i18n.__("resume.result")).then(autoDelete);
+      return await commandTrigger.send(i18n.__("resume.result")).then(autoDelete);
     }
 
-    return commandTrigger.reply(i18n.__("resume.result")).then(autoDelete);
+    return await commandTrigger.reply(i18n.__("resume.result")).then(autoDelete);
   }
 }

@@ -1,7 +1,7 @@
 import { GatewayIntentBits, Options } from 'discord.js';
 import { Bot } from './core/Bot';
 
-export const bot = new Bot({
+export const bot = await Bot.create({
   allowedMentions: { repliedUser: false },
   rest: {
     timeout: 30000,

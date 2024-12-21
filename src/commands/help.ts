@@ -30,13 +30,14 @@ export default class HelpCommand extends Command {
       const endIndex = startIndex + commandsPerPage;
 
       const helpEmbed = new EmbedBuilder()
-        .setTitle(i18n.__mf("help.embedTitle", { botname: commandTrigger.guild.client.user!.username }))
+        .setTitle(i18n.__mf("help.embedTitle", { botname: commandTrigger.guild.client.user.username }))
         .setDescription(`${i18n.__('help.embedDescription')} (${page}/${totalPages})`)
         .setColor(config.COLORS.MAIN);
 
       commands.slice(startIndex, endIndex).forEach((cmd) => {
+        const aliases = cmd.aliases ? `(${cmd.aliases})` : '';
         helpEmbed.addFields({
-          name: `**${bot.prefix}${cmd.name} ${cmd.aliases ? `(${cmd.aliases})` : ''}**`,
+          name: `**${bot.prefix}${cmd.name} ${aliases}**`,
           value: `${cmd.description}`,
           inline: true,
         });
@@ -46,7 +47,7 @@ export default class HelpCommand extends Command {
       return helpEmbed;
     }
 
-    commandTrigger.reply({ embeds: [createHelpPage(page)], ephemeral: true });
+    void commandTrigger.reply({ embeds: [createHelpPage(page)], ephemeral: true });
     if (totalPages === 1) return;
 
     function createHelpButtons(page: number): ActionRowBuilder<ButtonBuilder> {
@@ -75,7 +76,7 @@ export default class HelpCommand extends Command {
         page++;
       }
 
-      commandTrigger.editReply({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
+      void commandTrigger.editReply({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
       interaction.deferUpdate();
     });
 

@@ -3,20 +3,19 @@ import type { TrackData } from '@custom-types/extractor/TrackData';
 import { config } from 'config';
 import { LRUCache } from 'lru-cache';
 
-type CacheKey = string;
 type CacheValue = TrackData | PlaylistData;
 
 class CacheManager {
 
-  private cache: LRUCache<CacheKey, CacheValue>;
-  private maxSize: number;
-  private ttl: number;
+  private readonly cache: LRUCache<string, CacheValue>;
+  private readonly maxSize: number;
+  private readonly ttl: number;
 
   constructor(maxSizeInMB = 50, ttlInHours = 12) {
     this.maxSize = maxSizeInMB * 1024 * 1024;
     this.ttl = ttlInHours * 60 * 60 * 1000;
 
-    this.cache = new LRUCache<CacheKey, CacheValue>({
+    this.cache = new LRUCache<string, CacheValue>({
       max: 100,
       maxSize: this.maxSize,
       sizeCalculation: this.maxSize ? this.calculateSize : undefined,
@@ -29,16 +28,16 @@ class CacheManager {
     return Buffer.byteLength(JSON.stringify(value), 'utf8');
   }
 
-  public get(key: CacheKey): CacheValue | undefined {
+  public get(key: string): CacheValue | undefined {
     return this.cache.get(key);
   }
 
-  public set(key: CacheKey, value: CacheValue): void {
+  public set(key: string, value: CacheValue): void {
     if (this.maxSize === 0) return;
     this.cache.set(key, value);
   }
 
-  public has(key: CacheKey): boolean {
+  public has(key: string): boolean {
     return this.cache.has(key);
   }
 

@@ -10,8 +10,7 @@ import {
   Message,
   PermissionsBitField,
   type ApplicationCommandDataResolvable,
-  type GuildBasedChannel,
-  type PermissionResolvable
+  type GuildBasedChannel
 } from "discord.js";
 import { readdirSync } from 'fs';
 import { i18n } from 'i18n.config';
@@ -131,7 +130,7 @@ export class CommandManager {
     }
 
     if (command.permissions) {
-      const missing = member.permissions.missing(command.permissions as PermissionResolvable[]);
+      const missing = member.permissions.missing(command.permissions);
       if (missing.length) {
         commandTrigger.reply(`Missing permissions: ${missing.join(", ")}`).then(autoDelete);
         return false;
@@ -149,12 +148,13 @@ export class CommandManager {
           return i18n.__("errors.notChannel");
         }
         break;
-      case CommandConditions.QUEUE_EXISTS:
+      case CommandConditions.QUEUE_EXISTS: {
         const player = bot.playerManager.getPlayer(member.guild.id);
-        if (!player || !player.queue.currentTrack) {
+        if (!player?.queue.currentTrack) {
           return i18n.__("errors.notQueue");
         }
         break;
+      }
       case CommandConditions.IS_IN_SAME_CHANNEL:
         if (!voiceChannel || voiceChannel.id !== member.guild.members.me?.voice.channelId) {
           return i18n.__("errors.notInSameChannel");

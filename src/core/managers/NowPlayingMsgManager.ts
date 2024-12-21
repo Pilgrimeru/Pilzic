@@ -14,7 +14,7 @@ export class NowPlayingMsgManager {
 
   private msg: Message | undefined;
   private track: Track | undefined;
-  private player: Player;
+  private readonly player: Player;
   private state: "play" | "pause";
 
   constructor(player: Player) {

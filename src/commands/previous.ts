@@ -22,16 +22,16 @@ export default class PreviousCommand extends Command {
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     if (!player.queue.canBack()) {
-      return commandTrigger.reply(i18n.__("previous.error")).then(autoDelete);
+      return await commandTrigger.reply(i18n.__("previous.error")).then(autoDelete);
     }
 
     if (player.queue.loop === "track") player.queue.loop = "disabled";
-    player.previous();
+    await player.previous();
 
     if (commandTrigger.type === "ButtonInteraction") {
-      return commandTrigger.send(i18n.__("previous.result")).then(autoDelete);
+      return await commandTrigger.send(i18n.__("previous.result")).then(autoDelete);
     }
 
-    return commandTrigger.reply(i18n.__("previous.result")).then(autoDelete);
+    return await commandTrigger.reply(i18n.__("previous.result")).then(autoDelete);
   }
 }

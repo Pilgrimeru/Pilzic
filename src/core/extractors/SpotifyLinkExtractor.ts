@@ -18,18 +18,14 @@ export class SpotifyLinkExtractor extends LinkExtractor {
   private static readonly SP_ARTIST = /^https?:\/\/(?:open|play)\.spotify\.com\/artist\/?.+/;
 
   public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
-    if (url.match(SpotifyLinkExtractor.SP_LINK)) {
+    if (RegExp(SpotifyLinkExtractor.SP_LINK).exec(url)) {
       const result = sp_validate(url);
       if (result == "search") return false;
       if (result == "album") return "playlist";
-      if (url.match(SpotifyLinkExtractor.SP_ARTIST)) return "playlist";
+      if (RegExp(SpotifyLinkExtractor.SP_ARTIST).exec(url)) return "playlist";
       return result;
     }
     return false;
-  }
-
-  public static getType(url: string): 'track' | 'playlist' {
-    return url.includes('/playlist/') ? 'playlist' : 'track';
   }
 
   protected async extractTrack(): Promise<TrackData> {

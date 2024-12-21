@@ -1,13 +1,17 @@
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { ExtractorFactory } from '@core/helpers/ExtractorFactory';
-import { Command, CommandConditions } from '@custom-types/Command';
-import { ExtractionError } from '@errors/ExtractionErrors';
-import { autoDelete } from '@utils/autoDelete';
-import { processSearchAutocomplete } from '@utils/processSearchAutocomplete';
-import { config } from 'config';
-import { ApplicationCommandOptionType, AutocompleteInteraction, BaseGuildTextChannel, PermissionsBitField, User } from 'discord.js';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
+import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import { Command, CommandConditions } from "@custom-types/Command";
+import { ExtractionError } from "@errors/ExtractionErrors";
+import { autoDelete } from "@utils/autoDelete";
+import { extractAudioItem, getQuery, handleAutocomplete, parseArgsAndCheckForPlaylist } from "@utils/MusicCommandUtils.ts";
+import { config } from "config";
+import {
+  ApplicationCommandOptionType,
+  AutocompleteInteraction,
+  BaseGuildTextChannel,
+  PermissionsBitField
+} from "discord.js";
+import { i18n } from "i18n.config";
+import { bot } from "index";
 
 export default class PlayCommand extends Command {
 
@@ -44,49 +48,38 @@ export default class PlayCommand extends Command {
   }
 
   async autocomplete(interaction: AutocompleteInteraction) {
-    if (!config.AUTOCOMPLETE) return;
-    processSearchAutocomplete(interaction);
+    await handleAutocomplete(interaction);
   }
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
     if (!args.length && !(commandTrigger.attachments?.size)) {
-      return commandTrigger.reply(i18n.__mf("play.usageReply", { prefix: bot.prefix })).then(autoDelete);
+      return commandTrigger
+        .reply(i18n.__mf("play.usageReply", { prefix: bot.prefix }))
+        .then(autoDelete);
     }
 
-    let searchForPlaylist = false;
-    if (!commandTrigger.isInteraction && args.length >= 2 && args[0].toLowerCase() === "playlist") {
-      args = args.slice(1);
-      searchForPlaylist = true;
-    } else if (commandTrigger.isInteraction && args.at(-1) === "true") {
-      args = args.slice(0, args.length - 1);
-      searchForPlaylist = true;
-    } else if (commandTrigger.isInteraction && args.at(-1) === "false") {
-      args = args.slice(0, args.length - 1);
-    }
+    const { newArgs, searchForPlaylist } = parseArgsAndCheckForPlaylist(commandTrigger, args);
 
-    commandTrigger.loadingReply();
+    await commandTrigger.loadingReply();
 
-    const query = (commandTrigger.attachments && !args.length) ? commandTrigger.attachments.first()?.url! : args.join(" ");
-    const requester: User = commandTrigger.member!.user;
+    const query = getQuery(commandTrigger, newArgs);
 
     try {
-      const extractor = await ExtractorFactory.createExtractor(query, searchForPlaylist ? "playlist" : "track");
-      if (extractor.type === "playlist") {
-        commandTrigger.editReply(i18n.__("play.fetchingPlaylist")).catch(() => null);
-      }
-      const item = await extractor.extractAndBuild(requester);
+      const item = await extractAudioItem(commandTrigger, query, searchForPlaylist);
 
-      const guildMember = commandTrigger.member!;
-      const { channel } = guildMember!.voice;
+      const guildMember = commandTrigger.member;
+      const { channel } = guildMember.voice;
       if (!channel) return;
 
       bot.playerManager.enqueue(item, commandTrigger.channel as BaseGuildTextChannel, channel);
 
-      commandTrigger.deleteReply();
+      await commandTrigger.deleteReply();
 
     } catch (error) {
       if (error instanceof ExtractionError) {
-        return commandTrigger.editReply(i18n.__(error.i18n())).then(autoDelete);
+        return await commandTrigger
+          .editReply(i18n.__(error.i18n()))
+          .then(autoDelete);
       }
       throw error;
     }

@@ -63,22 +63,22 @@ export default class QueueCommand extends Command {
       if (q.customId === "previous") {
         if (currentPage !== 0) {
           currentPage--;
-          response.edit({
+          void response.edit({
             content: `**${i18n.__("queue.currentPage")} ${currentPage + 1}/${embeds.length}**`,
             embeds: [embeds[currentPage]]
           });
         }
       }
-      if (q.customId === "next") {
+      else if (q.customId === "next") {
         if (currentPage < embeds.length - 1) {
           currentPage++;
-          response.edit({
+          void response.edit({
             content: `**${i18n.__("queue.currentPage")} ${currentPage + 1}/${embeds.length}**`,
             embeds: [embeds[currentPage]]
           });
         }
       }
-      if (q.customId === "close") {
+      else if (q.customId === "close") {
         collector.stop();
       }
 
@@ -87,9 +87,9 @@ export default class QueueCommand extends Command {
 
     collector.on("end", async () => {
       if (config.AUTO_DELETE) {
-        commandTrigger.deleteReply();
+        await commandTrigger.deleteReply();
       } else {
-        response.edit({ components: [] });
+        await response.edit({components: []});
       }
     });
   }

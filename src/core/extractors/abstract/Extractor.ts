@@ -9,7 +9,7 @@ export abstract class Extractor {
 
   public readonly type: 'track' | 'playlist';
 
-  constructor(type: 'track' | 'playlist') {
+  protected constructor(type: 'track' | 'playlist') {
     this.type = type;
   }
 

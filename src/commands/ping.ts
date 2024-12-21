@@ -14,7 +14,7 @@ export default class PingCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger) {
 
-    commandTrigger
+    await commandTrigger
       .reply(i18n.__mf("ping.result", { ping: Math.round(commandTrigger.guild.client.ws.ping) }))
       .then(autoDelete);
   }

@@ -29,21 +29,21 @@ export default class VolumeCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    const player = bot.playerManager.getPlayer(commandTrigger.guild!.id)!;
+    const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     if (!args[0])
-      return commandTrigger.reply(i18n.__mf("volume.currentVolume", { volume: player.volume })).then(autoDelete);
+      return await commandTrigger.reply(i18n.__mf("volume.currentVolume", { volume: player.volume })).then(autoDelete);
 
     const level = Number(args[0]);
 
     if (isNaN(level))
-      return commandTrigger.reply(i18n.__("volume.errorNotNumber")).then(autoDelete);
+      return await commandTrigger.reply(i18n.__("volume.errorNotNumber")).then(autoDelete);
 
     if (level > 100 || level < 0)
-      return commandTrigger.reply(i18n.__("volume.intervalError")).then(autoDelete);
+      return await commandTrigger.reply(i18n.__("volume.intervalError")).then(autoDelete);
 
     player.volume = level;
 
-    return commandTrigger.reply(i18n.__mf("volume.result", { level: args[0] })).then(autoDelete);
+    return await commandTrigger.reply(i18n.__mf("volume.result", { level: args[0] })).then(autoDelete);
   }
 }

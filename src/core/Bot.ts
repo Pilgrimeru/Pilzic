@@ -13,26 +13,29 @@ export class Bot extends Client {
   public playerManager: PlayerManager;
   public readonly commandManager: CommandManager;
 
-  public constructor(options: ClientOptions) {
+  private constructor(options: ClientOptions) {
     super(options);
     this.prefix = config.PREFIX;
     this.playerManager = new PlayerManager();
     this.commandManager = new CommandManager();
 
-    this.login(config.TOKEN);
-
     this.on("warn", (info) => console.log("client warn : ", info));
     this.on("error", (e) => console.error("client : ", e));
+  }
 
-    this.loadEvents();
-    this.commandManager.loadCommands();
-    this.soundcloudApiConnect();
+  public static async create(options: ClientOptions): Promise<Bot> {
+    const bot = new Bot(options);
+    await bot.login(config.TOKEN);
+    void bot.commandManager.loadCommands();
+    void bot.loadEvents();
+    void bot.soundcloudApiConnect();
+    return bot;
   }
 
   private async soundcloudApiConnect(): Promise<void> {
     try {
       const clientID = await getFreeClientID();
-      setToken({
+      await setToken({
         useragent: [config.USERAGENT],
         soundcloud: {
           client_id: clientID,

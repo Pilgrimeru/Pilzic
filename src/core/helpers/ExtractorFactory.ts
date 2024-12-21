@@ -10,7 +10,7 @@ import { DataFinder } from './DataFinder';
 
 export class ExtractorFactory {
 
-  private static linkExtractors = [
+  private static readonly linkExtractors = [
     YouTubeLinkExtractor,
     SoundCloudLinkExtractor,
     SpotifyLinkExtractor,

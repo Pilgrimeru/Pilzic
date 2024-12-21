@@ -23,6 +23,6 @@ export default class ShuffleCommand extends Command {
     
     player.queue.shuffle();
 
-    commandTrigger.reply(i18n.__("shuffle.result")).then(autoDelete);
+    await commandTrigger.reply(i18n.__("shuffle.result")).then(autoDelete);
   }
 }

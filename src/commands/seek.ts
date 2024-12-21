@@ -7,7 +7,7 @@ import { i18n } from 'i18n.config';
 import { bot } from 'index';
 import { yt_validate } from 'play-dl';
 
-const timeRegEx = /^(?:[0-9]|[0-5]\d):[0-5]\d(:[0-5]\d)?$/;
+const timeRegEx = /^(?:\d|[0-5]\d):[0-5]\d(:[0-5]\d)?$/;
 
 export default class SeekCommand extends Command {
 
@@ -32,8 +32,8 @@ export default class SeekCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
 
-    if (!args.length || (isNaN(Number(args[0])) && !args[0].match(timeRegEx)))
-      return commandTrigger
+    if (!args.length || (isNaN(Number(args[0])) && !RegExp(timeRegEx).exec(args[0])))
+      return await commandTrigger
         .reply(i18n.__("seek.usageReply", { prefix: bot.prefix }))
         .then(autoDelete);
 
@@ -42,14 +42,14 @@ export default class SeekCommand extends Command {
     const currentTrack = player.queue.currentTrack;
 
     if (!currentTrack || yt_validate(currentTrack.url) !== "video") {
-      return commandTrigger
+      return await commandTrigger
         .reply(i18n.__("seek.errorSource"))
         .then(autoDelete);
     }
 
     let seekTime;
 
-    if (args[0].match(timeRegEx)) {
+    if (RegExp(timeRegEx).exec(args[0])) {
       const [seconds, minutes, hours] = args[0].split(':').reverse();
 
       seekTime = Number(seconds);
@@ -60,14 +60,14 @@ export default class SeekCommand extends Command {
     }
 
     if (seekTime < 0 || seekTime * 1000 >= (currentTrack?.duration ?? 0)) {
-      return commandTrigger
-        .reply(i18n.__mf("seek.errorNotValid", { prefix: bot.prefix, duration: Math.floor(currentTrack?.duration! / 1000) }))
+      return await commandTrigger
+        .reply(i18n.__mf("seek.errorNotValid", { prefix: bot.prefix, duration: Math.floor(currentTrack?.duration / 1000) }))
         .then(autoDelete);
     }
 
     await player.seek(seekTime);
 
-    return commandTrigger
+    return await commandTrigger
       .reply(i18n.__mf("seek.result", { prefix: bot.prefix, time: formatTime(seekTime * 1000) }))
       .then(autoDelete);
   }

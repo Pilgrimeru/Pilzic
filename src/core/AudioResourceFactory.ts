@@ -23,7 +23,7 @@ export class AudioResourceFactory {
       quality: 0
     });
 
-    if (!response || !response.stream) {
+    if (!response?.stream) {
       throw new Error("Unable to retrieve SoundCloud stream.");
     }
 
@@ -42,7 +42,7 @@ export class AudioResourceFactory {
       download: true
     });
 
-    if (!response || !response.stream) {
+    if (!response?.stream) {
       throw new Error("Unable to retrieve YouTube stream.");
     }
 

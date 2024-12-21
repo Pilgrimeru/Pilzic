@@ -13,6 +13,7 @@ import { autoDelete } from '@utils/autoDelete';
 import { formatTime } from '@utils/formatTime';
 import { config } from 'config';
 import { BaseGuildTextChannel } from 'discord.js';
+import { EventEmitter } from 'events';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
 import { audioResourceFactory } from "./AudioResourceFactory";
@@ -21,12 +22,7 @@ import { Playlist } from './Playlist';
 import { Queue } from './Queue';
 import { Track } from './Track';
 
-type skipCallback = () => any;
-type previousCallback = () => any;
-type jumpCallback = (trackId: number) => any;
-
-export class Player {
-
+export class Player extends EventEmitter {
   public readonly textChannel!: BaseGuildTextChannel;
   public readonly queue: Queue;
 
@@ -38,11 +34,8 @@ export class Player {
   private _volume: number;
   private _stopped: boolean;
 
-  private skipCallbacks: skipCallback[] = [];
-  private previousCallbacks: previousCallback[] = [];
-  private jumpCallbacks: jumpCallback[] = [];
-
   public constructor(options: PlayerOptions) {
+    super();
     Object.assign(this, options);
     this._stopped = true;
     this._volume = config.DEFAULT_VOLUME;
@@ -76,17 +69,17 @@ export class Player {
       return;
     }
 
-    this.nowPlayingMsgManager.clear();
-    this.emitSkip();
+    void this.nowPlayingMsgManager.clear();
+    this.emit('skip');
     const newCurrent = this.queue.currentTrack;
-    newCurrent ? this.process(newCurrent) : this.stop();
+    newCurrent ? await this.process(newCurrent) : this.stop();
   }
 
   public async jumpTo(trackId: number): Promise<void> {
     if (this._stopped) return;
     this.audioPlayer.pause(true);
-    this.nowPlayingMsgManager.clear();
-    this.emitJump(trackId);
+    void this.nowPlayingMsgManager.clear();
+    this.emit('jump', trackId);
     const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
@@ -94,14 +87,14 @@ export class Player {
   public async previous(): Promise<void> {
     if (!this.queue.canBack()) return;
     this.audioPlayer.pause(true);
-    this.nowPlayingMsgManager.clear();
-    this.emitPrevious();
+    void this.nowPlayingMsgManager.clear();
+    this.emit('previous');
     const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
 
   public async seek(time: number): Promise<void> {
-    this.nowPlayingMsgManager.clear();
+    void this.nowPlayingMsgManager.clear();
     this.audioPlayer.pause(true);
     const current = this.queue.currentTrack;
     return current ? this.process(current, time) : this.stop();
@@ -121,7 +114,7 @@ export class Player {
     if (this._stopped) return;
     this._stopped = true;
     this.queue.clear();
-    this.nowPlayingMsgManager.clear();
+    void this.nowPlayingMsgManager.clear();
     this.resource?.playStream?.destroy();
     this.resource = undefined;
     this.audioPlayer.stop(true);
@@ -134,38 +127,16 @@ export class Player {
   }
 
   public leave(): void {
+    bot.playerManager.removePlayer(this.textChannel.guildId);
     this.stop();
     if (this.connection.state.status != VoiceConnectionStatus.Destroyed) {
       this.connection.destroy();
       this.connection.removeAllListeners();
       this.audioPlayer.removeAllListeners();
+      this.queue.removeAllListeners();
+      this.removeAllListeners();
       this.textChannel.send(i18n.__("player.leaveChannel")).then(autoDelete);
     }
-    bot.playerManager.removePlayer(this.textChannel.guildId);
-  }
-
-  public onSkip(callback: skipCallback) {
-    this.skipCallbacks.push(callback);
-  }
-
-  public onJump(callback: jumpCallback) {
-    this.jumpCallbacks.push(callback);
-  }
-
-  public onPrevious(callback: previousCallback) {
-    this.previousCallbacks.push(callback);
-  }
-
-  private emitSkip() {
-    this.skipCallbacks.forEach(callback => callback());
-  }
-
-  private emitJump(trackId: number) {
-    this.jumpCallbacks.forEach(callback => callback(trackId));
-  }
-
-  private emitPrevious() {
-    this.previousCallbacks.forEach(callback => callback());
   }
 
   public get volume(): number {
@@ -187,7 +158,6 @@ export class Player {
     return this.audioPlayer.state.status;
   }
 
-
   private async process(track: Track, seek?: number): Promise<void> {
     const loadingMsg = this.textChannel.send(i18n.__("common.loading"));
     try {
@@ -206,7 +176,7 @@ export class Player {
     }
   }
 
-  private async setupConnectionListeners(): Promise<void> {
+  private setupConnectionListeners(): void {
     this.connection.on(VoiceConnectionStatus.Disconnected, async (_, disconnection) => {
       if ((disconnection.reason == 0 && disconnection.closeCode == 4014) || disconnection.reason == 3) {
         return this.stop();
@@ -224,14 +194,14 @@ export class Player {
     });
   }
 
-  private async setupAudioPlayerListeners(): Promise<void> {
+  private setupAudioPlayerListeners(): void {
     this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
-      this.skip();
+      void this.skip();
     });
 
     this.audioPlayer.on(AudioPlayerStatus.AutoPaused, async () => {
       try {
-        this.nowPlayingMsgManager.update();
+        void this.nowPlayingMsgManager.update();
         if (!this._stopped) {
           this.connection.configureNetworking();
         }
@@ -240,24 +210,23 @@ export class Player {
         await entersState(this.audioPlayer, AudioPlayerStatus.Playing, 5_000);
       } catch (error) {
         console.error(error);
-        this.skip();
+        await this.skip();
       }
     });
 
     this.audioPlayer.on(AudioPlayerStatus.Playing, async () => {
-      this.nowPlayingMsgManager.update();
+      void this.nowPlayingMsgManager.update();
     });
 
     this.audioPlayer.on("error", (error) => {
       console.error(error);
       this.textChannel.send(i18n.__("player.error")).then(autoDelete);
-      this.skip();
+      void this.skip();
     });
   }
 
-  private async setupQueueListeners(): Promise<void> {
-
-    this.queue.onTrackAdded(track => {
+  private setupQueueListeners(): void {
+    this.queue.on('trackAdded', (track: Track) => {
       this.sendTrackAddedMessage(track);
       if (this._stopped) {
         this._stopped = false;
@@ -265,8 +234,8 @@ export class Player {
         return current ? this.process(current) : this.stop();
       }
     });
-
-    this.queue.onPlaylistAdded(playlist => {
+  
+    this.queue.on('playlistAdded', (playlist: Playlist) => {
       this.sendPlaylistAddedMessage(playlist);
       if (this._stopped) {
         this._stopped = false;
