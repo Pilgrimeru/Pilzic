@@ -35,7 +35,7 @@
     "@types/ffprobe-static": "^2.0.3",
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/i18n": "^0.13.12",
-    "bun-types": "^1.2.0",
+    "bun-types": "^1.2.1",
     "typescript": "^5.7.3"
   },
   "optionalDependencies": {
