@@ -1,7 +1,7 @@
 import { AudioResource, createAudioResource, StreamType } from "@discordjs/voice";
 import axios from "axios";
 import { stream as getStream, so_validate, yt_validate } from "play-dl";
-import ytstream from 'yt-stream';
+import ytmusic from "ytmusic_api_unofficial";
 import type { Track } from "./Track";
 
 export class AudioResourceFactory {
@@ -35,20 +35,15 @@ export class AudioResourceFactory {
   }
 
   private async getYouTubeResource(track: Track): Promise<AudioResource<Track>> {
-    const response = await ytstream.stream(track.url, {
-      quality: 'high',
-      type: 'audio',
-      highWaterMark: 1048576 * 32,
-      download: true
-    });
-
-    if (!response?.stream) {
+    const players = await ytmusic.getPlayers(track.url);
+    const streamUrl = await players.bestAudio().url();
+    
+    if (!streamUrl) {
       throw new Error("Unable to retrieve YouTube stream.");
     }
 
-    return createAudioResource(response.stream, {
+    return createAudioResource(streamUrl, {
       metadata: track,
-      inputType: response.type as StreamType,
       inlineVolume: true,
     });
   }

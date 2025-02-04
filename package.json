@@ -29,7 +29,7 @@
     "string-progressbar": "^1.0.4",
     "utf-8-validate": "^6.0.5",
     "youtube-sr": "^4.3.11",
-    "yt-stream": "^1.7.4"
+    "ytmusic_api_unofficial": "^2.0.15"
   },
   "devDependencies": {
     "@types/ffprobe-static": "^2.0.3",
