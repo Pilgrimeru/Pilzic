@@ -1,8 +1,8 @@
-### Step 1: Use a lightweight image with Bun ###
-FROM oven/bun:alpine AS base
+### Step 1: Use a lightweight image with Bun based on Debian ###
+FROM oven/bun:debian AS base
 
-# Install ffmpeg via apk (Alpine package manager)
-RUN apk add --no-cache ffmpeg
+# Install ffmpeg via apt (Debian package manager)
+RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -17,7 +17,7 @@ RUN bun install --production
 COPY . .
 
 # Create a non-root user for security purposes
-RUN adduser -D appuser
+RUN adduser --disabled-password --gecos "" appuser
 USER appuser
 
 # Set the environment to production mode
