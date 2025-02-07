@@ -1,7 +1,3 @@
-Here's the English version with a fun, engaging tone while keeping it clear and concise:  
-
----
-
 # Pilzic 🎵 – No Nonsense, Just Music!  
 
 ![banner](https://i.imgur.com/y73VY4q.jpg)  
