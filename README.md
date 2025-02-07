@@ -1,4 +1,4 @@
-# Pilzic 🎵 – No Nonsense, Just Music!  
+# Pilzic 🎵 – Just Music!  
 
 ![banner](https://i.imgur.com/y73VY4q.jpg)  
 
@@ -6,9 +6,8 @@
 
 ⚡ **Blazing fast** & smooth as butter  
 🎧 **YouTube Friendly™** (Yes, it works with YouTube!)  
-🦾 **No third-party APIs** – forget Lavalink and other headaches  
+🦾 **No third-party APIs** – **forget Lavalink** and other headaches  
 💾 **Lightweight AF** – uses less than **200MiB of RAM**  
-💀 **No fluff, no gimmicks** – just solid music playback  
 
 ## 🎶 Why Pilzic?  
 
@@ -31,7 +30,7 @@
 ```bash
 git clone https://github.com/Pilgrimeru/Pilzic.git
 cd Pilzic
-cp config.env.example config.env  # Add your token inside
+cp config.env.example config.env
 docker build -t pilzic .
 docker run -d --name pilzic --restart=always -e TOKEN="your-discord-bot-token" pilzic
 ```
@@ -87,7 +86,6 @@ And just like that, you’re ready to blast some tunes 🎵
 - `/ping` - Check bot response time.  
 - `/lyrics (ly)` - Show lyrics of the current track.  
 - `/nowplaying (np)` - Show what's currently playing.  
-- `/seek` - Jump to a specific timestamp.  
 - `/volume (v)` - Adjust volume.  
 - `/search (sh)` - Search and select videos to play.  
 - `/uptime (up)` - Check how long the bot has been running.  
