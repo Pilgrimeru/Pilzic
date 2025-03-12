@@ -4,7 +4,8 @@
   "description": "Feature-rich Discord bot that allows you to play music from various sources, manage your music queue, and enjoy a seamless music experience in your Discord server.",
   "main": "./src/index.ts",
   "scripts": {
-    "start": "bun ./src/index.ts"
+    "start": "bun ./src/index.ts",
+    "format": "prettier --write ."
   },
   "author": "Elliott DE LUCA",
   "license": "MIT",
@@ -13,7 +14,7 @@
     "@discordjs/voice": "^0.18.0",
     "@vreden/youtube_scraper": "^1.2.6",
     "array-move": "^4.0.0",
-    "axios": "^1.8.1",
+    "axios": "^1.8.3",
     "bufferutil": "^4.0.9",
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
@@ -35,8 +36,9 @@
     "@types/ffprobe-static": "^2.0.3",
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/i18n": "^0.13.12",
-    "bun-types": "^1.2.4",
-    "typescript": "^5.7.3"
+    "bun-types": "^1.2.5",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
   },
   "optionalDependencies": {
     "ffmpeg-static": "^5.2.0"
