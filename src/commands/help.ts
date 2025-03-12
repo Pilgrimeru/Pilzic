@@ -1,7 +1,7 @@
 import { CommandTrigger } from '@core/helpers/CommandTrigger';
 import { Command } from '@custom-types/Command';
 import { config } from 'config';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } from 'discord.js';
 import { i18n } from 'i18n.config';
 import { bot } from 'index';
 
@@ -47,7 +47,7 @@ export default class HelpCommand extends Command {
       return helpEmbed;
     }
 
-    void commandTrigger.reply({ embeds: [createHelpPage(page)], ephemeral: true });
+    void commandTrigger.reply({ embeds: [createHelpPage(page)], flags: MessageFlags.Ephemeral });
     if (totalPages === 1) return;
 
     function createHelpButtons(page: number): ActionRowBuilder<ButtonBuilder> {

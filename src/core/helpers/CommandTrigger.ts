@@ -6,6 +6,7 @@ import {
   CommandInteraction,
   Guild,
   GuildMember,
+  InteractionCallbackResponse,
   Message,
   MessageComponentInteraction,
   type BaseMessageOptions,
@@ -42,18 +43,20 @@ export class CommandTrigger {
 
   public async reply(content: string | InteractionReplyOptions): Promise<Message> {
     if (this.response || this.interaction?.replied || this.interaction?.deferred) {
-      return this.editReply(content);
+      throw new Error("Message already replied !");
     }
+
     if (this.interaction) {
       if (typeof content === "string") {
-        this.response = this.interaction.reply({ content, fetchReply: true });
+        this.response = this.getResponseFromCallback(this.interaction.reply({ content, withResponse: true }));
       } else {
-        content.fetchReply = true;
-        this.response = this.interaction.reply(content as { fetchReply: true; });
+        content.withResponse = true;
+        this.response = this.getResponseFromCallback(this.interaction.reply(content as { withResponse: true; }));
       }
     } else if (this.message) {
       this.response = this.message.reply(content as BaseMessageOptions);
     }
+
     return this.response!;
   }
 
@@ -82,7 +85,7 @@ export class CommandTrigger {
   public async loadingReply(ephemeral?: boolean): Promise<Message> {
     if (this.interaction) {
       if (!this.interaction.replied && !this.interaction.deferred) {
-        this.response = this.interaction.deferReply({ ephemeral, fetchReply: true });
+        this.response = this.getResponseFromCallback(this.interaction.deferReply({ ephemeral, withResponse: true }));
       } else {
         await this.interaction.editReply(i18n.__("common.loading"));
       }
@@ -152,5 +155,9 @@ export class CommandTrigger {
     } else {
       return "MessageComponentInteraction";
     }
+  }
+
+  private async getResponseFromCallback(callbackResponse: Promise<InteractionCallbackResponse>): Promise<Message> {
+    return (await callbackResponse).resource?.message!;
   }
 }
