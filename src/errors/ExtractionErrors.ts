@@ -1,4 +1,4 @@
-import { i18n } from 'i18n.config';
+import { i18n } from "i18n.config";
 
 export abstract class ExtractionError extends Error {
   protected constructor(message: string) {
@@ -8,7 +8,6 @@ export abstract class ExtractionError extends Error {
 }
 
 export class InvalidURLError extends ExtractionError {
-
   constructor() {
     super(i18n.__("errors.invalidURL"));
   }

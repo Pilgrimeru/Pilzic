@@ -1,11 +1,10 @@
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { Command, CommandConditions } from '@custom-types/Command';
-import { autoDelete } from '@utils/autoDelete';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
+import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import { Command, CommandConditions } from "@custom-types/Command";
+import { autoDelete } from "@utils/autoDelete";
+import { i18n } from "i18n.config";
+import { bot } from "index";
 
 export default class SkipCommand extends Command {
-
   constructor() {
     super({
       name: "skip",
@@ -13,13 +12,12 @@ export default class SkipCommand extends Command {
       description: i18n.__("skip.description"),
       conditions: [
         CommandConditions.QUEUE_EXISTS,
-        CommandConditions.IS_IN_SAME_CHANNEL
+        CommandConditions.IS_IN_SAME_CHANNEL,
       ],
     });
   }
 
   async execute(commandTrigger: CommandTrigger) {
-
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     if (player.queue.loop === "track") player.queue.loop = "disabled";

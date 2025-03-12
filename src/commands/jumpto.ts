@@ -1,12 +1,11 @@
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { Command, CommandConditions } from '@custom-types/Command';
-import { autoDelete } from '@utils/autoDelete';
-import { ApplicationCommandOptionType } from 'discord.js';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
+import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import { Command, CommandConditions } from "@custom-types/Command";
+import { autoDelete } from "@utils/autoDelete";
+import { ApplicationCommandOptionType } from "discord.js";
+import { i18n } from "i18n.config";
+import { bot } from "index";
 
 export default class JumpCommand extends Command {
-
   constructor() {
     super({
       name: "jumpto",
@@ -18,17 +17,16 @@ export default class JumpCommand extends Command {
           description: i18n.__("jumpto.options.position"),
           type: ApplicationCommandOptionType.Number,
           required: true,
-        }
+        },
       ],
       conditions: [
         CommandConditions.QUEUE_EXISTS,
-        CommandConditions.IS_IN_SAME_CHANNEL
+        CommandConditions.IS_IN_SAME_CHANNEL,
       ],
     });
   }
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
-
     if (!args.length || isNaN(Number(args[0])))
       return commandTrigger
         .reply(i18n.__("jumpto.usageReply", { prefix: bot.prefix }))
@@ -39,7 +37,10 @@ export default class JumpCommand extends Command {
     const queue = player.queue;
     const position = Number(args[0]);
 
-    if (position < -queue.index || position >= queue.tracks.length - queue.index)
+    if (
+      position < -queue.index ||
+      position >= queue.tracks.length - queue.index
+    )
       return commandTrigger
         .reply(i18n.__("jumpto.errorNotValid"))
         .then(autoDelete);

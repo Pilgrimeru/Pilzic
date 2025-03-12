@@ -1,12 +1,18 @@
-import { AudioResource, createAudioResource, StreamType } from "@discordjs/voice";
+import {
+  AudioResource,
+  createAudioResource,
+  StreamType,
+} from "@discordjs/voice";
 import axios from "axios";
 import { stream as getStream, so_validate, yt_validate } from "play-dl";
 import type { Track } from "./Track";
-const { ytmp3 } = require('@vreden/youtube_scraper');
+const { ytmp3 } = require("@vreden/youtube_scraper");
 
 export class AudioResourceFactory {
-
-  public async createResource(track: Track, _seek?: number): Promise<AudioResource<Track>> {
+  public async createResource(
+    track: Track,
+    _seek?: number,
+  ): Promise<AudioResource<Track>> {
     if (await so_validate(track.url)) {
       return this.getSoundCloudResource(track);
     } else if (yt_validate(track.url) === "video") {
@@ -16,11 +22,13 @@ export class AudioResourceFactory {
     }
   }
 
-  private async getSoundCloudResource(track: Track): Promise<AudioResource<Track>> {
+  private async getSoundCloudResource(
+    track: Track,
+  ): Promise<AudioResource<Track>> {
     const response = await getStream(track.url, {
       htmldata: false,
       precache: 15,
-      quality: 0
+      quality: 0,
     });
 
     if (!response?.stream) {
@@ -34,25 +42,29 @@ export class AudioResourceFactory {
     });
   }
 
-  private async getYouTubeResource(track: Track): Promise<AudioResource<Track>> {
+  private async getYouTubeResource(
+    track: Track,
+  ): Promise<AudioResource<Track>> {
     const result = await ytmp3(track.url, 128);
-    
+
     if (!result.status || !result.download?.url) {
       throw new Error("Unable to retrieve YouTube stream.");
     }
-    
+
     const streamUrl = result.download.url;
-    
+
     return createAudioResource(streamUrl, {
       metadata: track,
       inlineVolume: true,
     });
   }
 
-  private async getExternalResource(track: Track): Promise<AudioResource<Track>> {
+  private async getExternalResource(
+    track: Track,
+  ): Promise<AudioResource<Track>> {
     try {
       const response = await axios.get(track.url, {
-        responseType: 'stream',
+        responseType: "stream",
       });
 
       if (!response.data) {
@@ -72,4 +84,3 @@ export class AudioResourceFactory {
 
 const audioResourceFactory = new AudioResourceFactory();
 export { audioResourceFactory };
-

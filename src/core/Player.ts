@@ -7,20 +7,20 @@ import {
   VoiceConnection,
   VoiceConnectionStatus,
   createAudioPlayer,
-  entersState
+  entersState,
 } from "@discordjs/voice";
-import { autoDelete } from '@utils/autoDelete';
-import { formatTime } from '@utils/formatTime';
-import { config } from 'config';
-import { BaseGuildTextChannel } from 'discord.js';
-import { EventEmitter } from 'events';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
+import { autoDelete } from "@utils/autoDelete";
+import { formatTime } from "@utils/formatTime";
+import { config } from "config";
+import { BaseGuildTextChannel } from "discord.js";
+import { EventEmitter } from "events";
+import { i18n } from "i18n.config";
+import { bot } from "index";
 import { audioResourceFactory } from "./AudioResourceFactory";
-import { NowPlayingMsgManager } from './managers/NowPlayingMsgManager';
-import { Playlist } from './Playlist';
-import { Queue } from './Queue';
-import { Track } from './Track';
+import { NowPlayingMsgManager } from "./managers/NowPlayingMsgManager";
+import { Playlist } from "./Playlist";
+import { Queue } from "./Queue";
+import { Track } from "./Track";
 
 export class Player extends EventEmitter {
   public readonly textChannel!: BaseGuildTextChannel;
@@ -46,8 +46,8 @@ export class Player extends EventEmitter {
     this.audioPlayer = createAudioPlayer({
       behaviors: {
         maxMissedFrames: 30,
-        noSubscriber: NoSubscriberBehavior.Pause
-      }
+        noSubscriber: NoSubscriberBehavior.Pause,
+      },
     });
     this.connection.subscribe(this.audioPlayer);
 
@@ -70,7 +70,7 @@ export class Player extends EventEmitter {
     }
 
     void this.nowPlayingMsgManager.clear();
-    this.emit('skip');
+    this.emit("skip");
     const newCurrent = this.queue.currentTrack;
     newCurrent ? await this.process(newCurrent) : this.stop();
   }
@@ -79,7 +79,7 @@ export class Player extends EventEmitter {
     if (this._stopped) return;
     this.audioPlayer.pause(true);
     void this.nowPlayingMsgManager.clear();
-    this.emit('jump', trackId);
+    this.emit("jump", trackId);
     const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
@@ -88,7 +88,7 @@ export class Player extends EventEmitter {
     if (!this.queue.canBack()) return;
     this.audioPlayer.pause(true);
     void this.nowPlayingMsgManager.clear();
-    this.emit('previous');
+    this.emit("previous");
     const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
@@ -177,21 +177,35 @@ export class Player extends EventEmitter {
   }
 
   private setupConnectionListeners(): void {
-    this.connection.on(VoiceConnectionStatus.Disconnected, async (_, disconnection) => {
-      if ((disconnection.reason == 0 && disconnection.closeCode == 4014) || disconnection.reason == 3) {
-        return this.stop();
-      }
-      try {
-        this.connection.configureNetworking();
-        await Promise.race([
-          entersState(this.connection, VoiceConnectionStatus.Signalling, 5_000),
-          entersState(this.connection, VoiceConnectionStatus.Connecting, 5_000)
-        ]);
-      } catch (error) {
-        console.error(error);
-        this.stop();
-      }
-    });
+    this.connection.on(
+      VoiceConnectionStatus.Disconnected,
+      async (_, disconnection) => {
+        if (
+          (disconnection.reason == 0 && disconnection.closeCode == 4014) ||
+          disconnection.reason == 3
+        ) {
+          return this.stop();
+        }
+        try {
+          this.connection.configureNetworking();
+          await Promise.race([
+            entersState(
+              this.connection,
+              VoiceConnectionStatus.Signalling,
+              5_000,
+            ),
+            entersState(
+              this.connection,
+              VoiceConnectionStatus.Connecting,
+              5_000,
+            ),
+          ]);
+        } catch (error) {
+          console.error(error);
+          this.stop();
+        }
+      },
+    );
   }
 
   private setupAudioPlayerListeners(): void {
@@ -226,7 +240,7 @@ export class Player extends EventEmitter {
   }
 
   private setupQueueListeners(): void {
-    this.queue.on('trackAdded', (track: Track) => {
+    this.queue.on("trackAdded", (track: Track) => {
       this.sendTrackAddedMessage(track);
       if (this._stopped) {
         this._stopped = false;
@@ -234,8 +248,8 @@ export class Player extends EventEmitter {
         return current ? this.process(current) : this.stop();
       }
     });
-  
-    this.queue.on('playlistAdded', (playlist: Playlist) => {
+
+    this.queue.on("playlistAdded", (playlist: Playlist) => {
       this.sendPlaylistAddedMessage(playlist);
       if (this._stopped) {
         this._stopped = false;
@@ -249,9 +263,9 @@ export class Player extends EventEmitter {
     const embed = {
       description: i18n.__mf("player.trackAdded", {
         title: track.title,
-        url: track.url
+        url: track.url,
       }),
-      color: config.COLORS.MAIN
+      color: config.COLORS.MAIN,
     };
     this.textChannel.send({ embeds: [embed] }).then(autoDelete);
   }
@@ -262,9 +276,9 @@ export class Player extends EventEmitter {
         title: playlist.title,
         url: playlist.url,
         length: playlist.tracks.length,
-        duration: formatTime(playlist.duration)
+        duration: formatTime(playlist.duration),
       }),
-      color: config.COLORS.MAIN
+      color: config.COLORS.MAIN,
     };
     this.textChannel.send({ embeds: [embed] }).then(autoDelete);
   }

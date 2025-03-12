@@ -1,24 +1,38 @@
-import { Player } from '@core/Player';
+import { Player } from "@core/Player";
 import type { Playlist } from "@core/Playlist";
 import type { Track } from "@core/Track";
-import { joinVoiceChannel, VoiceConnection } from '@discordjs/voice';
-import { BaseGuildTextChannel, Collection, type VoiceBasedChannel } from 'discord.js';
+import { joinVoiceChannel, VoiceConnection } from "@discordjs/voice";
+import {
+  BaseGuildTextChannel,
+  Collection,
+  type VoiceBasedChannel,
+} from "discord.js";
 
 export class PlayerManager {
-
   private readonly players: Collection<string, Player> = new Collection();
 
-  public enqueue(item: Track | Playlist, textChannel: BaseGuildTextChannel, voiceChannel: VoiceBasedChannel): void {
+  public enqueue(
+    item: Track | Playlist,
+    textChannel: BaseGuildTextChannel,
+    voiceChannel: VoiceBasedChannel,
+  ): void {
     const player = this.getOrCreatePlayer(textChannel, voiceChannel);
     player.queue.enqueue(item);
   }
 
-  public insert(item: Track | Playlist, textChannel: BaseGuildTextChannel, voiceChannel: VoiceBasedChannel): void {
+  public insert(
+    item: Track | Playlist,
+    textChannel: BaseGuildTextChannel,
+    voiceChannel: VoiceBasedChannel,
+  ): void {
     const player = this.getOrCreatePlayer(textChannel, voiceChannel);
     player.queue.insert(item);
   }
 
-  private getOrCreatePlayer(textChannel: BaseGuildTextChannel, voiceChannel: VoiceBasedChannel): Player {
+  private getOrCreatePlayer(
+    textChannel: BaseGuildTextChannel,
+    voiceChannel: VoiceBasedChannel,
+  ): Player {
     let player = this.players.get(textChannel.guildId);
 
     if (!player) {
@@ -33,7 +47,9 @@ export class PlayerManager {
     return player;
   }
 
-  private connectToVoiceChannel(voiceChannel: VoiceBasedChannel): VoiceConnection {
+  private connectToVoiceChannel(
+    voiceChannel: VoiceBasedChannel,
+  ): VoiceConnection {
     return joinVoiceChannel({
       channelId: voiceChannel.id,
       guildId: voiceChannel.guild.id,

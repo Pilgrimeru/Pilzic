@@ -1,14 +1,13 @@
-import i18n from 'i18n';
-import path from 'path';
-import { config } from './config';
+import i18n from "i18n";
+import path from "path";
+import { config } from "./config";
 
 i18n.configure({
+  locales: ["en", "fr"],
 
-  locales: ['en', 'fr'],
+  defaultLocale: "en",
 
-  defaultLocale: 'en',
-
-  queryParameter: 'lang',
+  queryParameter: "lang",
 
   retryInDefaultLocale: true,
 
@@ -17,10 +16,8 @@ i18n.configure({
   register: global,
 
   directory: path.join(__dirname, "locales"),
-
 });
 
 i18n.setLocale(config.LOCALE);
 
 export { i18n };
-

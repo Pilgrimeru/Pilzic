@@ -1,12 +1,11 @@
-import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
-import type { TrackData } from '@custom-types/extractor/TrackData';
-import { config } from 'config';
-import { LRUCache } from 'lru-cache';
+import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
+import type { TrackData } from "@custom-types/extractor/TrackData";
+import { config } from "config";
+import { LRUCache } from "lru-cache";
 
 type CacheValue = TrackData | PlaylistData;
 
 class CacheManager {
-
   private readonly cache: LRUCache<string, CacheValue>;
   private readonly maxSize: number;
   private readonly ttl: number;
@@ -20,12 +19,12 @@ class CacheManager {
       maxSize: this.maxSize,
       sizeCalculation: this.maxSize ? this.calculateSize : undefined,
       ttl: this.ttl,
-      ttlAutopurge: true
+      ttlAutopurge: true,
     });
   }
 
   private calculateSize(value: CacheValue): number {
-    return Buffer.byteLength(JSON.stringify(value), 'utf8');
+    return Buffer.byteLength(JSON.stringify(value), "utf8");
   }
 
   public get(key: string): CacheValue | undefined {
@@ -48,4 +47,3 @@ class CacheManager {
 
 const cacheManager = new CacheManager(config.CACHE_SIZE);
 export { cacheManager };
-

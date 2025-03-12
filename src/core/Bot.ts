@@ -1,14 +1,13 @@
-import { Event } from '@custom-types/Event';
-import { config } from 'config';
-import { Client, type ClientEvents, type ClientOptions } from 'discord.js';
-import { readdirSync } from 'fs';
-import { join } from 'path';
-import { getFreeClientID, setToken } from 'play-dl';
-import { CommandManager } from './managers/CommandManager';
-import { PlayerManager } from './managers/PlayerManager';
+import { Event } from "@custom-types/Event";
+import { config } from "config";
+import { Client, type ClientEvents, type ClientOptions } from "discord.js";
+import { readdirSync } from "fs";
+import { join } from "path";
+import { getFreeClientID, setToken } from "play-dl";
+import { CommandManager } from "./managers/CommandManager";
+import { PlayerManager } from "./managers/PlayerManager";
 
 export class Bot extends Client {
-
   public readonly prefix: string;
   public playerManager: PlayerManager;
   public readonly commandManager: CommandManager;
@@ -39,7 +38,7 @@ export class Bot extends Client {
         useragent: [config.USERAGENT],
         soundcloud: {
           client_id: clientID,
-        }
+        },
       });
     } catch (error) {
       console.error(error);
@@ -47,11 +46,15 @@ export class Bot extends Client {
   }
 
   private async loadEvents(): Promise<void> {
-    const eventFolder = join(__dirname, '../events');
-    const eventFiles = readdirSync(eventFolder).filter((file) => !file.endsWith(".map"));
+    const eventFolder = join(__dirname, "../events");
+    const eventFiles = readdirSync(eventFolder).filter(
+      (file) => !file.endsWith(".map"),
+    );
     for (const file of eventFiles) {
       const filePath = join(eventFolder, file);
-      const event = (await import(filePath)).default as Event<keyof ClientEvents>;
+      const event = (await import(filePath)).default as Event<
+        keyof ClientEvents
+      >;
       this.on(event.name, event.execute);
     }
   }

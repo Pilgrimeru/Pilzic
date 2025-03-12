@@ -1,16 +1,22 @@
-import { DataFinder } from '@core/helpers/DataFinder';
-import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
-import type { TrackData } from '@custom-types/extractor/TrackData';
-import { InvalidURLError, NoDataError, ServiceUnavailableError } from '@errors/ExtractionErrors';
-import axios from 'axios';
-import { deezer, DeezerTrack, dz_validate } from 'play-dl';
-import { LinkExtractor } from './abstract/LinkExtractor';
+import { DataFinder } from "@core/helpers/DataFinder";
+import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
+import type { TrackData } from "@custom-types/extractor/TrackData";
+import {
+  InvalidURLError,
+  NoDataError,
+  ServiceUnavailableError,
+} from "@errors/ExtractionErrors";
+import axios from "axios";
+import { deezer, DeezerTrack, dz_validate } from "play-dl";
+import { LinkExtractor } from "./abstract/LinkExtractor";
 
 export class DeezerLinkExtractor extends LinkExtractor {
+  private static readonly DZ_LINK =
+    /^https?:\/\/(?:www\.)?(?:deezer\.com|deezer\.page\.link)\/?.+/;
 
-  private static readonly DZ_LINK = /^https?:\/\/(?:www\.)?(?:deezer\.com|deezer\.page\.link)\/?.+/;
-
-  public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
+  public static override async validate(
+    url: string,
+  ): Promise<"track" | "playlist" | false> {
     if (RegExp(DeezerLinkExtractor.DZ_LINK).exec(url)) {
       const response = await axios.head(url).catch(() => null);
 
@@ -26,8 +32,8 @@ export class DeezerLinkExtractor extends LinkExtractor {
       return false;
     }
     const validate = await dz_validate(url);
-    if (validate === 'album') return "playlist";
-    if (validate === 'search') return false;
+    if (validate === "album") return "playlist";
+    if (validate === "search") return false;
     return validate;
   }
 
@@ -37,10 +43,9 @@ export class DeezerLinkExtractor extends LinkExtractor {
       if (!data || !(data instanceof DeezerTrack)) {
         throw new NoDataError();
       }
-  
+
       const search = data.artist.name + " " + data.title;
       return DataFinder.searchTrackData(search);
-
     } catch (error: any) {
       if (error.message?.includes("not a Deezer")) {
         throw new InvalidURLError();
@@ -59,13 +64,18 @@ export class DeezerLinkExtractor extends LinkExtractor {
         throw new NoDataError();
       }
 
-      const promiseTracksData: Promise<TrackData>[] = data.tracks.map((track) => {
-        const search = track.artist.name + " " + track.title;
-        return DataFinder.searchTrackData(search);
-      });
+      const promiseTracksData: Promise<TrackData>[] = data.tracks.map(
+        (track) => {
+          const search = track.artist.name + " " + track.title;
+          return DataFinder.searchTrackData(search);
+        },
+      );
 
       const tracks = await Promise.all(promiseTracksData);
-      const duration = tracks.reduce((total, track) => total + track.duration, 0);
+      const duration = tracks.reduce(
+        (total, track) => total + track.duration,
+        0,
+      );
 
       return { title: data.title, url: data.url, tracks, duration };
     } catch (error: any) {

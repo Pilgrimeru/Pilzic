@@ -1,6 +1,6 @@
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { Command, CommandConditions } from '@custom-types/Command';
-import { autoDelete } from '@utils/autoDelete';
+import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import { Command, CommandConditions } from "@custom-types/Command";
+import { autoDelete } from "@utils/autoDelete";
 import {
   AutocompleteInteraction,
   ButtonInteraction,
@@ -10,20 +10,21 @@ import {
   Message,
   PermissionsBitField,
   type ApplicationCommandDataResolvable,
-  type GuildBasedChannel
+  type GuildBasedChannel,
 } from "discord.js";
-import { readdirSync } from 'fs';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
-import { join } from 'path';
+import { readdirSync } from "fs";
+import { i18n } from "i18n.config";
+import { bot } from "index";
+import { join } from "path";
 
 export class CommandManager {
-
   public commands = new Collection<string, Command>();
 
   public async loadCommands(): Promise<void> {
-    const commandFolder = join(__dirname, '../../commands');
-    const commandFiles = readdirSync(commandFolder).filter((file) => !file.endsWith(".map"));
+    const commandFolder = join(__dirname, "../../commands");
+    const commandFiles = readdirSync(commandFolder).filter(
+      (file) => !file.endsWith(".map"),
+    );
 
     for (const file of commandFiles) {
       const filePath = join(commandFolder, file);
@@ -36,20 +37,28 @@ export class CommandManager {
   }
 
   private registerSlashCommands(): void {
-    const slashCommands: ApplicationCommandDataResolvable[] = this.commands.map(command => ({
-      name: command.name,
-      description: command.description,
-      options: command.options,
-      defaultMemberPermissions: command.permissions ?? null,
-    }));
+    const slashCommands: ApplicationCommandDataResolvable[] = this.commands.map(
+      (command) => ({
+        name: command.name,
+        description: command.description,
+        options: command.options,
+        defaultMemberPermissions: command.permissions ?? null,
+      }),
+    );
 
     bot.once("ready", () => {
       bot.application?.commands.set(slashCommands);
     });
   }
 
-  public async executeCommand(commandName: string, commandTrigger: CommandTrigger, args?: string[]): Promise<void> {
-    const command = this.commands.get(commandName) || this.commands.find(cmd => cmd.aliases?.includes(commandName));
+  public async executeCommand(
+    commandName: string,
+    commandTrigger: CommandTrigger,
+    args?: string[],
+  ): Promise<void> {
+    const command =
+      this.commands.get(commandName) ||
+      this.commands.find((cmd) => cmd.aliases?.includes(commandName));
     if (!command) return;
 
     const member = commandTrigger.member;
@@ -64,7 +73,12 @@ export class CommandManager {
     }
   }
 
-  public async handleInteraction(interaction: ChatInputCommandInteraction | ButtonInteraction | AutocompleteInteraction): Promise<void> {
+  public async handleInteraction(
+    interaction:
+      | ChatInputCommandInteraction
+      | ButtonInteraction
+      | AutocompleteInteraction,
+  ): Promise<void> {
     if (!interaction.guild) return;
 
     if (interaction.isAutocomplete()) {
@@ -73,7 +87,8 @@ export class CommandManager {
       return;
     }
 
-    if (interaction.isButton() && !interaction.customId.startsWith("cmd-")) return;
+    if (interaction.isButton() && !interaction.customId.startsWith("cmd-"))
+      return;
 
     const member = interaction.guild.members.cache.get(interaction.user.id);
     if (!member) return;
@@ -86,10 +101,16 @@ export class CommandManager {
       : interaction.customId.slice(4);
 
     const args = interaction.isChatInputCommand()
-      ? interaction.options.data.map(opt => opt.value?.toString()).filter(Boolean) as string[]
+      ? (interaction.options.data
+          .map((opt) => opt.value?.toString())
+          .filter(Boolean) as string[])
       : undefined;
 
-    await this.executeCommand(commandName, new CommandTrigger(interaction), args);
+    await this.executeCommand(
+      commandName,
+      new CommandTrigger(interaction),
+      args,
+    );
   }
 
   public async handleMessage(message: Message): Promise<void> {
@@ -100,8 +121,14 @@ export class CommandManager {
 
     if (message.content.startsWith(prefix)) {
       args = message.content.slice(prefix.length).trim().split(/\s+/);
-    } else if (message.content.startsWith(`<@!${bot.user?.id}>`) || message.content.startsWith(`<@${bot.user?.id}>`)) {
-      args = message.content.replace(/<@!?(\d+)>/, '').trim().split(/\s+/);
+    } else if (
+      message.content.startsWith(`<@!${bot.user?.id}>`) ||
+      message.content.startsWith(`<@${bot.user?.id}>`)
+    ) {
+      args = message.content
+        .replace(/<@!?(\d+)>/, "")
+        .trim()
+        .split(/\s+/);
     } else {
       return;
     }
@@ -112,13 +139,23 @@ export class CommandManager {
     await this.executeCommand(commandName, new CommandTrigger(message), args);
   }
 
-  private hasChannelPermissions(member: GuildMember, channel: GuildBasedChannel): boolean {
+  private hasChannelPermissions(
+    member: GuildMember,
+    channel: GuildBasedChannel,
+  ): boolean {
     const permissions = channel.permissionsFor(member);
     if (!permissions) return false;
-    return permissions.has([PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages]);
+    return permissions.has([
+      PermissionsBitField.Flags.ViewChannel,
+      PermissionsBitField.Flags.SendMessages,
+    ]);
   }
 
-  private hasPermissions(command: Command, member: GuildMember, commandTrigger: CommandTrigger): boolean {
+  private hasPermissions(
+    command: Command,
+    member: GuildMember,
+    commandTrigger: CommandTrigger,
+  ): boolean {
     if (command.conditions) {
       for (const condition of command.conditions) {
         const result = this.evaluateCondition(condition, member);
@@ -132,7 +169,9 @@ export class CommandManager {
     if (command.permissions) {
       const missing = member.permissions.missing(command.permissions);
       if (missing.length) {
-        commandTrigger.reply(`Missing permissions: ${missing.join(", ")}`).then(autoDelete);
+        commandTrigger
+          .reply(`Missing permissions: ${missing.join(", ")}`)
+          .then(autoDelete);
         return false;
       }
     }
@@ -140,7 +179,10 @@ export class CommandManager {
     return true;
   }
 
-  private evaluateCondition(condition: CommandConditions, member: GuildMember): string {
+  private evaluateCondition(
+    condition: CommandConditions,
+    member: GuildMember,
+  ): string {
     const voiceChannel = member.voice.channel;
     switch (condition) {
       case CommandConditions.IS_CONNECTED_TO_CHANNEL:
@@ -156,7 +198,10 @@ export class CommandManager {
         break;
       }
       case CommandConditions.IS_IN_SAME_CHANNEL:
-        if (!voiceChannel || voiceChannel.id !== member.guild.members.me?.voice.channelId) {
+        if (
+          !voiceChannel ||
+          voiceChannel.id !== member.guild.members.me?.voice.channelId
+        ) {
           return i18n.__("errors.notInSameChannel");
         }
         break;
@@ -166,7 +211,12 @@ export class CommandManager {
         }
         break;
       case CommandConditions.CAN_BOT_SPEAK:
-        if (voiceChannel && !voiceChannel.permissionsFor(bot.user!)?.has(PermissionsBitField.Flags.Speak)) {
+        if (
+          voiceChannel &&
+          !voiceChannel
+            .permissionsFor(bot.user!)
+            ?.has(PermissionsBitField.Flags.Speak)
+        ) {
           return i18n.__("errors.missingPermissionSpeak");
         }
         break;

@@ -1,5 +1,10 @@
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import type { ApplicationCommandDataResolvable, ApplicationCommandOptionData, AutocompleteInteraction, PermissionResolvable } from "discord.js";
+import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import type {
+  ApplicationCommandDataResolvable,
+  ApplicationCommandOptionData,
+  AutocompleteInteraction,
+  PermissionResolvable,
+} from "discord.js";
 
 export enum CommandConditions {
   QUEUE_EXISTS,
@@ -9,14 +14,13 @@ export enum CommandConditions {
   CAN_BOT_SPEAK,
 }
 
-type ExtendedCommandDataResolvable = (ApplicationCommandDataResolvable & {
+type ExtendedCommandDataResolvable = ApplicationCommandDataResolvable & {
   aliases?: string[];
   conditions?: CommandConditions[];
   permissions?: PermissionResolvable[];
-});
+};
 
 export abstract class Command {
-
   public readonly name!: string;
   public readonly description!: string;
   public readonly aliases?: string[];

@@ -1,6 +1,6 @@
-import { Player } from '@core/Player';
-import { Track } from '@core/Track';
-import { config } from 'config';
+import { Player } from "@core/Player";
+import { Track } from "@core/Track";
+import { config } from "config";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -8,10 +8,9 @@ import {
   EmbedBuilder,
   Message,
 } from "discord.js";
-import { i18n } from 'i18n.config';
+import { i18n } from "i18n.config";
 
 export class NowPlayingMsgManager {
-
   private msg: Message | undefined;
   private track: Track | undefined;
   private readonly player: Player;
@@ -29,7 +28,7 @@ export class NowPlayingMsgManager {
     const embed = this.buildPlayingEmbed(track, "▶");
     this.msg = await this.player.textChannel.send({
       embeds: [embed],
-      components: [this.buildButtons()]
+      components: [this.buildButtons()],
     });
   }
 
@@ -41,10 +40,13 @@ export class NowPlayingMsgManager {
 
     this.state = currentState;
 
-    const embed = this.buildPlayingEmbed(this.track, currentState === "pause" ? "❚❚" : "▶");
+    const embed = this.buildPlayingEmbed(
+      this.track,
+      currentState === "pause" ? "❚❚" : "▶",
+    );
     await this.msg.edit({
       embeds: [embed],
-      components: [this.buildButtons()]
+      components: [this.buildButtons()],
     });
   }
 
@@ -62,10 +64,10 @@ export class NowPlayingMsgManager {
       this.msg = undefined;
     }
   }
-  
 
   private getPlayerState(): "play" | "pause" {
-    const isPaused = this.player.status === "paused" || this.player.status === "autopaused";
+    const isPaused =
+      this.player.status === "paused" || this.player.status === "autopaused";
     return isPaused ? "pause" : "play";
   }
 
@@ -74,13 +76,15 @@ export class NowPlayingMsgManager {
       title: `${emoji}  ${i18n.__("nowplayingMsg.startedPlaying")}`,
       description: `[${track.title}](${track.url})\n${i18n.__mf("nowplayingMsg.duration", { duration: track.formatedTime() })}`,
       thumbnail: {
-        url: track.thumbnail
+        url: track.thumbnail,
       },
       color: this.state === "pause" ? config.COLORS.PAUSE : config.COLORS.MAIN,
       footer: {
-        text: i18n.__mf("nowplayingMsg.requestedBy", { name: track.requester?.displayName ?? "unknown" }),
-        icon_url: track.requester?.avatarURL() ?? undefined
-      }
+        text: i18n.__mf("nowplayingMsg.requestedBy", {
+          name: track.requester?.displayName ?? "unknown",
+        }),
+        icon_url: track.requester?.avatarURL() ?? undefined,
+      },
     });
   }
 
@@ -101,13 +105,13 @@ export class NowPlayingMsgManager {
 
       new ButtonBuilder()
         .setCustomId(isPaused ? "cmd-resume" : "cmd-pause")
-        .setEmoji(isPaused ? '▶️' : '⏸️')
+        .setEmoji(isPaused ? "▶️" : "⏸️")
         .setStyle(ButtonStyle.Secondary),
 
       new ButtonBuilder()
         .setCustomId("cmd-skip")
         .setEmoji("⏭")
-        .setStyle(ButtonStyle.Secondary)
+        .setStyle(ButtonStyle.Secondary),
     );
   }
 }

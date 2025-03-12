@@ -9,15 +9,18 @@ import { config } from "../config.ts";
 import { i18n } from "../i18n.config.ts";
 
 export function parseArgsAndCheckForPlaylist(
-  commandTrigger: CommandTrigger, 
-  args: string[]
+  commandTrigger: CommandTrigger,
+  args: string[],
 ): { newArgs: string[]; searchForPlaylist: boolean } {
   let searchForPlaylist = false;
 
-  if (!commandTrigger.isInteraction && args.length >= 2 && args[0].toLowerCase() === "playlist") {
+  if (
+    !commandTrigger.isInteraction &&
+    args.length >= 2 &&
+    args[0].toLowerCase() === "playlist"
+  ) {
     args = args.slice(1);
     searchForPlaylist = true;
-  
   } else if (commandTrigger.isInteraction && args.at(-1) === "true") {
     args = args.slice(0, -1);
     searchForPlaylist = true;
@@ -28,12 +31,17 @@ export function parseArgsAndCheckForPlaylist(
   return { newArgs: args, searchForPlaylist };
 }
 
-export async function handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
+export async function handleAutocomplete(
+  interaction: AutocompleteInteraction,
+): Promise<void> {
   if (!config.AUTOCOMPLETE) return;
   await processSearchAutocomplete(interaction);
 }
 
-export function getQuery(commandTrigger: CommandTrigger, args: string[]): string {
+export function getQuery(
+  commandTrigger: CommandTrigger,
+  args: string[],
+): string {
   if (commandTrigger.attachments?.size && !args.length) {
     return commandTrigger.attachments.first()?.url ?? "";
   }
@@ -41,30 +49,38 @@ export function getQuery(commandTrigger: CommandTrigger, args: string[]): string
 }
 
 export async function extractAudioItem(
-  commandTrigger: CommandTrigger, 
-  query: string, 
-  searchForPlaylist: boolean
+  commandTrigger: CommandTrigger,
+  query: string,
+  searchForPlaylist: boolean,
 ) {
   const type = searchForPlaylist ? "playlist" : "track";
   const extractor = await ExtractorFactory.createExtractor(query, type);
 
   if (extractor.type === "playlist") {
-    await commandTrigger.editReply(i18n.__("play.fetchingPlaylist")).catch(() => null);
+    await commandTrigger
+      .editReply(i18n.__("play.fetchingPlaylist"))
+      .catch(() => null);
   }
 
   return extractor.extractAndBuild(commandTrigger.member.user);
 }
 
-
-export async function processSearchAutocomplete(interaction: AutocompleteInteraction) {
+export async function processSearchAutocomplete(
+  interaction: AutocompleteInteraction,
+) {
   const focusedValue = interaction.options.getFocused().trim();
   if (!focusedValue) return interaction.respond([]).catch(() => null);
 
   if (focusedValue.length < 4 || focusedValue.startsWith("http")) {
-    return interaction.respond([{ name: focusedValue, value: focusedValue }]).catch(() => null);
+    return interaction
+      .respond([{ name: focusedValue, value: focusedValue }])
+      .catch(() => null);
   }
 
-  async function getResult(focusedValue: string, isPlaylist: boolean): Promise<PlaylistData | TrackData | undefined> {
+  async function getResult(
+    focusedValue: string,
+    isPlaylist: boolean,
+  ): Promise<PlaylistData | TrackData | undefined> {
     try {
       if (isPlaylist) {
         return await DataFinder.searchPlaylistData(focusedValue, false);
@@ -78,7 +94,10 @@ export async function processSearchAutocomplete(interaction: AutocompleteInterac
 
   const [suggestions, result] = await Promise.all([
     YouTube.getSuggestions(focusedValue),
-    getResult(focusedValue, interaction.options.getBoolean("playlist") ?? false),
+    getResult(
+      focusedValue,
+      interaction.options.getBoolean("playlist") ?? false,
+    ),
   ]);
 
   let autocomplete = (suggestions || []).map((suggestion) => ({

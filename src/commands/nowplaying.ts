@@ -1,12 +1,12 @@
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { Command, CommandConditions } from '@custom-types/Command';
-import { autoDelete } from '@utils/autoDelete';
-import { formatTime } from '@utils/formatTime';
-import { config } from 'config';
-import { EmbedBuilder } from 'discord.js';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
-import { splitBar } from 'string-progressbar';
+import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import { Command, CommandConditions } from "@custom-types/Command";
+import { autoDelete } from "@utils/autoDelete";
+import { formatTime } from "@utils/formatTime";
+import { config } from "config";
+import { EmbedBuilder } from "discord.js";
+import { i18n } from "i18n.config";
+import { bot } from "index";
+import { splitBar } from "string-progressbar";
 
 export default class NowPlayingCommand extends Command {
   constructor() {
@@ -14,14 +14,11 @@ export default class NowPlayingCommand extends Command {
       name: "nowplaying",
       aliases: ["np"],
       description: i18n.__("nowplaying.description"),
-      conditions: [
-        CommandConditions.QUEUE_EXISTS
-      ],
+      conditions: [CommandConditions.QUEUE_EXISTS],
     });
   }
 
   async execute(commandTrigger: CommandTrigger) {
-
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     const track = player.queue.currentTrack!;
@@ -29,31 +26,36 @@ export default class NowPlayingCommand extends Command {
     const left = track.duration - seek;
 
     const nowPlaying = new EmbedBuilder()
-      .setTitle(`${player.status === "playing" ? "▶" : "⏸"} ${i18n.__("nowplaying.embedTitle")}`)
+      .setTitle(
+        `${player.status === "playing" ? "▶" : "⏸"} ${i18n.__("nowplaying.embedTitle")}`,
+      )
       .setDescription(`[${track.title}](${track.url})`)
       .setColor(config.COLORS.MAIN)
       .setThumbnail(track.thumbnail);
 
-    nowPlaying.addFields(
-      {
-        name: "\u200b",
-        value: formatTime(seek) +
-          " [" +
-          splitBar((track.duration == 0 ? seek : track.duration), seek, 15)[0] +
-          "] " +
-          (track.duration == 0 ? i18n.__("nowplaying.live") : formatTime(track.duration)),
-        inline: false
-      }
-    );
+    nowPlaying.addFields({
+      name: "\u200b",
+      value:
+        formatTime(seek) +
+        " [" +
+        splitBar(track.duration == 0 ? seek : track.duration, seek, 15)[0] +
+        "] " +
+        (track.duration == 0
+          ? i18n.__("nowplaying.live")
+          : formatTime(track.duration)),
+      inline: false,
+    });
 
     if (track.duration >= 1000) {
       nowPlaying.setFooter({
         text: i18n.__mf("nowplaying.timeRemaining", {
-          time: formatTime(left)
-        })
+          time: formatTime(left),
+        }),
       });
     }
 
-    return commandTrigger.reply({ embeds: [nowPlaying] }).then(msg => autoDelete(msg, true));
+    return commandTrigger
+      .reply({ embeds: [nowPlaying] })
+      .then((msg) => autoDelete(msg, true));
   }
 }

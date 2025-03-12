@@ -1,9 +1,9 @@
-import type { PlaylistData } from '@custom-types/extractor/PlaylistData';
-import type { TrackData } from '@custom-types/extractor/TrackData';
-import axios, { type AxiosResponse } from 'axios';
-import ffprobe from 'ffprobe-static';
-import ffmpeg from 'fluent-ffmpeg';
-import { LinkExtractor } from './abstract/LinkExtractor';
+import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
+import type { TrackData } from "@custom-types/extractor/TrackData";
+import axios, { type AxiosResponse } from "axios";
+import ffprobe from "ffprobe-static";
+import ffmpeg from "fluent-ffmpeg";
+import { LinkExtractor } from "./abstract/LinkExtractor";
 
 ffmpeg.setFfprobePath(ffprobe.path);
 
@@ -13,12 +13,14 @@ type ExternalStreamInfo = {
 };
 
 export class ExternalLinkExtractor extends LinkExtractor {
+  private static readonly AUDIO_LINK =
+    /https?:\/\/.+\.(mp3|wav|flac|ogg)(\?.*)?$/;
 
-  private static readonly AUDIO_LINK = /https?:\/\/.+\.(mp3|wav|flac|ogg)(\?.*)?$/;
-
-  public static override async validate(url: string): Promise<'track' | 'playlist' | false> {
+  public static override async validate(
+    url: string,
+  ): Promise<"track" | "playlist" | false> {
     if (RegExp(ExternalLinkExtractor.AUDIO_LINK).exec(url)) {
-      return 'track';
+      return "track";
     }
     return false;
   }
@@ -35,11 +37,13 @@ export class ExternalLinkExtractor extends LinkExtractor {
   }
 
   protected async extractPlaylist(): Promise<PlaylistData> {
-    throw new Error('External links do not support playlists');
+    throw new Error("External links do not support playlists");
   }
 
-  private async getExternalStreamInfo(url: string): Promise<ExternalStreamInfo> {
-    const response = await axios.get(url, { responseType: 'stream' });
+  private async getExternalStreamInfo(
+    url: string,
+  ): Promise<ExternalStreamInfo> {
+    const response = await axios.get(url, { responseType: "stream" });
     const headers = response.headers;
 
     const name = this.extractFileName(headers);
@@ -47,27 +51,29 @@ export class ExternalLinkExtractor extends LinkExtractor {
 
     return {
       fileName: name,
-      durationInMs: durationInMs
+      durationInMs: durationInMs,
     };
   }
 
   private extractFileName(headers: any): string {
-    const contentDisposition = headers['content-disposition'];
+    const contentDisposition = headers["content-disposition"];
 
     if (contentDisposition) {
       const fileNameMatch = contentDisposition.match(/filename\*?=([^;]+)/);
       if (fileNameMatch) {
-        const fileName = fileNameMatch[1].replace(/['"]/g, '');
+        const fileName = fileNameMatch[1].replace(/['"]/g, "");
         return fileName.startsWith("UTF-8''")
-          ? decodeURIComponent(fileName.replace("UTF-8''", ''))
+          ? decodeURIComponent(fileName.replace("UTF-8''", ""))
           : fileName;
       }
     }
 
-    return 'unknown name';
+    return "unknown name";
   }
 
-  private async getStreamDuration(streamResponse: AxiosResponse<any, any>): Promise<number> {
+  private async getStreamDuration(
+    streamResponse: AxiosResponse<any, any>,
+  ): Promise<number> {
     const { data: audioStream, headers } = streamResponse;
 
     const data: any = await new Promise((resolve, reject) => {
@@ -86,13 +92,12 @@ export class ExternalLinkExtractor extends LinkExtractor {
     }
 
     const bitRate = parseInt(data.format.bit_rate);
-    const fileSize = parseInt(headers['content-length']);
+    const fileSize = parseInt(headers["content-length"]);
 
     if (!isNaN(bitRate) && !isNaN(fileSize)) {
       return (fileSize * 8 * 1000) / bitRate;
     }
 
-    throw new Error('Could not determine the duration.'); // Proper error handling
+    throw new Error("Could not determine the duration."); // Proper error handling
   }
-
 }

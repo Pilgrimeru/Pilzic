@@ -1,17 +1,17 @@
-import { GatewayIntentBits, Options } from 'discord.js';
-import { Bot } from './core/Bot';
+import { GatewayIntentBits, Options } from "discord.js";
+import { Bot } from "./core/Bot";
 
 export const bot = await Bot.create({
   allowedMentions: { repliedUser: false },
   rest: {
     timeout: 30000,
-    retries: 6
+    retries: 6,
   },
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
   ],
   makeCache: Options.cacheWithLimits({
     ...Options.DefaultMakeCacheSettings,
@@ -31,7 +31,7 @@ export const bot = await Bot.create({
     },
     users: {
       interval: 1800,
-      filter: () => user => user.bot && user.id !== user.client.user.id,
+      filter: () => (user) => user.bot && user.id !== user.client.user.id,
     },
   },
 });

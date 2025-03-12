@@ -1,12 +1,16 @@
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { Command, CommandConditions } from '@custom-types/Command';
-import { autoDelete } from '@utils/autoDelete';
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle } from 'discord.js';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
+import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import { Command, CommandConditions } from "@custom-types/Command";
+import { autoDelete } from "@utils/autoDelete";
+import {
+  ActionRowBuilder,
+  ApplicationCommandOptionType,
+  ButtonBuilder,
+  ButtonStyle,
+} from "discord.js";
+import { i18n } from "i18n.config";
+import { bot } from "index";
 
 export default class LoopCommand extends Command {
-
   constructor() {
     super({
       name: "loop",
@@ -14,7 +18,7 @@ export default class LoopCommand extends Command {
       description: i18n.__("loop.description"),
       conditions: [
         CommandConditions.QUEUE_EXISTS,
-        CommandConditions.IS_IN_SAME_CHANNEL
+        CommandConditions.IS_IN_SAME_CHANNEL,
       ],
       options: [
         {
@@ -25,21 +29,26 @@ export default class LoopCommand extends Command {
           choices: [
             { name: "track", value: "track" },
             { name: "queue", value: "queue" },
-            { name: "disabled", value: "disabled" }
-          ]
-        }
+            { name: "disabled", value: "disabled" },
+          ],
+        },
       ],
     });
   }
 
   async execute(commandTrigger: CommandTrigger, args: string[]) {
-
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
     if (args.length >= 1) {
-      if (args[0] === "queue" || args[0] === "track" || args[0] === "disabled") {
+      if (
+        args[0] === "queue" ||
+        args[0] === "track" ||
+        args[0] === "disabled"
+      ) {
         player.queue.loop = args[0];
-        return commandTrigger.reply(i18n.__mf("loop.result", { loop: player.queue.loop })).then(autoDelete);
+        return commandTrigger
+          .reply(i18n.__mf("loop.result", { loop: player.queue.loop }))
+          .then(autoDelete);
       }
     }
 
@@ -57,12 +66,12 @@ export default class LoopCommand extends Command {
       new ButtonBuilder()
         .setCustomId("disabled")
         .setEmoji("🚫")
-        .setStyle(ButtonStyle.Secondary)
+        .setStyle(ButtonStyle.Secondary),
     );
 
     const response = await commandTrigger.reply({
       content: i18n.__("loop.chooseMode"),
-      components: [row]
+      components: [row],
     });
 
     try {
@@ -70,10 +79,17 @@ export default class LoopCommand extends Command {
         .awaitMessageComponent({ time: 30000 })
         .then(async (selectInteraction) => {
           const customId = selectInteraction.customId;
-          if (customId === "queue" || customId === "track" || customId === "disabled") {
+          if (
+            customId === "queue" ||
+            customId === "track" ||
+            customId === "disabled"
+          ) {
             player.queue.loop = customId;
           }
-          await selectInteraction.update({ content: i18n.__mf("loop.result", { loop: player.queue.loop }), components: [] });
+          await selectInteraction.update({
+            content: i18n.__mf("loop.result", { loop: player.queue.loop }),
+            components: [],
+          });
           void autoDelete(response);
         });
     } catch (error) {

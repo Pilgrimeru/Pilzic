@@ -1,24 +1,26 @@
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { Command } from '@custom-types/Command';
-import { config } from 'config';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } from 'discord.js';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
+import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import { Command } from "@custom-types/Command";
+import { config } from "config";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  MessageFlags,
+} from "discord.js";
+import { i18n } from "i18n.config";
+import { bot } from "index";
 
 export default class HelpCommand extends Command {
-
   constructor() {
-    super(
-      {
-        name: "help",
-        description: i18n.__("help.description"),
-        aliases: ["h"],
-      }
-    );
+    super({
+      name: "help",
+      description: i18n.__("help.description"),
+      aliases: ["h"],
+    });
   }
 
   async execute(commandTrigger: CommandTrigger) {
-
     const commands = Array.from(bot.commandManager.commands.values());
     const commandsPerPage = 15;
 
@@ -30,12 +32,18 @@ export default class HelpCommand extends Command {
       const endIndex = startIndex + commandsPerPage;
 
       const helpEmbed = new EmbedBuilder()
-        .setTitle(i18n.__mf("help.embedTitle", { botname: commandTrigger.guild.client.user.username }))
-        .setDescription(`${i18n.__('help.embedDescription')} (${page}/${totalPages})`)
+        .setTitle(
+          i18n.__mf("help.embedTitle", {
+            botname: commandTrigger.guild.client.user.username,
+          }),
+        )
+        .setDescription(
+          `${i18n.__("help.embedDescription")} (${page}/${totalPages})`,
+        )
         .setColor(config.COLORS.MAIN);
 
       commands.slice(startIndex, endIndex).forEach((cmd) => {
-        const aliases = cmd.aliases ? `(${cmd.aliases})` : '';
+        const aliases = cmd.aliases ? `(${cmd.aliases})` : "";
         helpEmbed.addFields({
           name: `**${bot.prefix}${cmd.name} ${aliases}**`,
           value: `${cmd.description}`,
@@ -47,40 +55,50 @@ export default class HelpCommand extends Command {
       return helpEmbed;
     }
 
-    void commandTrigger.reply({ embeds: [createHelpPage(page)], flags: MessageFlags.Ephemeral });
+    void commandTrigger.reply({
+      embeds: [createHelpPage(page)],
+      flags: MessageFlags.Ephemeral,
+    });
     if (totalPages === 1) return;
 
     function createHelpButtons(page: number): ActionRowBuilder<ButtonBuilder> {
       return new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
-          .setCustomId('previous')
-          .setEmoji('⬅')
+          .setCustomId("previous")
+          .setEmoji("⬅")
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(page === 1),
         new ButtonBuilder()
-          .setCustomId('next')
-          .setEmoji('➡')
+          .setCustomId("next")
+          .setEmoji("➡")
           .setStyle(ButtonStyle.Secondary)
-          .setDisabled(page === totalPages)
+          .setDisabled(page === totalPages),
       );
     }
 
-    const response = await commandTrigger.editReply({ components: [createHelpButtons(page)] });
+    const response = await commandTrigger.editReply({
+      components: [createHelpButtons(page)],
+    });
 
-    const collector = response.createMessageComponentCollector({ time: 120000 });
+    const collector = response.createMessageComponentCollector({
+      time: 120000,
+    });
 
-    collector.on('collect', async (interaction) => {
-      if (interaction.customId === 'previous' && page > 1) {
+    collector.on("collect", async (interaction) => {
+      if (interaction.customId === "previous" && page > 1) {
         page--;
-      } else if (interaction.customId === 'next' && page < totalPages) {
+      } else if (interaction.customId === "next" && page < totalPages) {
         page++;
       }
 
-      void commandTrigger.editReply({ embeds: [createHelpPage(page)], components: [createHelpButtons(page)] });
+      void commandTrigger.editReply({
+        embeds: [createHelpPage(page)],
+        components: [createHelpButtons(page)],
+      });
       interaction.deferUpdate();
     });
 
-    collector.on('end', () => {
+    collector.on("end", () => {
       if (config.AUTO_DELETE) {
         commandTrigger.deleteReply();
       } else {

@@ -15,18 +15,22 @@ import {
   type InteractionReplyOptions,
   type Snowflake,
 } from "discord.js";
-import { i18n } from 'i18n.config';
+import { i18n } from "i18n.config";
 
 export class CommandTrigger {
-
   public readonly member: GuildMember;
   public readonly channel: GuildTextBasedChannel;
   public readonly isInteraction: boolean;
-  private readonly interaction?: CommandInteraction | MessageComponentInteraction | ButtonInteraction;
+  private readonly interaction?:
+    | CommandInteraction
+    | MessageComponentInteraction
+    | ButtonInteraction;
   private readonly message?: Message;
   private response?: Promise<Message>;
 
-  constructor(trigger: CommandInteraction | Message | MessageComponentInteraction) {
+  constructor(
+    trigger: CommandInteraction | Message | MessageComponentInteraction,
+  ) {
     if (trigger instanceof BaseInteraction) {
       this.interaction = trigger;
       this.message = undefined;
@@ -41,17 +45,27 @@ export class CommandTrigger {
     this.isInteraction = !!this.interaction;
   }
 
-  public async reply(content: string | InteractionReplyOptions): Promise<Message> {
-    if (this.response || this.interaction?.replied || this.interaction?.deferred) {
+  public async reply(
+    content: string | InteractionReplyOptions,
+  ): Promise<Message> {
+    if (
+      this.response ||
+      this.interaction?.replied ||
+      this.interaction?.deferred
+    ) {
       throw new Error("Message already replied !");
     }
 
     if (this.interaction) {
       if (typeof content === "string") {
-        this.response = this.getResponseFromCallback(this.interaction.reply({ content, withResponse: true }));
+        this.response = this.getResponseFromCallback(
+          this.interaction.reply({ content, withResponse: true }),
+        );
       } else {
         content.withResponse = true;
-        this.response = this.getResponseFromCallback(this.interaction.reply(content as { withResponse: true; }));
+        this.response = this.getResponseFromCallback(
+          this.interaction.reply(content as { withResponse: true }),
+        );
       }
     } else if (this.message) {
       this.response = this.message.reply(content as BaseMessageOptions);
@@ -60,7 +74,9 @@ export class CommandTrigger {
     return this.response!;
   }
 
-  public async editReply(content: string | InteractionEditReplyOptions): Promise<Message> {
+  public async editReply(
+    content: string | InteractionEditReplyOptions,
+  ): Promise<Message> {
     if (this.interaction) {
       await this.response;
       await this.interaction.editReply(content);
@@ -76,7 +92,7 @@ export class CommandTrigger {
         void this.interaction.deferUpdate();
       } else {
         await this.loadingReply().then((rep: Message) =>
-          rep.delete().catch(() => null)
+          rep.delete().catch(() => null),
         );
       }
     }
@@ -85,7 +101,9 @@ export class CommandTrigger {
   public async loadingReply(ephemeral?: boolean): Promise<Message> {
     if (this.interaction) {
       if (!this.interaction.replied && !this.interaction.deferred) {
-        this.response = this.getResponseFromCallback(this.interaction.deferReply({ ephemeral, withResponse: true }));
+        this.response = this.getResponseFromCallback(
+          this.interaction.deferReply({ ephemeral, withResponse: true }),
+        );
       } else {
         await this.interaction.editReply(i18n.__("common.loading"));
       }
@@ -107,7 +125,9 @@ export class CommandTrigger {
     }
   }
 
-  public async followUp(content: string | BaseMessageOptions): Promise<Message> {
+  public async followUp(
+    content: string | BaseMessageOptions,
+  ): Promise<Message> {
     if (this.interaction) {
       if (!this.interaction.replied && !this.interaction.deferred) {
         this.response = this.reply(content);
@@ -136,7 +156,6 @@ export class CommandTrigger {
     return this.channel.send(content);
   }
 
-
   public get guild(): Guild {
     return this.channel.guild;
   }
@@ -157,7 +176,9 @@ export class CommandTrigger {
     }
   }
 
-  private async getResponseFromCallback(callbackResponse: Promise<InteractionCallbackResponse>): Promise<Message> {
+  private async getResponseFromCallback(
+    callbackResponse: Promise<InteractionCallbackResponse>,
+  ): Promise<Message> {
     return (await callbackResponse).resource?.message!;
   }
 }

@@ -1,12 +1,11 @@
-import { CommandTrigger } from '@core/helpers/CommandTrigger';
-import { Command } from '@custom-types/Command';
-import { autoDelete } from '@utils/autoDelete';
-import { MessageFlags } from 'discord.js';
-import { i18n } from 'i18n.config';
-import { bot } from 'index';
+import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import { Command } from "@custom-types/Command";
+import { autoDelete } from "@utils/autoDelete";
+import { MessageFlags } from "discord.js";
+import { i18n } from "i18n.config";
+import { bot } from "index";
 
 export default class UptimeCommand extends Command {
-
   constructor() {
     super({
       name: "uptime",
@@ -25,8 +24,11 @@ export default class UptimeCommand extends Command {
       seconds: uptimeInSeconds % 60,
     };
 
-    await commandTrigger.reply({
-      content: i18n.__mf("uptime.result", timeUnits),
-      flags: MessageFlags.Ephemeral}).then(autoDelete);
+    await commandTrigger
+      .reply({
+        content: i18n.__mf("uptime.result", timeUnits),
+        flags: MessageFlags.Ephemeral,
+      })
+      .then(autoDelete);
   }
 }

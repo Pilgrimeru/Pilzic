@@ -10,7 +10,7 @@ export interface Config {
   CACHE_SIZE: number;
   USERAGENT: string;
   COLORS: {
-    MAIN: number,
+    MAIN: number;
     PAUSE: number;
   };
 }

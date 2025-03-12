@@ -1,25 +1,26 @@
-import { Playlist } from '@core/Playlist';
-import { Track } from '@core/Track';
+import { Playlist } from "@core/Playlist";
+import { Track } from "@core/Track";
 import { cacheManager } from "@core/managers/CacheManager";
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import type { User } from "discord.js";
 
 export abstract class Extractor {
+  public readonly type: "track" | "playlist";
 
-  public readonly type: 'track' | 'playlist';
-
-  protected constructor(type: 'track' | 'playlist') {
+  protected constructor(type: "track" | "playlist") {
     this.type = type;
   }
 
-  public static async validate(_url: string): Promise<'track' | 'playlist' | boolean> {
+  public static async validate(
+    _url: string,
+  ): Promise<"track" | "playlist" | boolean> {
     throw new Error("Must be implemented by subclass");
   }
 
   public async extract(): Promise<TrackData | PlaylistData>;
-  public async extract(type: 'track'): Promise<TrackData>;
-  public async extract(type: 'playlist'): Promise<PlaylistData>;
+  public async extract(type: "track"): Promise<TrackData>;
+  public async extract(type: "playlist"): Promise<PlaylistData>;
   public async extract(): Promise<TrackData | PlaylistData> {
     const cacheKey = this.getCacheKey();
     if (cacheManager.has(cacheKey)) {

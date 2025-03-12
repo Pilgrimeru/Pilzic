@@ -1,15 +1,14 @@
-import { InvalidURLError } from '@errors/ExtractionErrors';
-import type { Extractor } from '../extractors/abstract/Extractor';
-import type { LinkExtractor } from '../extractors/abstract/LinkExtractor';
-import { DeezerLinkExtractor } from '../extractors/DeezerLinkExtractor';
-import { ExternalLinkExtractor } from '../extractors/ExternalLinkExtractor';
-import { SoundCloudLinkExtractor } from '../extractors/SoundCloudLinkExtractor';
-import { SpotifyLinkExtractor } from '../extractors/SpotifyLinkExtractor';
-import { YouTubeLinkExtractor } from '../extractors/YouTubeLinkExtractor';
-import { DataFinder } from './DataFinder';
+import { InvalidURLError } from "@errors/ExtractionErrors";
+import type { Extractor } from "../extractors/abstract/Extractor";
+import type { LinkExtractor } from "../extractors/abstract/LinkExtractor";
+import { DeezerLinkExtractor } from "../extractors/DeezerLinkExtractor";
+import { ExternalLinkExtractor } from "../extractors/ExternalLinkExtractor";
+import { SoundCloudLinkExtractor } from "../extractors/SoundCloudLinkExtractor";
+import { SpotifyLinkExtractor } from "../extractors/SpotifyLinkExtractor";
+import { YouTubeLinkExtractor } from "../extractors/YouTubeLinkExtractor";
+import { DataFinder } from "./DataFinder";
 
 export class ExtractorFactory {
-
   private static readonly linkExtractors = [
     YouTubeLinkExtractor,
     SoundCloudLinkExtractor,
@@ -20,13 +19,12 @@ export class ExtractorFactory {
 
   public static async createExtractor(
     query: string,
-    defaultSearchType: "track" | "playlist" = "track"
+    defaultSearchType: "track" | "playlist" = "track",
   ): Promise<Extractor> {
     const url = query.split(" ")[0];
 
     const extractor = await ExtractorFactory.createLinkExtractor(url);
     if (extractor) return extractor;
-
 
     if (await DataFinder.SearchExtractorClass.validate(query)) {
       return new DataFinder.SearchExtractorClass(query, defaultSearchType);
@@ -35,7 +33,9 @@ export class ExtractorFactory {
     throw new InvalidURLError();
   }
 
-  public static async createLinkExtractor(url: string): Promise<LinkExtractor | null> {
+  public static async createLinkExtractor(
+    url: string,
+  ): Promise<LinkExtractor | null> {
     for (const LinkExtractorClass of this.linkExtractors) {
       const type = await LinkExtractorClass.validate(url);
       if (type) {
