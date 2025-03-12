@@ -1,32 +1,59 @@
-# Pilzic 🎵 – Just Music!
+# **Pilzic 🎵 – Just Music!**
 
 ![banner](https://i.imgur.com/y73VY4q.jpg)
 
-**Pilzic** is the **no-BS Discord music bot** you actually need! 🎶 No endless setup, no extra API keys – just **drop in your Discord token and go!**
+✔️ **Compatible with YouTube** _(Yes, it works!)_  
+✔️ **No Lavalink or third-party APIs required**
+✔️ **Fast, smooth, and reliable**  
+✔️ **Lightweight (<200MB RAM)**  
+✔️ **Multi-language support** \*(Currently available in **English & French**)
 
-⚡ **Blazing fast** & smooth as butter  
-🎧 **YouTube Friendly™** (Yes, it works with YouTube!)  
-🦾 **No third-party APIs** – **forget Lavalink** and other headaches  
-💾 **Lightweight AF** – uses less than **200MiB of RAM**
+---
 
-## 🎶 Why Pilzic?
+# **🎵 Music Sources & Search**
 
-- **🎵 Pure music, no distractions.** Everything you need, nothing you don’t.
-- **🔄 Simple & efficient.** Slash commands, prefix commands, and interactive buttons.
-- **🌍 Multilingual.** English or French? Pilzic speaks both!
-- **🗑️ Keeps your chat clean.** Auto-deletes bot messages.
-- **🎯 Built for speed & stability.** Starts instantly, never crashes.
+## **🔍 Search Functionality**
 
-## 🛠️ Get Started in 2 Minutes
+At the moment, **searching is only available for YouTube**. You can search for videos and playlists.
 
-### Option 1: With Docker 🐳 (Recommended)
+For other platforms like Spotify and SoundCloud, you'll need to provide direct links.
 
-#### 🔧 Requirements
+## **📺 YouTube Support**
 
-- **Docker** (20.10+) – [Download here](https://www.docker.com/get-started)
-- **A Discord bot token** – Get one from the [Discord Developer Portal](https://discord.com/developers/applications)
+| Feature             |  Supported   |
+| ------------------- | :----------: |
+| **Videos (Tracks)** |      ✅      |
+| **Shorts**          |      ✅      |
+| **Playlists**       |      ✅      |
+| **Mixes**           | ⚠️ (Limited) |
+| **Channels**        |      ❌      |
+| **Live Streams**    |      ❌      |
 
-#### 🚀 Setup
+## **🎵 Supported Platforms**
+
+Pilzic supports a variety of music sources. Here's what you can play:
+
+| Platform                             | Tracks | Albums | Playlists | Artists |
+| ------------------------------------ | :----: | :----: | :-------: | :-----: |
+| **SoundCloud**                       |   ✅   |   ✅   |    ✅     |   ❌    |
+| **Uploads / Direct Links**           |   ✅   |   -    |     -     |    -    |
+| **Spotify** _(Redirects to YouTube)_ |   ✅   |   ✅   |    ✅     |   ❌    |
+| **Deezer** _(Redirects to YouTube)_  |   ✅   |   ✅   |    ✅     |   ❌    |
+
+---
+
+# **🚀 Quick & Easy Setup**
+
+Getting started with Pilzic is super simple! Choose your preferred installation method:
+
+### **🐳 Option 1: Docker (Recommended)**
+
+#### **Requirements**
+
+- [**Docker** (20.10+)](https://www.docker.com/get-started)
+- **A Discord bot token** – Get one [here](https://discord.com/developers/applications)
+
+#### **Installation**
 
 ```bash
 git clone https://github.com/Pilgrimeru/Pilzic.git
@@ -36,20 +63,16 @@ docker build -t pilzic .
 docker run -d --name pilzic --restart=always -e TOKEN="your-discord-bot-token" pilzic
 ```
 
-And **boom**, your bot is ready to roll. 🎉
+🎉 **Your bot is now up and running!**
 
----
+### **🛠️ Option 2: Manual Installation**
 
-### Option 2: Manual Installation 🛠️
+#### **Requirements**
 
-If you prefer doing things the old-school way 👨‍💻
-
-#### 🔧 Requirements
-
-- **Bun** (1.1.31+) – [Download here](https://bun.sh/)
+- [**Bun** (1.1.31+)](https://bun.sh/)
 - **A Discord bot token**
 
-#### ⚡ Quick Install
+#### **Installation**
 
 ```bash
 git clone https://github.com/Pilgrimeru/Pilzic.git
@@ -59,16 +82,16 @@ cp config.env.example config.env  # Add your token inside
 bun start
 ```
 
-And just like that, you’re ready to blast some tunes 🎵
+✅ **You're all set! Start playing music.**
 
 ---
 
-## 📜 Commands (Only What Matters)
+# **📜 Essential Commands**
 
 <details>
-<summary>📌 Click to expand the list</summary>
+<summary>📌 Click to expand</summary>
 
-🎶 **Playback & Queue Management**
+### **🎶 Playback & Queue Management**
 
 - `/play (p)` - Play music from YouTube, Spotify, etc.
 - `/pause` - Pause the current track.
@@ -82,33 +105,32 @@ And just like that, you’re ready to blast some tunes 🎵
 - `/insert` - Add a track to the start of the queue.
 - `/move (m)` - Move a track within the queue.
 - `/remove (rm)` - Remove a track from the queue.
-- `/previous` - Go back in the queue.
-- `/jumpto (jump)` - Jump to a specific track in the queue.
+- `/previous` - Go back to the previous track.
+- `/jumpto (jump)` - Jump to a specific track.
 
-🔧 **Utilities & Information**
+### **🔧 Utilities & Info**
 
 - `/ping` - Check bot response time.
-- `/lyrics (ly)` - Show lyrics of the current track.
+- `/lyrics (ly)` - Display lyrics for the current track.
 - `/nowplaying (np)` - Show what's currently playing.
 - `/volume (v)` - Adjust volume.
-- `/search (sh)` - Search and select videos to play.
-- `/uptime (up)` - Check how long the bot has been running.
-- `/help (h)` - Show all available commands.
+- `/search (sh)` - Search and play a track or a playlist.
+- `/uptime (up)` - Show bot uptime.
+- `/help (h)` - List all commands.
 - `/invite` - Get the bot’s invite link.
 </details>
 
 ---
 
-## 📸 Screenshot
+# **📸 User Interface Preview**
 
 ![buttons](https://i.imgur.com/B1WKjlO.png)
 
 ---
 
-## 📄 License
+# **📄 License & Contributions**
 
-**MIT License** – Use it, modify it, improve it. Just don’t break it! 😉
+Pilzic is **open-source** and licensed under the **MIT License**—so feel free to use, modify, and improve it as you like!
 
-Got a question, found a bug, or have a cool idea? Drop by the [issues page](https://github.com/Pilgrimeru/Pilzic/issues).
-
-🔥 **Pilzic – just music, nothing else.** 🔥
+💡 **Found a bug, have an idea, or need help?**  
+👉 Visit the [**GitHub issues page**](https://github.com/Pilgrimeru/Pilzic/issues) and let us know!
