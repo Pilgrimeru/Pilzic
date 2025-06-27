@@ -6,7 +6,7 @@ import {
 import axios from "axios";
 import { stream as getStream, so_validate, yt_validate } from "play-dl";
 import type { Track } from "./Track";
-const { ytmp3 } = require("@vreden/youtube_scraper");
+import { getYouTubeStream } from "./helpers/YouTubeStreamConverter";
 
 export class AudioResourceFactory {
   public async createResource(
@@ -45,16 +45,14 @@ export class AudioResourceFactory {
   private async getYouTubeResource(
     track: Track,
   ): Promise<AudioResource<Track>> {
-    const result = await ytmp3(track.url, 128);
+    const stream = await getYouTubeStream(track.url);
 
-    if (!result.status || !result.download?.url) {
+    if (!stream) {
       throw new Error("Unable to retrieve YouTube stream.");
     }
-
-    const streamUrl = result.download.url;
-
-    return createAudioResource(streamUrl, {
+    return createAudioResource(stream, {
       metadata: track,
+      inputType: StreamType.Arbitrary,
       inlineVolume: true,
     });
   }

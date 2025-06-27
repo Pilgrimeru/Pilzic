@@ -1,8 +1,5 @@
 ### Step 1: Use a lightweight image with Bun based on Debian ###
-FROM oven/bun:debian AS base
-
-# Install ffmpeg via apt (Debian package manager)
-RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+FROM oven/bun:slim AS base
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -17,11 +14,11 @@ RUN bun install --production
 COPY . .
 
 # Create a non-root user for security purposes
-RUN adduser --disabled-password --gecos "" appuser
-USER appuser
+RUN adduser --disabled-password --gecos "" appuser && \
+    mkdir -p /app/scripts && chown -R appuser:appuser /app/scripts
 
-# Set the environment to production mode
-ENV NODE_ENV=production
+# Create scripts directory with proper permissions for appuser
+USER appuser
 
 # Command to start the application with Bun
 CMD ["bun", "start"]
