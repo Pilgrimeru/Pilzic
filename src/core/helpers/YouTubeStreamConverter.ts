@@ -93,7 +93,7 @@ export class YouTubeStreamError extends Error {
 export class YouTubeStreamConverter {
   private readonly options: Required<StreamConverterOptions>;
   private readonly ytDlpPath: string;
-
+  
   /**
    * Creates a new YouTube Stream Converter instance
    *
@@ -109,6 +109,7 @@ export class YouTubeStreamConverter {
     };
 
     this.ytDlpPath = this.getYtDlpPath();
+    this.ensureYtDlpExists();
   }
 
   /**
@@ -508,6 +509,5 @@ export async function getYouTubeStream(
   }
   return defaultConverter.getYouTubeStream(url);
 }
-
 export { YouTubeStreamConverter as default };
 
