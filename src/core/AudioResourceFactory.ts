@@ -11,12 +11,12 @@ import { getYouTubeStream } from "./helpers/YouTubeStreamConverter";
 export class AudioResourceFactory {
   public async createResource(
     track: Track,
-    _seek?: number,
+    seek?: number,
   ): Promise<AudioResource<Track>> {
     if (await so_validate(track.url)) {
       return this.getSoundCloudResource(track);
     } else if (yt_validate(track.url) === "video") {
-      return this.getYouTubeResource(track);
+      return this.getYouTubeResource(track, seek);
     } else {
       return this.getExternalResource(track);
     }
@@ -44,8 +44,9 @@ export class AudioResourceFactory {
 
   private async getYouTubeResource(
     track: Track,
+    seek?: number,
   ): Promise<AudioResource<Track>> {
-    const stream = await getYouTubeStream(track.url);
+    const stream = await getYouTubeStream(track.url, { seek });
 
     if (!stream) {
       throw new Error("Unable to retrieve YouTube stream.");

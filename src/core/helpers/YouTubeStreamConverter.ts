@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import { config } from "config";
+import ffmpegPath from "ffmpeg-static";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
 import got from "got";
 import * as nodePath from "path";
@@ -41,6 +42,11 @@ export interface StreamConverterOptions {
    * @default false
    */
   noImpersonate?: boolean;
+  /**
+   * Optional seek position (in seconds) to start the stream from.
+   * If set, the stream will start from this position.
+   */
+  seek?: number;
 }
 
 /**
@@ -75,6 +81,7 @@ export class YouTubeStreamConverter {
       quiet: options.quiet ?? true,
       additionalArgs: options.additionalArgs ?? [],
       noImpersonate: options.noImpersonate ?? false,
+      seek: options.seek ?? 0,
     };
   }
 
@@ -215,6 +222,15 @@ export class YouTubeStreamConverter {
       "--extractor-args", "youtube:client=android",
       ...this.options.additionalArgs,
     ];
+
+    if (ffmpegPath) {
+      args.push("--ffmpeg-location", ffmpegPath);
+    }
+
+    const seek = this.options.seek;
+    if (typeof seek === "number" && !isNaN(seek) && seek > 0) {
+      args.push("--download-sections", `*${seek}-`);
+    }
 
     if (this.options.quiet) {
       args.push("--quiet");
