@@ -32,7 +32,7 @@ const config: Config = {
   AUTOCOMPLETE: process.env["AUTOCOMPLETE"] == "true",
   USERAGENT:
     process.env["LOCALE"] ??
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.3",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   COLORS: {
     MAIN: parseEnvColor(process.env["MAIN_COLOR"], 0x69adc7),
     PAUSE: 0xc0c0c0,

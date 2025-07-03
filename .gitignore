@@ -2,6 +2,7 @@ config.env
 dist/
 reboot.ts
 /.idea/
+scripts/
 
 # Node
 node_modules/

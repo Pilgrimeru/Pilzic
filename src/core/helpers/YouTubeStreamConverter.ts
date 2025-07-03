@@ -1,4 +1,5 @@
 import { spawn } from "child_process";
+import { config } from "config";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
 import got from "got";
 import * as nodePath from "path";
@@ -102,7 +103,7 @@ export class YouTubeStreamConverter {
   constructor(options: StreamConverterOptions = {}) {
     this.options = {
       format: options.format ?? "bestaudio[ext=opus]/bestaudio",
-      limitRate: options.limitRate ?? "500K",
+      limitRate: options.limitRate ?? "100K",
       quiet: options.quiet ?? true,
       additionalArgs: options.additionalArgs ?? [],
       noImpersonate: options.noImpersonate ?? false,
@@ -317,6 +318,10 @@ export class YouTubeStreamConverter {
    * @returns Array of yt-dlp arguments.
    */
   private buildYtDlpArgs(url: string): string[] {
+    const acceptLanguage = "en-US,en;q=0.9";
+    const referer = "https://www.youtube.com/";
+    const fakeCookie = `PREF=f${Math.floor(Math.random() * 100000)}; YSC=${Math.random().toString(36).substring(2, 18)}; VISITOR_INFO1_LIVE=${Math.random().toString(36).substring(2, 13)}`;
+
     const args: string[] = [
       url,
       "--output", "-",
@@ -325,6 +330,11 @@ export class YouTubeStreamConverter {
       "--retries", "infinite",
       "--youtube-skip-dash-manifest",
       "--no-warnings",
+      "--user-agent", config.USERAGENT,
+      "--add-header", `Accept-Language:${acceptLanguage}`,
+      "--add-header", `Referer:${referer}`,
+      "--add-header", `Cookie:${fakeCookie}`,
+      "--extractor-args", "youtube:client=android",
       ...this.options.additionalArgs,
     ];
 
