@@ -44,38 +44,6 @@ export interface StreamConverterOptions {
 }
 
 /**
- * Information about a YouTube video
- * (Note: This interface is for metadata, not directly used in stream extraction,
- * but kept for potential future use or info command).
- */
-export interface YouTubeVideoInfo {
-  /**
-   * Video title
-   */
-  title: string;
-  /**
-   * Video duration in seconds (changed from milliseconds for consistency with yt-dlp output)
-   */
-  duration: number;
-  /**
-   * Video ID
-   */
-  id: string;
-  /**
-   * Video URL
-   */
-  url: string;
-  /**
-   * Video thumbnails
-   */
-  thumbnails?: Array<{
-    url: string;
-    width: number;
-    height: number;
-  }>;
-}
-
-/**
  * Error thrown when YouTube stream extraction fails
  */
 export class YouTubeStreamError extends Error {
@@ -92,9 +60,9 @@ export class YouTubeStreamError extends Error {
  * compatible with discord.js/voice using yt-dlp.
  */
 export class YouTubeStreamConverter {
+  private static readonly YTDLP_PATH: string = YouTubeStreamConverter.getYtDlpPath();
   private readonly options: Required<StreamConverterOptions>;
-  private readonly ytDlpPath: string;
-  
+
   /**
    * Creates a new YouTube Stream Converter instance
    *
@@ -108,9 +76,6 @@ export class YouTubeStreamConverter {
       additionalArgs: options.additionalArgs ?? [],
       noImpersonate: options.noImpersonate ?? false,
     };
-
-    this.ytDlpPath = this.getYtDlpPath();
-    this.ensureYtDlpExists();
   }
 
   /**
@@ -154,93 +119,6 @@ export class YouTubeStreamConverter {
   }
 
   /**
-   * Fetches video information using yt-dlp without downloading the stream.
-   * Useful for displaying now playing info.
-   * @param url - The YouTube URL to fetch info for.
-   * @returns A Promise that resolves with `YouTubeVideoInfo`.
-   * @throws {YouTubeStreamError} If information extraction fails.
-   */
-  async getVideoInfo(url: string): Promise<YouTubeVideoInfo> {
-    if (!this.isValidYouTubeUrl(url)) {
-      throw new YouTubeStreamError(`Invalid YouTube URL provided: ${url}`);
-    }
-
-    await this.ensureYtDlpExists();
-
-    return new Promise((resolve, reject) => {
-      const args = [
-        url,
-        "--dump-json",
-        "--flat-playlist",
-        "--no-warnings",
-        "--extractor-args", "youtube:player-client=web_music",
-        ...this.options.additionalArgs,
-      ];
-
-      if (this.options.quiet) {
-        args.push("--quiet");
-      }
-
-      if (this.options.noImpersonate) {
-        args.push("--impersonate", "");
-      }
-
-      const infoProcess = spawn(this.ytDlpPath, args, {
-        stdio: ["ignore", "pipe", "pipe"],
-        windowsHide: true,
-      });
-
-      let stdoutData = "";
-      let stderrData = "";
-
-      infoProcess.stdout.on("data", (data) => {
-        stdoutData += data.toString();
-      });
-
-      infoProcess.stderr.on("data", (data) => {
-        stderrData += data.toString();
-      });
-
-      infoProcess.on("close", (code) => {
-        if (code === 0) {
-          try {
-            const jsonInfo = JSON.parse(stdoutData);
-            const videoInfo: YouTubeVideoInfo = {
-              title: jsonInfo.fulltitle ?? jsonInfo.title ?? "Unknown Title",
-              duration: jsonInfo.duration,
-              id: jsonInfo.id,
-              url: jsonInfo.webpage_url ?? url,
-              thumbnails: jsonInfo.thumbnails?.map((thumb: any) => ({
-                url: thumb.url,
-                width: thumb.width,
-                height: thumb.height,
-              })),
-            };
-            resolve(videoInfo);
-          } catch (error) {
-            reject(
-              new YouTubeStreamError(
-                `Failed to parse yt-dlp JSON output for ${url}: ${error}`,
-                new Error(stderrData || "No stderr output")
-              )
-            );
-          }
-        } else {
-          reject(
-            new YouTubeStreamError(
-              `yt-dlp failed to get info for ${url} with code ${code}. Error: ${stderrData}`
-            )
-          );
-        }
-      });
-
-      infoProcess.on("error", (error: Error) => {
-        reject(new YouTubeStreamError(`yt-dlp process failed to spawn: ${error.message}`, error));
-      });
-    });
-  }
-
-  /**
    * Validates if a URL is a valid YouTube URL.
    * @param url - The URL to validate.
    * @returns True if the URL is a valid YouTube URL.
@@ -267,12 +145,12 @@ export class YouTubeStreamConverter {
    * @returns A Readable stream.
    */
   private async getStreamWithYtDlp(url: string): Promise<Readable> {
-    await this.ensureYtDlpExists();
+    await YouTubeStreamConverter.ensureYtDlpExists();
 
     return new Promise((resolve, reject) => {
       const args: string[] = this.buildYtDlpArgs(url);
 
-      const streamProcess = spawn(this.ytDlpPath, args, {
+      const streamProcess = spawn(YouTubeStreamConverter.YTDLP_PATH, args, {
         stdio: ["ignore", "pipe", "pipe"],
         windowsHide: true,
       });
@@ -354,7 +232,7 @@ export class YouTubeStreamConverter {
    * Determines the platform-specific suffix for the yt-dlp executable.
    * @returns {string} The platform-specific suffix.
    */
-  private getPlatformSuffix(): string {
+  private static getPlatformSuffix(): string {
     if (process.platform === "win32") return ".exe";
     if (process.platform === "darwin") return "_macos";
     if (process.platform === "linux") {
@@ -370,13 +248,13 @@ export class YouTubeStreamConverter {
    * Gets the path to yt-dlp executable. Tries to find it in `node_modules/.bin` first.
    * @returns {string} The absolute path to the yt-dlp executable.
    */
-  private getYtDlpPath(): string {
-    const ext = this.getPlatformSuffix();
+  private static getYtDlpPath(): string {
+    const ext = YouTubeStreamConverter.getPlatformSuffix();
     const filename = `yt-dlp${ext}`;
 
     const nodeModulesBinPath = nodePath.join(process.cwd(), 'node_modules', '.bin', filename);
     if (existsSync(nodeModulesBinPath)) {
-        return nodeModulesBinPath;
+      return nodeModulesBinPath;
     }
 
     const scriptsPath = nodePath.resolve(process.cwd(), "scripts");
@@ -387,12 +265,12 @@ export class YouTubeStreamConverter {
    * Ensures yt-dlp executable exists, downloads it if necessary.
    * Includes architecture checks for Linux.
    */
-  private async ensureYtDlpExists(): Promise<void> {
-    if (existsSync(this.ytDlpPath)) {
+  private static async ensureYtDlpExists(): Promise<void> {
+    if (existsSync(this.YTDLP_PATH)) {
       return;
     }
 
-    mkdirSync(nodePath.dirname(this.ytDlpPath), { recursive: true });
+    mkdirSync(nodePath.dirname(this.YTDLP_PATH), { recursive: true });
 
     let latestRelease: any;
     try {
@@ -415,9 +293,9 @@ export class YouTubeStreamConverter {
       );
     }
 
-    console.info(`[INFO] Downloading yt-dlp binary from ${exeAsset.browser_download_url} to ${this.ytDlpPath}`);
+    console.info(`[INFO] Downloading yt-dlp binary from ${exeAsset.browser_download_url} to ${this.YTDLP_PATH}`);
     try {
-      await this.downloadFile(exeAsset.browser_download_url, this.ytDlpPath);
+      await this.downloadFile(exeAsset.browser_download_url, this.YTDLP_PATH);
     } catch (error) {
       throw new YouTubeStreamError(
         `Failed to download yt-dlp binary: ${error}`,
@@ -429,17 +307,17 @@ export class YouTubeStreamConverter {
       try {
         await import("fs/promises").then(async fs => {
           try {
-            await fs.chmod(this.ytDlpPath, 0o755);
+            await fs.chmod(this.YTDLP_PATH, 0o755);
           } catch (chmodErr: any) {
             if (chmodErr && chmodErr.code === "EACCES") {
               try {
                 const uid = process.getuid?.();
                 const gid = process.getgid?.();
                 if (typeof uid === "number" && typeof gid === "number") {
-                  await fs.chown(this.ytDlpPath, uid, gid);
-                  await fs.chmod(this.ytDlpPath, 0o755);
+                  await fs.chown(this.YTDLP_PATH, uid, gid);
+                  await fs.chmod(this.YTDLP_PATH, 0o755);
                 }
-              } catch {}
+              } catch { }
             } else {
               throw chmodErr;
             }
@@ -453,7 +331,7 @@ export class YouTubeStreamConverter {
       }
     }
 
-    if (!existsSync(this.ytDlpPath)) {
+    if (!existsSync(this.YTDLP_PATH)) {
       throw new YouTubeStreamError("yt-dlp binary was not found after download and permission setting.");
     }
     console.info("[INFO] Successfully downloaded and set up yt-dlp.");
@@ -466,7 +344,7 @@ export class YouTubeStreamConverter {
    * @param url The URL to fetch JSON from.
    * @returns A Promise that resolves with the parsed JSON data.
    */
-  private async fetchJson<T>(url: string): Promise<T> {
+  private static async fetchJson<T>(url: string): Promise<T> {
     try {
       const response = await got(url).json<T>();
       return response;
@@ -481,7 +359,7 @@ export class YouTubeStreamConverter {
    * @param destination The local path to save the file.
    * @returns A Promise that resolves when the download is complete.
    */
-  private async downloadFile(url: string, destination: string): Promise<void> {
+  private static async downloadFile(url: string, destination: string): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       const writeStream = createWriteStream(destination, { mode: 0o777 });
       writeStream.on("finish", resolve);
@@ -519,5 +397,6 @@ export async function getYouTubeStream(
   }
   return defaultConverter.getYouTubeStream(url);
 }
+
 export { YouTubeStreamConverter as default };
 
