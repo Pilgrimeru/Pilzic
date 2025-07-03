@@ -2,9 +2,9 @@
 
 ![banner](https://i.imgur.com/y73VY4q.jpg)
 
-✔️ **Compatible with YouTube** _(Yes, it works!)_  
+✔️ **Compatible with YouTube** _(Yes, it works!)_
 ✔️ **No Lavalink or third-party APIs required**
-✔️ **Fast, smooth, and reliable**  
+✔️ **Fast, smooth, and reliable**
 ✔️ **Lightweight (<200MB RAM)**  
 ✔️ **Multi-language support** \*(Currently available in **English & French**)
 
@@ -97,6 +97,7 @@ bun start
 - `/pause` - Pause the current track.
 - `/resume (r)` - Resume playback.
 - `/skip (s)` - Skip the current track.
+- `/seek` - Jump to a specific moment in the current track.
 - `/stop` - Stop all music.
 - `/queue (q)` - Show the queue.
 - `/autoplay` - Enable automatic queue filling.
