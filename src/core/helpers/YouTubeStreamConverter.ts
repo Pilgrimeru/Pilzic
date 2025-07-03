@@ -20,7 +20,7 @@ export interface StreamConverterOptions {
   /**
    * Rate limit for downloads (in bytes per second), e.g., "500K" or "1M".
    * Consider adjusting based on your bot's bandwidth and server load.
-   * @default "500K"
+   * @default "100K"
    */
   limitRate?: string;
   /**
