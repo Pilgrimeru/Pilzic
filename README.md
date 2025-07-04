@@ -27,7 +27,7 @@ For other platforms like Spotify and SoundCloud, you'll need to provide direct l
 | **Playlists**       |      ✅      |
 | **Mixes**           | ⚠️ (Limited) |
 | **Channels**        |      ❌      |
-| **Live Streams**    |      ❌      |
+| **Live Streams**    |      ✅      |
 
 ## **🎵 Supported Platforms**
 
