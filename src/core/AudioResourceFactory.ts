@@ -57,7 +57,7 @@ export class AudioResourceFactory {
       ? seek
         ? new YouTubeStreamConverter().transcodeFile(cached, seek)
         : audioCacheManager.open(track.url)
-      : !seek && track.duration !== 0
+      : !seek && track.duration !== 0 && audioCacheManager.enabled
         ? audioCacheManager.tee(track.url, freshStream!)
         : freshStream;
 

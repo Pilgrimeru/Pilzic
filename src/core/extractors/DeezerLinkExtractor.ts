@@ -1,11 +1,13 @@
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import {
+  ExtractionError,
   InvalidURLError,
   NoDataError,
   ServiceUnavailableError,
 } from "@errors/ExtractionErrors";
-import axios from "axios";
+import { config } from "config";
+import { mapWithConcurrency } from "@utils/mapWithConcurrency";
 import { deezer, DeezerTrack, dz_validate } from "play-dl";
 import { LinkExtractor } from "./abstract/LinkExtractor";
 
@@ -17,23 +19,28 @@ export class DeezerLinkExtractor extends LinkExtractor {
     url: string,
   ): Promise<"track" | "playlist" | false> {
     if (RegExp(DeezerLinkExtractor.DZ_LINK).exec(url)) {
-      const response = await axios.head(url).catch(() => null);
-
-      if (!response?.request?._redirectable?._options) return false;
-
-      const path = response.request._redirectable._options.pathname;
-
-      if (!path) return false;
-
-      if (path.match(/^\/\w{2}\/track/)) return "track";
-      if (path.match(/^\/\w{2}\/album/)) return "playlist";
-      if (path.match(/^\/\w{2}\/playlist/)) return "playlist";
-      return false;
+      const parsedUrl = new URL(url);
+      if (parsedUrl.hostname !== "deezer.page.link") {
+        return DeezerLinkExtractor.classifyPath(parsedUrl.pathname);
+      }
+      const response = await fetch(url, {
+        method: "HEAD",
+        redirect: "follow",
+        signal: AbortSignal.timeout(5_000),
+      }).catch(() => null);
+      if (!response?.ok) return false;
+      return DeezerLinkExtractor.classifyPath(new URL(response.url).pathname);
     }
     const validate = await dz_validate(url);
     if (validate === "album") return "playlist";
     if (validate === "search") return false;
     return validate;
+  }
+
+  private static classifyPath(path: string): "track" | "playlist" | false {
+    if (/^\/(?:[a-z]{2}\/)?track\//i.test(path)) return "track";
+    if (/^\/(?:[a-z]{2}\/)?(?:album|playlist)\//i.test(path)) return "playlist";
+    return false;
   }
 
   protected async extractTrack(): Promise<TrackData> {
@@ -58,21 +65,22 @@ export class DeezerLinkExtractor extends LinkExtractor {
 
   protected async extractPlaylist(): Promise<PlaylistData> {
     try {
-      const data = await deezer(this.url).catch(console.error);
+      const data = await deezer(this.url);
 
       if (!data || data instanceof DeezerTrack) {
         throw new NoDataError();
       }
 
       const { DataFinder } = await import("@core/helpers/DataFinder");
-      const promiseTracksData: Promise<TrackData>[] = data.tracks.map(
-        (track) => {
-          const search = track.artist.name + " " + track.title;
-          return DataFinder.searchTrackData(search);
-        },
+      const sourceTracks = data.tracks.slice(0, config.MAX_PLAYLIST_SIZE);
+      const results = await mapWithConcurrency(sourceTracks, 4, (track) => {
+        const search = track.artist.name + " " + track.title;
+        return DataFinder.searchTrackData(search);
+      });
+      const tracks = results.flatMap((result) =>
+        result.status === "fulfilled" ? [result.value] : [],
       );
-
-      const tracks = await Promise.all(promiseTracksData);
+      if (!tracks.length) throw new NoDataError();
       const duration = tracks.reduce(
         (total, track) => total + track.duration,
         0,
@@ -80,6 +88,7 @@ export class DeezerLinkExtractor extends LinkExtractor {
 
       return { title: data.title, url: data.url, tracks, duration };
     } catch (error: any) {
+      if (error instanceof ExtractionError) throw error;
       if (error.message?.includes("not a Deezer")) {
         throw new InvalidURLError();
       } else if (error.message?.includes("API Error")) {

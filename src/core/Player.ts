@@ -156,7 +156,8 @@ export class Player extends EventEmitter {
   }
 
   private async fadeAndPause(): Promise<boolean> {
-    if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing) return false;
+    if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing)
+      return false;
     const transitionId = ++this.transitionId;
     const resource = this.resource;
     if (!(await this.fadeOut(resource, transitionId))) return false;
@@ -178,7 +179,10 @@ export class Player extends EventEmitter {
 
     for (let step = 1; step <= Player.FADE_OUT_STEPS; step++) {
       await new Promise<void>((resolve) =>
-        setTimeout(resolve, Player.FADE_OUT_DURATION_MS / Player.FADE_OUT_STEPS),
+        setTimeout(
+          resolve,
+          Player.FADE_OUT_DURATION_MS / Player.FADE_OUT_STEPS,
+        ),
       );
       if (transitionId !== this.transitionId || resource !== this.resource)
         return false;
@@ -207,21 +211,28 @@ export class Player extends EventEmitter {
   }
 
   private async process(track: Track, seek?: number): Promise<void> {
+    const processId = ++this.transitionId;
     const loadingMsg = this.textChannel.send(i18n.__("common.loading"));
     try {
       await entersState(this.connection, VoiceConnectionStatus.Ready, 15_000);
-      this.resource = await audioResourceFactory.createResource(track, seek);
-      if (!this.resource.readable) throw new Error("Resource not readable.");
-      this.resource.playbackDuration += (seek ?? 0) * 1000;
-      this.resource.volume?.setVolumeLogarithmic(this._volume / 100);
-      (await loadingMsg).delete().catch(() => null);
-      this.audioPlayer.play(this.resource);
+      const resource = await audioResourceFactory.createResource(track, seek);
+      if (processId !== this.transitionId || this._stopped) {
+        resource.playStream.destroy();
+        return;
+      }
+      if (!resource.readable) throw new Error("Resource not readable.");
+      resource.playbackDuration += (seek ?? 0) * 1000;
+      resource.volume?.setVolumeLogarithmic(this._volume / 100);
+      this.resource = resource;
+      this.audioPlayer.play(resource);
       await this.nowPlayingMsgManager.send(track);
     } catch (error) {
+      if (processId !== this.transitionId || this._stopped) return;
       console.error(error);
-      (await loadingMsg).delete().catch(() => null);
       this.textChannel.send(i18n.__("player.error")).then(autoDelete);
       await this.handlePlaybackFailure(error);
+    } finally {
+      (await loadingMsg).delete().catch(() => null);
     }
   }
 

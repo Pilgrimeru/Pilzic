@@ -27,7 +27,12 @@ class AudioCacheManager {
     this.cleanup();
   }
 
+  public get enabled(): boolean {
+    return config.AUDIO_CACHE_MAX_FILES > 0 && config.AUDIO_CACHE_MAX_MB > 0;
+  }
+
   public get(url: string): string | null {
+    if (!this.enabled) return null;
     const target = this.pathFor(url);
     try {
       const stat = statSync(target);
@@ -81,6 +86,7 @@ class AudioCacheManager {
     url: string,
     producer: () => Promise<Readable>,
   ): Promise<string | null> {
+    if (!this.enabled) return Promise.resolve(null);
     const cached = this.get(url);
     if (cached) return Promise.resolve(cached);
     const existing = this.pending.get(url);

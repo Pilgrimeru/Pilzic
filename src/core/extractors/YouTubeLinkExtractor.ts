@@ -100,7 +100,7 @@ export class YouTubeLinkExtractor extends LinkExtractor {
         !video.nsfw,
     );
 
-    return validVideos.slice(0, config.MAX_PLAYLIST_SIZE - 1).map((video) => ({
+    return validVideos.slice(0, config.MAX_PLAYLIST_SIZE).map((video) => ({
       title: video.title!,
       url: `https://youtube.com/watch?v=${video.id}`,
       duration: video.duration,

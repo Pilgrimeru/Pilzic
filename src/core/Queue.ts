@@ -10,6 +10,7 @@ export class Queue extends EventEmitter {
 
   private _index: number;
   private _autoqueue: boolean;
+  private autoAddPromise: Promise<void> | undefined;
   private readonly player: Player;
   private _tracks: Track[] = [];
 
@@ -82,7 +83,7 @@ export class Queue extends EventEmitter {
   public async toggleAutoqueue(): Promise<boolean> {
     this._autoqueue = !this._autoqueue;
     if (this._autoqueue) {
-      await this.autoAddNextTrack();
+      await this.scheduleAutoAdd();
     }
     return this._autoqueue;
   }
@@ -124,7 +125,7 @@ export class Queue extends EventEmitter {
       if (this._index !== this._tracks.length - 1) {
         this._index += 1;
         if (this._autoqueue) {
-          void this.autoAddNextTrack();
+          void this.scheduleAutoAdd();
         }
       } else if (this.loop === "queue") {
         this._index = 0;
@@ -135,7 +136,7 @@ export class Queue extends EventEmitter {
       if (trackId >= this._tracks.length) trackId = this._tracks.length - 1;
       else if (trackId < 0) trackId = 0;
       if (this._autoqueue) {
-        void this.autoAddNextTrack();
+        void this.scheduleAutoAdd();
       }
       this._index = trackId;
     });
@@ -143,19 +144,30 @@ export class Queue extends EventEmitter {
     this.player.on("previous", () => {
       if (this._index <= 0 && this.loop === "queue") {
         this._index = this._tracks.length - 1;
-      }
-      if (this._index >= 0) {
+      } else if (this._index > 0) {
         this._index--;
       }
     });
   }
 
+  private scheduleAutoAdd(): Promise<void> {
+    if (!this.autoAddPromise) {
+      this.autoAddPromise = this.autoAddNextTrack().finally(() => {
+        this.autoAddPromise = undefined;
+      });
+    }
+    return this.autoAddPromise;
+  }
+
   private async autoAddNextTrack(): Promise<void> {
+    if (!this._autoqueue) return;
     const remainingTracks = this.tracks.length - this.index - 1;
     if (remainingTracks > 2) return;
+    const current = this._tracks[this._index];
+    if (!current) return;
     const botUser = this.player.textChannel.guild.members.me?.user!;
 
-    let related_videos = await this._tracks[this._index].getRelated();
+    let related_videos = await current.getRelated();
     related_videos = related_videos.filter(
       (url) => !this._tracks.some((existingTrack) => existingTrack.url === url),
     );
@@ -164,7 +176,7 @@ export class Queue extends EventEmitter {
     const trackData = await DataFinder.getTrackDataFromLink(
       related_videos[0],
     ).catch(console.error);
-    if (!trackData) return;
+    if (!trackData || !this._autoqueue) return;
 
     const relatedTrack = Track.from(trackData, botUser);
     this._tracks.push(relatedTrack);
