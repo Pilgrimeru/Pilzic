@@ -40,6 +40,7 @@ export class Player extends EventEmitter {
   private readonly queueRetries = new WeakMap<Track, number>();
   private handlingFailure = false;
   private transitionId = 0;
+  private leaveTimer: ReturnType<typeof setTimeout> | undefined;
 
   public constructor(options: PlayerOptions) {
     super();
@@ -135,15 +136,21 @@ export class Player extends EventEmitter {
       this.resource = undefined;
     }
 
-    setTimeout(() => {
+    this.cancelLeaveTimer();
+    if (config.STAY_TIME === 0) return;
+    this.leaveTimer = setTimeout(() => {
+      this.leaveTimer = undefined;
       if (this._stopped) {
         void this.leave();
       }
     }, config.STAY_TIME * 1000);
+    this.leaveTimer.unref?.();
   }
 
   public async leave(): Promise<void> {
+    this.cancelLeaveTimer();
     await this.stop();
+    this.cancelLeaveTimer();
     bot.playerManager.removePlayer(this.textChannel.guildId);
     if (this.connection.state.status != VoiceConnectionStatus.Destroyed) {
       this.connection.destroy();
@@ -355,6 +362,7 @@ export class Player extends EventEmitter {
 
   private setupQueueListeners(): void {
     this.queue.on("trackAdded", (track: Track) => {
+      this.cancelLeaveTimer();
       this.sendTrackAddedMessage(track);
       if (this._stopped) {
         this._stopped = false;
@@ -364,6 +372,7 @@ export class Player extends EventEmitter {
     });
 
     this.queue.on("playlistAdded", (playlist: Playlist) => {
+      this.cancelLeaveTimer();
       this.sendPlaylistAddedMessage(playlist);
       if (this._stopped) {
         this._stopped = false;
@@ -371,6 +380,12 @@ export class Player extends EventEmitter {
         return current ? this.process(current) : this.stop();
       }
     });
+  }
+
+  private cancelLeaveTimer(): void {
+    if (!this.leaveTimer) return;
+    clearTimeout(this.leaveTimer);
+    this.leaveTimer = undefined;
   }
 
   private sendTrackAddedMessage(track: Track): void {

@@ -1,7 +1,7 @@
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import axios, { type AxiosResponse } from "axios";
-import ffprobe from "ffprobe-static";
+import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
 import type { Readable } from "node:stream";
 import { LinkExtractor } from "./abstract/LinkExtractor";
@@ -17,6 +17,15 @@ type FfprobeData = {
     bit_rate?: string;
   };
 };
+
+const require = createRequire(import.meta.url);
+const ffprobePath = (() => {
+  try {
+    return (require("ffprobe-static") as { path: string }).path;
+  } catch {
+    return process.env["FFPROBE_PATH"] || "ffprobe";
+  }
+})();
 
 export class ExternalLinkExtractor extends LinkExtractor {
   private static readonly AUDIO_LINK =
@@ -108,7 +117,7 @@ export class ExternalLinkExtractor extends LinkExtractor {
 
   private probeStream(audioStream: Readable): Promise<FfprobeData> {
     const probeProcess = spawn(
-      ffprobe.path,
+      ffprobePath,
       ["-v", "error", "-print_format", "json", "-show_format", "-i", "pipe:0"],
       { stdio: ["pipe", "pipe", "pipe"] },
     );

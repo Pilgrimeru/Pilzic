@@ -1,4 +1,5 @@
 import { arrayMoveImmutable } from "array-move";
+import { config } from "config";
 import { EventEmitter } from "events";
 import { Player } from "./Player";
 import { Playlist } from "./Playlist";
@@ -124,6 +125,7 @@ export class Queue extends EventEmitter {
     this.player.on("skip", () => {
       if (this._index !== this._tracks.length - 1) {
         this._index += 1;
+        this.pruneHistory();
         if (this._autoqueue) {
           void this.scheduleAutoAdd();
         }
@@ -148,6 +150,14 @@ export class Queue extends EventEmitter {
         this._index--;
       }
     });
+  }
+
+  private pruneHistory(): void {
+    if (this.loop === "queue") return;
+    const excess = this._index - config.QUEUE_HISTORY_SIZE;
+    if (excess <= 0) return;
+    this._tracks.splice(0, excess);
+    this._index -= excess;
   }
 
   private scheduleAutoAdd(): Promise<void> {

@@ -92,6 +92,11 @@ class AudioCacheManager {
     if (cached) return Promise.resolve(cached);
     const existing = this.pending.get(url);
     if (existing) return existing;
+    const maxQueued = Math.max(
+      config.AUDIO_PRELOAD_CONCURRENCY * 4,
+      config.AUDIO_PRELOAD_COUNT * 4,
+    );
+    if (this.preloadQueue.length >= maxQueued) return Promise.resolve(null);
     const task = new Promise<string | null>((resolve) => {
       this.preloadQueue.push(
         () => void this.runPreload(url, producer).then(resolve),

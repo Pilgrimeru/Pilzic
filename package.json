@@ -20,7 +20,6 @@
     "bufferutil": "^4.1.0",
     "discord.js": "^14.27.0",
     "dotenv": "^18.0.0",
-    "ffprobe-static": "^3.1.0",
     "got": "^16.0.0",
     "i18n": "^0.15.4",
     "isomorphic-unfetch": "^4.0.2",
@@ -35,15 +34,14 @@
     "youtube-sr": "^4.3.12"
   },
   "devDependencies": {
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
     "@types/ffprobe-static": "^2.0.3",
     "@types/i18n": "^0.13.12",
     "bun-types": "^1.4.2",
     "prettier": "^3.9.8",
     "puppeteer-core": "^25.11.0",
     "typescript": "^7.0.2"
-  },
-  "optionalDependencies": {
-    "ffmpeg-static": "^5.3.0"
   },
   "overrides": {
     "@discordjs/rest": "^2.6.3",

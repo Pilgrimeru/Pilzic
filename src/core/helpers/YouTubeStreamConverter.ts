@@ -6,9 +6,18 @@ import process from "node:process";
 import { PassThrough, type Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { URL } from "node:url";
+import { createRequire } from "node:module";
 import { config } from "config";
-import ffmpegPath from "ffmpeg-static";
 import got from "got";
+
+const require = createRequire(import.meta.url);
+const ffmpegPath = (() => {
+  try {
+    return require("ffmpeg-static") as string;
+  } catch {
+    return process.env["FFMPEG_PATH"] || "ffmpeg";
+  }
+})();
 
 export interface StreamConverterOptions {
   format?: string;
@@ -194,6 +203,10 @@ export class YouTubeStreamConverter {
       "2",
       "-acodec",
       "libopus",
+      "-b:a",
+      "96k",
+      "-compression_level",
+      "5",
       "-f",
       "opus",
       "pipe:1",

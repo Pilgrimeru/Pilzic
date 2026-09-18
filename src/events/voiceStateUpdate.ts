@@ -23,5 +23,6 @@ export default new Event("voiceStateUpdate", async (voice: VoiceState) => {
       }
     }
   }, config.STAY_TIME * 1000);
+  timer.unref?.();
   guildTimers.set(voice.guild.id, timer);
 });

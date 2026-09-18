@@ -44,6 +44,7 @@ const config: Config = {
     process.env["AUDIO_PRELOAD_CONCURRENCY"],
     2,
   ),
+  QUEUE_HISTORY_SIZE: parseEnvInt(process.env["QUEUE_HISTORY_SIZE"], 50),
   COLORS: {
     MAIN: parseEnvColor(process.env["MAIN_COLOR"], 0x69adc7),
     PAUSE: 0xc0c0c0,

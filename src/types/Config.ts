@@ -16,6 +16,7 @@ export interface Config {
   AUDIO_CACHE_MAX_MB: number;
   AUDIO_PRELOAD_COUNT: number;
   AUDIO_PRELOAD_CONCURRENCY: number;
+  QUEUE_HISTORY_SIZE: number;
   COLORS: {
     MAIN: number;
     PAUSE: number;
