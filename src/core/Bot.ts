@@ -3,7 +3,6 @@ import { config } from "config";
 import { Client, type ClientEvents, type ClientOptions } from "discord.js";
 import { readdirSync } from "fs";
 import { join } from "path";
-import { getFreeClientID, setToken } from "play-dl";
 import { CommandManager } from "./managers/CommandManager";
 import { PlayerManager } from "./managers/PlayerManager";
 
@@ -27,22 +26,7 @@ export class Bot extends Client {
     await bot.login(config.TOKEN);
     void bot.commandManager.loadCommands();
     void bot.loadEvents();
-    void bot.soundcloudApiConnect();
     return bot;
-  }
-
-  private async soundcloudApiConnect(): Promise<void> {
-    try {
-      const clientID = await getFreeClientID();
-      await setToken({
-        useragent: [config.USERAGENT],
-        soundcloud: {
-          client_id: clientID,
-        },
-      });
-    } catch (error) {
-      console.error(error);
-    }
   }
 
   private async loadEvents(): Promise<void> {

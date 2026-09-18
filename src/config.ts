@@ -36,6 +36,7 @@ const config: Config = {
   YOUTUBE_COOKIES_PATH:
     process.env["YOUTUBE_COOKIES_PATH"]?.trim() || undefined,
   YOUTUBE_MAX_RETRIES: parseEnvInt(process.env["YOUTUBE_MAX_RETRIES"], 5),
+  SOUNDCLOUD_MAX_RETRIES: parseEnvInt(process.env["SOUNDCLOUD_MAX_RETRIES"], 5),
   AUDIO_CACHE_MAX_FILES: parseEnvInt(process.env["AUDIO_CACHE_MAX_FILES"], 50),
   AUDIO_CACHE_MAX_MB: parseEnvInt(process.env["AUDIO_CACHE_MAX_MB"], 500),
   AUDIO_PRELOAD_COUNT: parseEnvInt(process.env["AUDIO_PRELOAD_COUNT"], 5),

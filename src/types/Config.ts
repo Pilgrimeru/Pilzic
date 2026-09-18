@@ -11,6 +11,7 @@ export interface Config {
   USERAGENT: string;
   YOUTUBE_COOKIES_PATH?: string;
   YOUTUBE_MAX_RETRIES: number;
+  SOUNDCLOUD_MAX_RETRIES: number;
   AUDIO_CACHE_MAX_FILES: number;
   AUDIO_CACHE_MAX_MB: number;
   AUDIO_PRELOAD_COUNT: number;

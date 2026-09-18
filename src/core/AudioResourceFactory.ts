@@ -4,10 +4,11 @@ import {
   StreamType,
 } from "@discordjs/voice";
 import got from "got";
-import { stream as getStream, so_validate, yt_validate } from "play-dl";
+import { yt_validate } from "play-dl";
 import type { Track } from "./Track";
 import {
   getYouTubeStream,
+  getSoundCloudStream,
   YouTubeStreamConverter,
 } from "./helpers/YouTubeStreamConverter";
 import { audioCacheManager } from "./managers/AudioCacheManager";
@@ -17,7 +18,7 @@ export class AudioResourceFactory {
     track: Track,
     seek?: number,
   ): Promise<AudioResource<Track>> {
-    if (await so_validate(track.url)) {
+    if (this.isSoundCloudUrl(track.url)) {
       return this.getSoundCloudResource(track);
     } else if (yt_validate(track.url) === "video") {
       return this.getYouTubeResource(track, seek);
@@ -29,19 +30,14 @@ export class AudioResourceFactory {
   private async getSoundCloudResource(
     track: Track,
   ): Promise<AudioResource<Track>> {
-    const response = await getStream(track.url, {
-      htmldata: false,
-      precache: 15,
-      quality: 0,
-    });
-
-    if (!response?.stream) {
+    const stream = await getSoundCloudStream(track.url);
+    if (!stream) {
       throw new Error("Unable to retrieve SoundCloud stream.");
     }
 
-    return createAudioResource(response.stream, {
+    return createAudioResource(stream, {
       metadata: track,
-      inputType: response.type,
+      inputType: StreamType.OggOpus,
       inlineVolume: true,
     });
   }
@@ -103,6 +99,16 @@ export class AudioResourceFactory {
     return audioCacheManager.preload(track.url, () =>
       getYouTubeStream(track.url),
     );
+  }
+
+  private isSoundCloudUrl(value: string): boolean {
+    try {
+      return /^(?:(?:www|m|on|api)\.)?soundcloud\.com$|^(?:www\.)?snd\.sc$/.test(
+        new URL(value).hostname.toLowerCase(),
+      );
+    } catch {
+      return false;
+    }
   }
 }
 

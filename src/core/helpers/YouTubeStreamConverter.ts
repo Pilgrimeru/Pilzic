@@ -16,6 +16,7 @@ export interface StreamConverterOptions {
   additionalArgs?: string[];
   seek?: number;
   isLive?: boolean;
+  source?: "youtube" | "soundcloud";
 }
 export type YouTubeErrorCode =
   | "YOUTUBE_AUTH_REQUIRED"
@@ -61,15 +62,20 @@ export class YouTubeStreamConverter {
       additionalArgs: options.additionalArgs ?? [],
       seek: options.seek ?? 0,
       isLive: options.isLive ?? false,
+      source: options.source ?? "youtube",
     };
   }
 
   public async getYouTubeStream(url: string): Promise<Readable> {
     if (!this.isValidUrl(url))
-      throw new YouTubeStreamError(`Invalid YouTube URL: ${url}`);
+      throw new YouTubeStreamError(`Invalid ${this.label} URL: ${url}`);
     await YouTubeStreamConverter.ensureYtDlpExists();
     let last: YouTubeStreamError | undefined;
-    for (let attempt = 0; attempt <= config.YOUTUBE_MAX_RETRIES; attempt++) {
+    const maxRetries =
+      this.options.source === "soundcloud"
+        ? config.SOUNDCLOUD_MAX_RETRIES
+        : config.YOUTUBE_MAX_RETRIES;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         return this.transcode(await this.spawnValidated(url), url);
       } catch (error) {
@@ -77,14 +83,11 @@ export class YouTubeStreamConverter {
           error instanceof YouTubeStreamError
             ? error
             : new YouTubeStreamError(String(error));
-        if (
-          last.code !== "YOUTUBE_TRANSIENT" ||
-          attempt === config.YOUTUBE_MAX_RETRIES
-        )
+        if (last.code !== "YOUTUBE_TRANSIENT" || attempt === maxRetries)
           throw last;
         const delay = Math.min(1_000 * 2 ** attempt, 10_000);
         console.warn(
-          `[YouTube] transient failure; retry ${attempt + 1}/${config.YOUTUBE_MAX_RETRIES} in ${delay}ms`,
+          `[${this.label}] transient failure; retry ${attempt + 1}/${maxRetries} in ${delay}ms`,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
@@ -116,10 +119,15 @@ export class YouTubeStreamConverter {
         settled = true;
         clearTimeout(timer);
         child.kill("SIGKILL");
-        const code = classify(stderr || message);
+        let code = classify(stderr || message);
+        if (
+          this.options.source === "soundcloud" &&
+          /http error 429|too many requests/i.test(stderr || message)
+        )
+          code = "YOUTUBE_TRANSIENT";
         if (code === "YOUTUBE_AUTH_REQUIRED")
           console.error(
-            "[YouTube] Authentication rejected; renew the local Netscape cookie file.",
+            `[${this.label}] Authentication rejected${this.options.source === "youtube" ? "; renew the local Netscape cookie file." : "."}`,
           );
         reject(
           new YouTubeStreamError(
@@ -148,11 +156,13 @@ export class YouTubeStreamConverter {
   ): void {
     child.once("close", (code) => {
       const details = stderr().trim();
+      // Windows may report a deliberately closed stdout pipe as either
+      // EPIPE/Errno 32 or EINVAL/Errno 22 depending on timing.
       const consumerClosedPipe =
-        /unable to write data.*(?:errno 32|broken pipe)/i.test(details);
+        /errno (?:22|32)|broken pipe|invalid argument/i.test(details);
       if (code !== 0 && code !== null && !consumerClosedPipe)
         console.error(
-          `[YouTube] yt-dlp failed during playback (${url}, code ${code}): ${details}`,
+          `[${this.label}] yt-dlp failed during playback (${url}, code ${code}): ${details}`,
         );
     });
   }
@@ -193,6 +203,13 @@ export class YouTubeStreamConverter {
       stderr = (stderr + chunk.toString()).slice(-16_384);
     });
     ffmpeg.once("error", (error) => output.destroy(error));
+    ffmpeg.stdin.on("error", (error: NodeJS.ErrnoException) => {
+      // Expected when a track is skipped: FFmpeg closes stdin while yt-dlp may
+      // still have a buffered chunk to write. Without a listener Bun treats
+      // this EPIPE as an uncaught exception and terminates the whole bot.
+      if (error.code === "EPIPE" || output.destroyed) return;
+      output.destroy(error);
+    });
     ffmpeg.once("close", (code) => {
       if (code !== 0 && !output.destroyed)
         output.destroy(
@@ -209,7 +226,12 @@ export class YouTubeStreamConverter {
     }
     ffmpeg.stdout.pipe(output);
     output.once("close", () => {
-      if (typeof source !== "string") source.destroy();
+      ffmpeg.stdout.unpipe(output);
+      if (typeof source !== "string") {
+        source.unpipe(ffmpeg.stdin);
+        source.destroy();
+      }
+      ffmpeg.stdin.destroy();
       if (!ffmpeg.killed) ffmpeg.kill("SIGKILL");
     });
     return output;
@@ -231,7 +253,7 @@ export class YouTubeStreamConverter {
       "--no-warnings",
     ];
     if (this.options.isLive) args.push("--no-live-from-start");
-    if (config.YOUTUBE_COOKIES_PATH) {
+    if (this.options.source === "youtube" && config.YOUTUBE_COOKIES_PATH) {
       if (!existsSync(config.YOUTUBE_COOKIES_PATH))
         throw new YouTubeStreamError(
           `Cookie file not found: ${config.YOUTUBE_COOKIES_PATH}`,
@@ -246,14 +268,21 @@ export class YouTubeStreamConverter {
 
   private isValidUrl(value: string): boolean {
     try {
-      return /^(?:www\.|m\.|music\.)?youtube\.com$|^youtu\.be$/.test(
-        new URL(value).hostname,
-      );
+      const hostname = new URL(value).hostname.toLowerCase();
+      return this.options.source === "soundcloud"
+        ? /^(?:(?:www|m|on|api)\.)?soundcloud\.com$|^(?:www\.)?snd\.sc$/.test(
+            hostname,
+          )
+        : /^(?:www\.|m\.|music\.)?youtube\.com$|^youtu\.be$/.test(hostname);
     } catch {
       return false;
     }
   }
-  private static getYtDlpPath(): string {
+  private get label(): string {
+    return this.options.source === "soundcloud" ? "SoundCloud" : "YouTube";
+  }
+
+  public static getYtDlpPath(): string {
     const suffix =
       process.platform === "win32"
         ? ".exe"
@@ -266,7 +295,7 @@ export class YouTubeStreamConverter {
               : "_linux";
     return path.resolve(process.cwd(), "scripts", `yt-dlp${suffix}`);
   }
-  private static async ensureYtDlpExists(): Promise<void> {
+  public static async ensureYtDlpExists(): Promise<void> {
     if (existsSync(this.YTDLP_PATH)) return;
     mkdirSync(path.dirname(this.YTDLP_PATH), { recursive: true });
     const release = await got(
@@ -295,5 +324,10 @@ export async function getYouTubeStream(
   options?: StreamConverterOptions,
 ): Promise<Readable> {
   return new YouTubeStreamConverter(options).getYouTubeStream(url);
+}
+export async function getSoundCloudStream(url: string): Promise<Readable> {
+  return new YouTubeStreamConverter({ source: "soundcloud" }).getYouTubeStream(
+    url,
+  );
 }
 export default YouTubeStreamConverter;
