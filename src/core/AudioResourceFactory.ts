@@ -3,10 +3,14 @@ import {
   createAudioResource,
   StreamType,
 } from "@discordjs/voice";
-import axios from "axios";
+import got from "got";
 import { stream as getStream, so_validate, yt_validate } from "play-dl";
 import type { Track } from "./Track";
-import { getYouTubeStream } from "./helpers/YouTubeStreamConverter";
+import {
+  getYouTubeStream,
+  YouTubeStreamConverter,
+} from "./helpers/YouTubeStreamConverter";
+import { audioCacheManager } from "./managers/AudioCacheManager";
 
 export class AudioResourceFactory {
   public async createResource(
@@ -46,14 +50,27 @@ export class AudioResourceFactory {
     track: Track,
     seek?: number,
   ): Promise<AudioResource<Track>> {
-    const stream = await getYouTubeStream(track.url, { seek });
+    const cached = audioCacheManager.get(track.url);
+    const freshStream = cached
+      ? null
+      : await getYouTubeStream(track.url, {
+          seek,
+          isLive: track.duration === 0,
+        });
+    const stream = cached
+      ? seek
+        ? new YouTubeStreamConverter().transcodeFile(cached, seek)
+        : audioCacheManager.open(track.url)
+      : !seek && track.duration !== 0
+        ? audioCacheManager.tee(track.url, freshStream!)
+        : freshStream;
 
     if (!stream) {
       throw new Error("Unable to retrieve YouTube stream.");
     }
     return createAudioResource(stream, {
       metadata: track,
-      inputType: StreamType.Arbitrary,
+      inputType: cached && !seek ? StreamType.OggOpus : StreamType.Arbitrary,
       inlineVolume: true,
     });
   }
@@ -62,15 +79,11 @@ export class AudioResourceFactory {
     track: Track,
   ): Promise<AudioResource<Track>> {
     try {
-      const response = await axios.get(track.url, {
-        responseType: "stream",
+      const response = got.stream(track.url, {
+        timeout: { lookup: 5_000, connect: 5_000, response: 15_000 },
+        retry: { limit: 2 },
       });
-
-      if (!response.data) {
-        throw new Error("Unable to retrieve the stream.");
-      }
-
-      return createAudioResource(response.data, {
+      return createAudioResource(response, {
         metadata: track,
         inputType: StreamType.Arbitrary,
         inlineVolume: true,
@@ -78,6 +91,15 @@ export class AudioResourceFactory {
     } catch (error: any) {
       throw new Error(`Error retrieving stream: ${error}`);
     }
+  }
+
+  public preload(track: Track): Promise<string | null> {
+    if (track.duration === 0 || yt_validate(track.url) !== "video") {
+      return Promise.resolve(null);
+    }
+    return audioCacheManager.preload(track.url, () =>
+      getYouTubeStream(track.url),
+    );
   }
 }
 

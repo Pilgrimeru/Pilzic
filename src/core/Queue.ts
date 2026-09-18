@@ -108,6 +108,17 @@ export class Queue extends EventEmitter {
     return this._tracks.at(this.index);
   }
 
+  public upcoming(limit: number): readonly Track[] {
+    return this._tracks.slice(this._index + 1, this._index + 1 + limit);
+  }
+
+  public deferCurrent(): Track | undefined {
+    if (this._index >= this._tracks.length - 1) return this.currentTrack;
+    const [track] = this._tracks.splice(this._index, 1);
+    if (track) this._tracks.push(track);
+    return this.currentTrack;
+  }
+
   private setupPlayerListeners(): void {
     this.player.on("skip", () => {
       if (this._index !== this._tracks.length - 1) {

@@ -84,6 +84,24 @@ cp config.env.example config.env  # Add your token inside
 bun start
 ```
 
+### Authenticated YouTube session
+
+Run this command on an administrator workstation with Chrome/Chromium installed:
+
+```bash
+bun run youtube-login
+```
+
+After signing in manually, the command writes `secrets/youtube-cookies.txt` in Netscape format. Never commit this file. In production set `YOUTUBE_COOKIES_PATH=/app/secrets/youtube-cookies.txt`; with Docker, mount it read-only:
+
+```bash
+docker run -d --name pilzic --restart=always \
+  -e TOKEN="your-discord-bot-token" \
+  -e YOUTUBE_COOKIES_PATH=/app/secrets/youtube-cookies.txt \
+  -v ./secrets/youtube-cookies.txt:/app/secrets/youtube-cookies.txt:ro \
+  pilzic
+```
+
 ✅ **You're all set! Start playing music.**
 
 ---

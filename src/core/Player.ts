@@ -17,6 +17,7 @@ import { EventEmitter } from "events";
 import { i18n } from "i18n.config";
 import { bot } from "index";
 import { audioResourceFactory } from "./AudioResourceFactory";
+import { YouTubeStreamError } from "./helpers/YouTubeStreamConverter";
 import { NowPlayingMsgManager } from "./managers/NowPlayingMsgManager";
 import { Playlist } from "./Playlist";
 import { Queue } from "./Queue";
@@ -33,6 +34,8 @@ export class Player extends EventEmitter {
 
   private _volume: number;
   private _stopped: boolean;
+  private readonly queueRetries = new WeakMap<Track, number>();
+  private handlingFailure = false;
 
   public constructor(options: PlayerOptions) {
     super();
@@ -173,7 +176,7 @@ export class Player extends EventEmitter {
       console.error(error);
       (await loadingMsg).delete().catch(() => null);
       this.textChannel.send(i18n.__("player.error")).then(autoDelete);
-      await this.skip();
+      await this.handlePlaybackFailure(error);
     }
   }
 
@@ -211,6 +214,9 @@ export class Player extends EventEmitter {
 
   private setupAudioPlayerListeners(): void {
     this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
+      if (this.handlingFailure) return;
+      const completed = this.queue.currentTrack;
+      if (completed) this.queueRetries.delete(completed);
       void this.skip();
     });
 
@@ -231,13 +237,55 @@ export class Player extends EventEmitter {
 
     this.audioPlayer.on(AudioPlayerStatus.Playing, async () => {
       void this.nowPlayingMsgManager.update();
+      for (const track of this.queue.upcoming(config.AUDIO_PRELOAD_COUNT)) {
+        void audioResourceFactory.preload(track);
+      }
     });
 
     this.audioPlayer.on("error", (error) => {
       console.error(error);
       this.textChannel.send(i18n.__("player.error")).then(autoDelete);
-      void this.skip();
+      void this.handlePlaybackFailure(error);
     });
+  }
+
+  private async handlePlaybackFailure(error: unknown): Promise<void> {
+    if (this.handlingFailure || this._stopped) return;
+    this.handlingFailure = true;
+    try {
+      const current = this.queue.currentTrack;
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        error instanceof YouTubeStreamError &&
+        error.code === "YOUTUBE_AUTH_REQUIRED"
+      ) {
+        console.error(
+          "[YouTube] Queue stopped: run `bun run youtube-login` locally and replace the cookie file.",
+        );
+        return this.stop();
+      }
+      const transient =
+        (error instanceof YouTubeStreamError &&
+          error.code === "YOUTUBE_TRANSIENT") ||
+        /econnreset|socket hang up|timed out|premature|broken pipe|http error 50[0234]/i.test(
+          message,
+        );
+      if (current && transient) {
+        const retries = this.queueRetries.get(current) ?? 0;
+        if (retries < 2) {
+          this.queueRetries.set(current, retries + 1);
+          const next = this.queue.deferCurrent();
+          if (next) {
+            this.handlingFailure = false;
+            return await this.process(next);
+          }
+        }
+      }
+      this.handlingFailure = false;
+      await this.skip();
+    } finally {
+      this.handlingFailure = false;
+    }
   }
 
   private setupQueueListeners(): void {

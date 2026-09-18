@@ -15,10 +15,14 @@ COPY . .
 
 # Create a non-root user for security purposes
 RUN adduser --disabled-password --gecos "" appuser && \
-    mkdir -p /app/scripts && chown -R appuser:appuser /app/scripts
+    mkdir -p /app/scripts /app/cache/audio && \
+    chown -R appuser:appuser /app/scripts /app/cache
 
 # Create scripts directory with proper permissions for appuser
 USER appuser
+
+# Mount the authenticated cookie file read-only at runtime, for example:
+# -v ./secrets/youtube-cookies.txt:/app/secrets/youtube-cookies.txt:ro
 
 # Command to start the application with Bun
 CMD ["bun", "start"]

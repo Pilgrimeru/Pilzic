@@ -2,9 +2,11 @@ config.env
 dist/
 reboot.ts
 /.idea/
-scripts/
+scripts/*
+!scripts/youtube-login.ts
 secrets/
 *cookies.txt
+cache/audio/
 
 # Node
 node_modules/

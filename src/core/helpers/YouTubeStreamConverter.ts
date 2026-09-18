@@ -91,6 +91,10 @@ export class YouTubeStreamConverter {
     throw last ?? new YouTubeStreamError("YouTube extraction failed.");
   }
 
+  public transcodeFile(file: string, seek = 0): Readable {
+    return this.transcode(file, file, seek);
+  }
+
   private spawnValidated(url: string): Promise<Readable> {
     return new Promise((resolve, reject) => {
       let stderr = "",
@@ -149,11 +153,21 @@ export class YouTubeStreamConverter {
     });
   }
 
-  private transcode(source: Readable, url: string): Readable {
+  private transcode(
+    source: Readable | string,
+    url: string,
+    seek = this.options.seek,
+  ): Readable {
     if (!ffmpegPath)
       throw new YouTubeStreamError("FFmpeg binary is unavailable.");
-    const args = ["-loglevel", "error", "-i", "-", "-vn"];
-    if (this.options.seek > 0) args.push("-ss", String(this.options.seek));
+    const args = [
+      "-loglevel",
+      "error",
+      "-i",
+      typeof source === "string" ? source : "-",
+      "-vn",
+    ];
+    if (seek > 0) args.push("-ss", String(seek));
     args.push(
       "-ar",
       "48000",
@@ -183,11 +197,15 @@ export class YouTubeStreamConverter {
           ),
         );
     });
-    source.once("error", (error) => output.destroy(error));
-    source.pipe(ffmpeg.stdin);
+    if (typeof source !== "string") {
+      source.once("error", (error) => output.destroy(error));
+      source.pipe(ffmpeg.stdin);
+    } else {
+      ffmpeg.stdin.end();
+    }
     ffmpeg.stdout.pipe(output);
     output.once("close", () => {
-      source.destroy();
+      if (typeof source !== "string") source.destroy();
       if (!ffmpeg.killed) ffmpeg.kill("SIGKILL");
     });
     return output;

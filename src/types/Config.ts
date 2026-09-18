@@ -11,6 +11,10 @@ export interface Config {
   USERAGENT: string;
   YOUTUBE_COOKIES_PATH?: string;
   YOUTUBE_MAX_RETRIES: number;
+  AUDIO_CACHE_MAX_FILES: number;
+  AUDIO_CACHE_MAX_MB: number;
+  AUDIO_PRELOAD_COUNT: number;
+  AUDIO_PRELOAD_CONCURRENCY: number;
   COLORS: {
     MAIN: number;
     PAUSE: number;
