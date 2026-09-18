@@ -9,8 +9,8 @@ import {
   renameSync,
   statSync,
   unlinkSync,
-  utimesSync,
 } from "node:fs";
+import { utimes } from "node:fs/promises";
 import path from "node:path";
 import { PassThrough, type Readable } from "node:stream";
 
@@ -21,10 +21,11 @@ class AudioCacheManager {
   private readonly pending = new Map<string, Promise<string | null>>();
   private activePreloads = 0;
   private readonly preloadQueue: Array<() => void> = [];
+  private cleanupTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     mkdirSync(this.directory, { recursive: true });
-    this.cleanup();
+    if (this.enabled) this.scheduleCleanup();
   }
 
   public get enabled(): boolean {
@@ -41,7 +42,7 @@ class AudioCacheManager {
         return null;
       }
       const now = new Date();
-      utimesSync(target, now, now);
+      void utimes(target, now, now).catch(() => undefined);
       return target;
     } catch {
       return null;
@@ -66,7 +67,7 @@ class AudioCacheManager {
         if (statSync(temporary).size >= MIN_CACHE_BYTES)
           renameSync(temporary, this.pathFor(url));
         else unlinkSync(temporary);
-        this.cleanup();
+        this.scheduleCleanup();
       } catch (error) {
         console.warn("[AudioCache] Could not commit cache entry:", error);
       }
@@ -117,7 +118,7 @@ class AudioCacheManager {
       if (statSync(temporary).size < MIN_CACHE_BYTES)
         throw new Error("Preloaded stream is too small");
       renameSync(temporary, this.pathFor(url));
-      this.cleanup();
+      this.scheduleCleanup();
       return this.pathFor(url);
     } catch (error) {
       this.safeUnlink(temporary);
@@ -155,6 +156,15 @@ class AudioCacheManager {
       bytes -= oldest.stat.size;
       this.safeUnlink(oldest.path);
     }
+  }
+
+  private scheduleCleanup(): void {
+    if (this.cleanupTimer) return;
+    this.cleanupTimer = setTimeout(() => {
+      this.cleanupTimer = undefined;
+      this.cleanup();
+    }, 250);
+    this.cleanupTimer.unref?.();
   }
 
   private pathFor(url: string): string {

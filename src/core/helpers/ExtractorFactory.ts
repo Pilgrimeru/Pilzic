@@ -1,6 +1,7 @@
 import { InvalidURLError } from "@errors/ExtractionErrors";
 import type { Extractor } from "../extractors/abstract/Extractor";
 import type { LinkExtractor } from "../extractors/abstract/LinkExtractor";
+import { LRUCache } from "lru-cache";
 import { DeezerLinkExtractor } from "../extractors/DeezerLinkExtractor";
 import { ExternalLinkExtractor } from "../extractors/ExternalLinkExtractor";
 import { SoundCloudLinkExtractor } from "../extractors/SoundCloudLinkExtractor";
@@ -15,6 +16,10 @@ export class ExtractorFactory {
     DeezerLinkExtractor,
     ExternalLinkExtractor,
   ];
+  private static readonly validationCache = new LRUCache<
+    string,
+    { extractorIndex: number; type: "track" | "playlist" }
+  >({ max: 500, ttl: 5 * 60 * 1000 });
 
   public static async createExtractor(
     query: string,
@@ -36,9 +41,19 @@ export class ExtractorFactory {
   public static async createLinkExtractor(
     url: string,
   ): Promise<LinkExtractor | null> {
-    for (const LinkExtractorClass of this.linkExtractors) {
+    const cached = this.validationCache.get(url);
+    if (cached) {
+      const LinkExtractorClass = this.linkExtractors[cached.extractorIndex]!;
+      return new LinkExtractorClass(url, cached.type);
+    }
+
+    for (const [
+      extractorIndex,
+      LinkExtractorClass,
+    ] of this.linkExtractors.entries()) {
       const type = await LinkExtractorClass.validate(url);
       if (type) {
+        this.validationCache.set(url, { extractorIndex, type });
         return new LinkExtractorClass(url, type);
       }
     }

@@ -49,7 +49,11 @@ export class ExternalLinkExtractor extends LinkExtractor {
   private async getExternalStreamInfo(
     url: string,
   ): Promise<ExternalStreamInfo> {
-    const response = await axios.get<Readable>(url, { responseType: "stream" });
+    const response = await axios.get<Readable>(url, {
+      responseType: "stream",
+      timeout: 15_000,
+      maxRedirects: 5,
+    });
     const headers = response.headers;
 
     const name = this.extractFileName(headers);

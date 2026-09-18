@@ -29,6 +29,6 @@ export class Playlist {
   private filterPlaylist(tracks: TrackData[]) {
     return tracks
       .filter((track) => track?.url)
-      .slice(0, config.MAX_PLAYLIST_SIZE - 1);
+      .slice(0, config.MAX_PLAYLIST_SIZE);
   }
 }

@@ -13,6 +13,10 @@ import { config } from "config";
 import { LinkExtractor } from "./abstract/LinkExtractor";
 
 export class SoundCloudLinkExtractor extends LinkExtractor {
+  private static readonly validationData = new Map<
+    string,
+    Promise<SoundCloudInfo>
+  >();
   private static readonly SO_LINK =
     /^https?:\/\/(?:(?:www|m|on|api)\.)?(?:soundcloud\.com|snd\.sc)\/.+$/i;
 
@@ -20,14 +24,21 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
     url: string,
   ): Promise<"track" | "playlist" | false> {
     if (!this.SO_LINK.test(url)) return false;
-    const data = await getSoundCloudInfo(url, 1);
-    return data.entries ? "playlist" : "track";
+    const pending = getSoundCloudInfo(url, 1);
+    this.validationData.set(url, pending);
+    try {
+      const data = await pending;
+      return data.entries ? "playlist" : "track";
+    } catch (error) {
+      this.validationData.delete(url);
+      throw error;
+    }
   }
 
   protected async extractTrack(): Promise<TrackData> {
     try {
       const track = SoundCloudLinkExtractor.toTrackData(
-        await getSoundCloudInfo(this.url, 1),
+        await this.takeValidationData(),
       );
       if (!track) throw new NoDataError();
       return track;
@@ -36,11 +47,18 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
     }
   }
 
+  private takeValidationData(): Promise<SoundCloudInfo> {
+    const pending = SoundCloudLinkExtractor.validationData.get(this.url);
+    SoundCloudLinkExtractor.validationData.delete(this.url);
+    return pending ?? getSoundCloudInfo(this.url, 1);
+  }
+
   protected async extractPlaylist(): Promise<PlaylistData> {
     try {
+      SoundCloudLinkExtractor.validationData.delete(this.url);
       const data = await getSoundCloudInfo(this.url);
       const tracks = (data.entries ?? [])
-        .slice(0, config.MAX_PLAYLIST_SIZE - 1)
+        .slice(0, config.MAX_PLAYLIST_SIZE)
         .map(SoundCloudLinkExtractor.toTrackData)
         .filter((track): track is TrackData => track !== null);
       if (!tracks.length) throw new NoDataError();

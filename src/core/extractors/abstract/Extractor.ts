@@ -6,6 +6,10 @@ import type { Playlist } from "@core/Playlist";
 import type { Track } from "@core/Track";
 
 export abstract class Extractor {
+  private static readonly pending = new Map<
+    string,
+    Promise<TrackData | PlaylistData>
+  >();
   public readonly type: "track" | "playlist";
 
   protected constructor(type: "track" | "playlist") {
@@ -23,13 +27,19 @@ export abstract class Extractor {
   public async extract(type: "playlist"): Promise<PlaylistData>;
   public async extract(): Promise<TrackData | PlaylistData> {
     const cacheKey = this.getCacheKey();
-    if (cacheManager.has(cacheKey)) {
-      return cacheManager.get(cacheKey)!;
-    }
+    const cached = cacheManager.get(cacheKey);
+    if (cached) return cached;
+    const pending = Extractor.pending.get(cacheKey);
+    if (pending) return pending;
 
-    const data = await this.fetchData();
-    cacheManager.set(cacheKey, data);
-    return data;
+    const extraction = this.fetchData()
+      .then((data) => {
+        cacheManager.set(cacheKey, data);
+        return data;
+      })
+      .finally(() => Extractor.pending.delete(cacheKey));
+    Extractor.pending.set(cacheKey, extraction);
+    return extraction;
   }
 
   protected abstract getCacheKey(): string;

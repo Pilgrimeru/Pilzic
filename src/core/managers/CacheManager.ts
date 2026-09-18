@@ -36,10 +36,6 @@ class CacheManager {
     this.cache.set(key, value);
   }
 
-  public has(key: string): boolean {
-    return this.cache.has(key);
-  }
-
   public clear(): void {
     this.cache.clear();
   }

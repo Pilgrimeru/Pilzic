@@ -109,11 +109,15 @@ export class YouTubeStreamConverter {
         { stdio: ["ignore", "pipe", "pipe"], windowsHide: true },
       );
       const timer = setTimeout(() => {
+        succeed();
+      }, 500);
+      const succeed = () => {
         if (settled) return;
         settled = true;
+        clearTimeout(timer);
         this.logLateFailure(child, url, () => stderr);
         resolve(child.stdout);
-      }, 500);
+      };
       const fail = (message: string, cause?: Error) => {
         if (settled) return;
         settled = true;
@@ -142,6 +146,7 @@ export class YouTubeStreamConverter {
         if (classify(stderr) !== "YOUTUBE_EXTRACTION_FAILED")
           fail("yt-dlp rejected the source");
       });
+      child.stdout.once("readable", succeed);
       child.once("error", (error) => fail("Unable to start yt-dlp", error));
       child.once("close", (code) => {
         if (!settled && code !== 0) fail(`yt-dlp exited with code ${code}`);
@@ -253,8 +258,7 @@ export class YouTubeStreamConverter {
     // JavaScript runtimes are only used by YouTube's extractor. Keeping this
     // option out of SoundCloud calls also preserves compatibility with older
     // bundled yt-dlp binaries that predate --js-runtimes.
-    if (this.options.source === "youtube")
-      args.push("--js-runtimes", "node");
+    if (this.options.source === "youtube") args.push("--js-runtimes", "node");
     if (this.options.isLive) args.push("--no-live-from-start");
     if (this.options.source === "youtube" && config.YOUTUBE_COOKIES_PATH) {
       if (!existsSync(config.YOUTUBE_COOKIES_PATH))

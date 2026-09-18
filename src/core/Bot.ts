@@ -23,9 +23,13 @@ export class Bot extends Client {
 
   public static async create(options: ClientOptions): Promise<Bot> {
     const bot = new Bot(options);
+    await Promise.all([bot.commandManager.loadCommands(), bot.loadEvents()]);
     await bot.login(config.TOKEN);
-    void bot.commandManager.loadCommands();
-    void bot.loadEvents();
+    void bot.commandManager
+      .registerSlashCommands(bot)
+      .catch((error) =>
+        console.error("Unable to register slash commands:", error),
+      );
     return bot;
   }
 
@@ -34,11 +38,13 @@ export class Bot extends Client {
     const eventFiles = readdirSync(eventFolder).filter(
       (file) => !file.endsWith(".map"),
     );
-    for (const file of eventFiles) {
-      const filePath = join(eventFolder, file);
-      const event = (await import(filePath)).default as Event<
-        keyof ClientEvents
-      >;
+    const events = await Promise.all(
+      eventFiles.map(async (file) => {
+        const filePath = join(eventFolder, file);
+        return (await import(filePath)).default as Event<keyof ClientEvents>;
+      }),
+    );
+    for (const event of events) {
       this.on(event.name, event.execute);
     }
   }

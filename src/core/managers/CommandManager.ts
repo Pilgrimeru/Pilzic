@@ -5,6 +5,7 @@ import {
   AutocompleteInteraction,
   ButtonInteraction,
   ChatInputCommandInteraction,
+  Client,
   Collection,
   GuildMember,
   Message,
@@ -19,6 +20,7 @@ import { join } from "path";
 
 export class CommandManager {
   public commands = new Collection<string, Command>();
+  private readonly commandLookup = new Map<string, Command>();
 
   public async loadCommands(): Promise<void> {
     const commandFolder = join(__dirname, "../../commands");
@@ -26,17 +28,23 @@ export class CommandManager {
       (file) => !file.endsWith(".map"),
     );
 
-    for (const file of commandFiles) {
-      const filePath = join(commandFolder, file);
-      const CommandClass = (await import(filePath)).default;
-      const commandInstance = new CommandClass() as Command;
-      this.commands.set(commandInstance.name, commandInstance);
-    }
+    const loadedCommands = await Promise.all(
+      commandFiles.map(async (file) => {
+        const filePath = join(commandFolder, file);
+        const CommandClass = (await import(filePath)).default;
+        return new CommandClass() as Command;
+      }),
+    );
 
-    this.registerSlashCommands();
+    for (const commandInstance of loadedCommands) {
+      this.commands.set(commandInstance.name, commandInstance);
+      this.commandLookup.set(commandInstance.name, commandInstance);
+      for (const alias of commandInstance.aliases ?? [])
+        this.commandLookup.set(alias, commandInstance);
+    }
   }
 
-  private registerSlashCommands(): void {
+  public async registerSlashCommands(client: Client): Promise<void> {
     const slashCommands: ApplicationCommandDataResolvable[] = this.commands.map(
       (command) => ({
         name: command.name,
@@ -46,9 +54,7 @@ export class CommandManager {
       }),
     );
 
-    bot.once("clientReady", () => {
-      bot.application?.commands.set(slashCommands);
-    });
+    await client.application?.commands.set(slashCommands);
   }
 
   public async executeCommand(
@@ -56,9 +62,7 @@ export class CommandManager {
     commandTrigger: CommandTrigger,
     args?: string[],
   ): Promise<void> {
-    const command =
-      this.commands.get(commandName) ||
-      this.commands.find((cmd) => cmd.aliases?.includes(commandName));
+    const command = this.commandLookup.get(commandName);
     if (!command) return;
 
     const member = commandTrigger.member;
@@ -75,9 +79,7 @@ export class CommandManager {
 
   public async handleInteraction(
     interaction:
-      | ChatInputCommandInteraction
-      | ButtonInteraction
-      | AutocompleteInteraction,
+      ChatInputCommandInteraction | ButtonInteraction | AutocompleteInteraction,
   ): Promise<void> {
     if (!interaction.guild) return;
 
@@ -90,7 +92,10 @@ export class CommandManager {
     if (interaction.isButton() && !interaction.customId.startsWith("cmd-"))
       return;
 
-    const member = interaction.guild.members.cache.get(interaction.user.id);
+    const member =
+      interaction.member instanceof GuildMember
+        ? interaction.member
+        : interaction.guild.members.cache.get(interaction.user.id);
     if (!member) return;
 
     const channel = interaction.channel as GuildBasedChannel;

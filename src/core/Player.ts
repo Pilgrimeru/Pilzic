@@ -214,8 +214,17 @@ export class Player extends EventEmitter {
     const processId = ++this.transitionId;
     const loadingMsg = this.textChannel.send(i18n.__("common.loading"));
     try {
-      await entersState(this.connection, VoiceConnectionStatus.Ready, 15_000);
-      const resource = await audioResourceFactory.createResource(track, seek);
+      const [connectionResult, resourceResult] = await Promise.allSettled([
+        entersState(this.connection, VoiceConnectionStatus.Ready, 15_000),
+        audioResourceFactory.createResource(track, seek),
+      ]);
+      if (connectionResult.status === "rejected") {
+        if (resourceResult.status === "fulfilled")
+          resourceResult.value.playStream.destroy();
+        throw connectionResult.reason;
+      }
+      if (resourceResult.status === "rejected") throw resourceResult.reason;
+      const resource = resourceResult.value;
       if (processId !== this.transitionId || this._stopped) {
         resource.playStream.destroy();
         return;
