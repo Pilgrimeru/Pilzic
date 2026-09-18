@@ -46,7 +46,7 @@ export class CommandManager {
       }),
     );
 
-    bot.once("ready", () => {
+    bot.once("clientReady", () => {
       bot.application?.commands.set(slashCommands);
     });
   }

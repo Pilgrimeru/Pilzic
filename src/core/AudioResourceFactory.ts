@@ -70,7 +70,10 @@ export class AudioResourceFactory {
     }
     return createAudioResource(stream, {
       metadata: track,
-      inputType: cached && !seek ? StreamType.OggOpus : StreamType.Arbitrary,
+      // YouTubeStreamConverter always emits an Ogg container containing Opus
+      // at 48 kHz, including seeks and live streams. Declaring it explicitly
+      // avoids an unnecessary second FFmpeg pass in prism-media.
+      inputType: StreamType.OggOpus,
       inlineVolume: true,
     });
   }

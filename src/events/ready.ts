@@ -2,7 +2,7 @@ import { Event } from "@custom-types/Event";
 import { ActivityType } from "discord.js";
 import { bot } from "index";
 
-export default new Event("ready", () => {
+export default new Event("clientReady", () => {
   console.log(`${bot.user!.username} ready!`);
 
   bot.user!.setActivity(`${bot.prefix}help and ${bot.prefix}play`, {

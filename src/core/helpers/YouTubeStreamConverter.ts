@@ -42,6 +42,7 @@ const UNAVAILABLE =
   /video unavailable|private video|deleted video|not available in your country|has been removed/i;
 const TRANSIENT =
   /econnreset|socket hang up|connection (?:reset|aborted|timed out)|temporarily unavailable|network is unreachable|unable to download|http error 50[0234]|read timed out|operation timed out|incomplete read|premature eof|broken pipe|remote end closed|transfer closed/i;
+
 function classify(value: string): YouTubeErrorCode {
   if (AUTH.test(value)) return "YOUTUBE_AUTH_REQUIRED";
   if (AGE.test(value)) return "YOUTUBE_AGE_RESTRICTED";
@@ -146,9 +147,12 @@ export class YouTubeStreamConverter {
     stderr: () => string,
   ): void {
     child.once("close", (code) => {
-      if (code !== 0 && code !== null)
+      const details = stderr().trim();
+      const consumerClosedPipe =
+        /unable to write data.*(?:errno 32|broken pipe)/i.test(details);
+      if (code !== 0 && code !== null && !consumerClosedPipe)
         console.error(
-          `[YouTube] yt-dlp failed during playback (${url}, code ${code}): ${stderr().trim()}`,
+          `[YouTube] yt-dlp failed during playback (${url}, code ${code}): ${details}`,
         );
     });
   }

@@ -1,96 +1,75 @@
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { createServer } from "node:net";
 import path from "node:path";
 import process from "node:process";
 import { createInterface } from "node:readline/promises";
 import puppeteer, { type Cookie } from "puppeteer-core";
 
-const candidates =
-  process.platform === "win32"
-    ? [
-        process.env["PROGRAMFILES"] &&
-          path.join(
-            process.env["PROGRAMFILES"],
-            "Google/Chrome/Application/chrome.exe",
-          ),
-        process.env["PROGRAMFILES(X86)"] &&
-          path.join(
-            process.env["PROGRAMFILES(X86)"],
-            "Google/Chrome/Application/chrome.exe",
-          ),
-        process.env["LOCALAPPDATA"] &&
-          path.join(
-            process.env["LOCALAPPDATA"],
-            "Google/Chrome/Application/chrome.exe",
-          ),
-        process.env["PROGRAMFILES(X86)"] &&
-          path.join(
-            process.env["PROGRAMFILES(X86)"],
-            "Microsoft/Edge/Application/msedge.exe",
-          ),
-      ]
-    : process.platform === "darwin"
-      ? [
-          "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-          "/Applications/Chromium.app/Contents/MacOS/Chromium",
-        ]
-      : [
-          "/usr/bin/google-chrome",
-          "/usr/bin/google-chrome-stable",
-          "/usr/bin/chromium",
-          "/usr/bin/chromium-browser",
-        ];
+type BrowserKind = "chrome" | "firefox";
 
-const executablePath =
-  process.env["CHROME_PATH"] ||
-  candidates.find((candidate): candidate is string =>
-    Boolean(candidate && existsSync(candidate)),
-  );
-if (!executablePath)
-  throw new Error(
-    "Chrome/Chromium introuvable. Définissez CHROME_PATH puis relancez la commande.",
-  );
+const AUTH_COOKIE_NAMES = new Set([
+  "APISID",
+  "HSID",
+  "LOGIN_INFO",
+  "SAPISID",
+  "SID",
+  "SIDCC",
+  "SSID",
+  "__Secure-1PAPISID",
+  "__Secure-1PSID",
+  "__Secure-1PSIDCC",
+  "__Secure-1PSIDTS",
+  "__Secure-3PAPISID",
+  "__Secure-3PSID",
+  "__Secure-3PSIDCC",
+  "__Secure-3PSIDTS",
+]);
 
 const secretsDirectory = path.resolve(process.cwd(), "secrets");
+const executablePath = findBrowserExecutable();
+const browserKind: BrowserKind = /firefox/i.test(path.basename(executablePath))
+  ? "firefox"
+  : "chrome";
+const profileDirectory = path.join(
+  secretsDirectory,
+  `youtube-profile-${browserKind}`,
+);
+
 mkdirSync(secretsDirectory, { recursive: true });
-const browser = await puppeteer.launch({
-  executablePath,
-  headless: false,
-  userDataDir: path.join(secretsDirectory, "youtube-profile"),
-  defaultViewport: null,
-});
+
+console.info(
+  "Une fenêtre isolée va s'ouvrir. Elle ne lit pas les cookies ni le profil de votre navigateur personnel.",
+);
+console.info(
+  "Choisissez uniquement le compte Google destiné au bot et vérifiez qu'il est actif sur YouTube.",
+);
+
+const { browser, browserProcess } = await openIsolatedBrowser();
 
 try {
   const page = (await browser.pages())[0] ?? (await browser.newPage());
-  await page.goto("https://www.youtube.com/", {
-    waitUntil: "domcontentloaded",
-  });
-  const prompt = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+  await page.goto(
+    "https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Fwww.youtube.com%2Faccount",
+    { waitUntil: "domcontentloaded" },
+  );
+
+  const prompt = createInterface({ input: process.stdin, output: process.stdout });
   await prompt.question(
-    "Connectez-vous à Google/YouTube dans Chrome, puis appuyez sur Entrée ici… ",
+    "Quand le bon compte est affiché comme compte actif sur YouTube, appuyez sur Entrée ici… ",
   );
   prompt.close();
 
-  const cookies = (await browser.cookies()).filter((cookie) =>
-    [
-      ".youtube.com",
-      ".google.com",
-      ".googlevideo.com",
-      ".googleapis.com",
-      ".accounts.google.com",
-      ".youtu.be",
-    ].some(
-      (domain) => cookie.domain === domain || cookie.domain.endsWith(domain),
-    ),
-  );
-  const names = new Set(cookies.map(({ name }) => name));
-  if (!names.has("LOGIN_INFO") || !names.has("SID")) {
-    throw new Error(
-      "Session incomplète : cookies LOGIN_INFO et/ou SID absents. Vérifiez la connexion YouTube.",
-    );
-  }
+  await page.goto("https://www.youtube.com/account", {
+    waitUntil: "domcontentloaded",
+  });
+  const cookies = (await page.cookies(
+    "https://www.youtube.com",
+    "https://accounts.google.com",
+    "https://www.google.com",
+  )).filter(isRequiredAuthenticationCookie);
+
+  validateAuthenticationCookies(cookies);
 
   const output =
     ["# Netscape HTTP Cookie File", ...cookies.map(toNetscape)].join("\n") +
@@ -98,10 +77,211 @@ try {
   const outputPath = path.join(secretsDirectory, "youtube-cookies.txt");
   writeFileSync(outputPath, output, { encoding: "utf8", mode: 0o600 });
   console.info(
-    `Cookies exportés vers ${outputPath}. Traitez ce fichier comme un secret.`,
+    `${cookies.length} cookies d'authentification strictement sélectionnés ont été exportés vers ${outputPath}.`,
   );
+  console.info("Vous pouvez maintenant lancer `bun start`.");
 } finally {
   await browser.close();
+  if (browserProcess && !browserProcess.killed) browserProcess.kill();
+}
+
+async function openIsolatedBrowser(): Promise<{
+  browser: Awaited<ReturnType<typeof puppeteer.launch>>;
+  browserProcess?: ChildProcess;
+}> {
+  if (browserKind === "firefox") {
+    const browser = await puppeteer.launch({
+      browser: "firefox",
+      executablePath,
+      headless: false,
+      userDataDir: profileDirectory,
+      defaultViewport: null,
+    });
+    return { browser };
+  }
+
+  const port = await getAvailablePort();
+  const browserProcess = spawn(
+    executablePath,
+    [
+      `--remote-debugging-port=${port}`,
+      `--user-data-dir=${profileDirectory}`,
+      "--no-first-run",
+      "--no-default-browser-check",
+      "about:blank",
+    ],
+    { stdio: "ignore", windowsHide: false },
+  );
+  let launchError: Error | undefined;
+  browserProcess.once("error", (error) => {
+    launchError = error;
+  });
+
+  try {
+    const browserURL = `http://127.0.0.1:${port}`;
+    await waitForBrowser(browserURL, browserProcess, () => launchError);
+    const browser = await puppeteer.connect({ browserURL, defaultViewport: null });
+    return { browser, browserProcess };
+  } catch (error) {
+    if (!browserProcess.killed) browserProcess.kill();
+    throw error;
+  }
+}
+
+function getAvailablePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = createServer();
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      if (!address || typeof address === "string") {
+        server.close();
+        reject(new Error("Impossible de réserver un port local."));
+        return;
+      }
+      server.close((error) => (error ? reject(error) : resolve(address.port)));
+    });
+  });
+}
+
+async function waitForBrowser(
+  browserURL: string,
+  browserProcess: ChildProcess,
+  getLaunchError: () => Error | undefined,
+): Promise<void> {
+  const deadline = Date.now() + 15_000;
+  while (Date.now() < deadline) {
+    const launchError = getLaunchError();
+    if (launchError) throw launchError;
+    if (browserProcess.exitCode !== null)
+      throw new Error("Le navigateur s'est fermé avant la connexion locale.");
+    try {
+      const response = await fetch(`${browserURL}/json/version`);
+      if (response.ok) return;
+    } catch {
+      // The local debugging endpoint is not ready yet.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error("Le navigateur n'a pas répondu dans le délai imparti.");
+}
+
+function findBrowserExecutable(): string {
+  const configuredPath =
+    process.env["BROWSER_PATH"] || process.env["CHROME_PATH"];
+  if (configuredPath) {
+    if (!existsSync(configuredPath))
+      throw new Error(`Navigateur introuvable : ${configuredPath}`);
+    return configuredPath;
+  }
+
+  const defaultPath = getWindowsDefaultBrowserPath();
+  const candidates = [defaultPath, ...getPlatformBrowserCandidates()];
+  const executable = candidates.find(
+    (candidate): candidate is string => Boolean(candidate && existsSync(candidate)),
+  );
+  if (!executable)
+    throw new Error(
+      "Aucun navigateur compatible trouvé. Définissez BROWSER_PATH vers Brave, Chrome, Edge, Chromium ou Firefox.",
+    );
+  return executable;
+}
+
+function getWindowsDefaultBrowserPath(): string | undefined {
+  if (process.platform !== "win32") return undefined;
+  const progId = spawnSync(
+    "reg",
+    [
+      "query",
+      "HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice",
+      "/v",
+      "ProgId",
+    ],
+    { encoding: "utf8", windowsHide: true },
+  ).stdout?.match(/ProgId\s+REG_\w+\s+(.+)/i)?.[1];
+  if (!progId) return undefined;
+
+  const command = spawnSync(
+    "reg",
+    ["query", `HKCR\\${progId.trim()}\\shell\\open\\command`, "/ve"],
+    { encoding: "utf8", windowsHide: true },
+  ).stdout;
+  return command
+    ?.match(/(?:"([^"]+\.exe)"|([^\s]+\.exe))/i)
+    ?.slice(1)
+    .find((value): value is string => Boolean(value));
+}
+
+function getPlatformBrowserCandidates(): Array<string | undefined> {
+  if (process.platform === "win32")
+    return [
+      process.env["PROGRAMFILES"] &&
+        path.join(
+          process.env["PROGRAMFILES"],
+          "BraveSoftware/Brave-Browser/Application/brave.exe",
+        ),
+      process.env["LOCALAPPDATA"] &&
+        path.join(
+          process.env["LOCALAPPDATA"],
+          "BraveSoftware/Brave-Browser/Application/brave.exe",
+        ),
+      process.env["PROGRAMFILES"] &&
+        path.join(
+          process.env["PROGRAMFILES"],
+          "Google/Chrome/Application/chrome.exe",
+        ),
+      process.env["LOCALAPPDATA"] &&
+        path.join(
+          process.env["LOCALAPPDATA"],
+          "Google/Chrome/Application/chrome.exe",
+        ),
+      process.env["PROGRAMFILES(X86)"] &&
+        path.join(
+          process.env["PROGRAMFILES(X86)"],
+          "Microsoft/Edge/Application/msedge.exe",
+        ),
+      process.env["PROGRAMFILES"] &&
+        path.join(process.env["PROGRAMFILES"], "Mozilla Firefox/firefox.exe"),
+    ];
+  if (process.platform === "darwin")
+    return [
+      "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "/Applications/Firefox.app/Contents/MacOS/firefox",
+      "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    ];
+  return [
+    "/usr/bin/brave-browser",
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/firefox",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+  ];
+}
+
+function isRequiredAuthenticationCookie(cookie: Cookie): boolean {
+  const domain = cookie.domain.toLowerCase();
+  const isGoogleOrYouTube =
+    domain === ".youtube.com" ||
+    domain === "youtube.com" ||
+    domain === ".google.com" ||
+    domain === "google.com" ||
+    domain === "accounts.google.com";
+  return isGoogleOrYouTube && AUTH_COOKIE_NAMES.has(cookie.name);
+}
+
+function validateAuthenticationCookies(cookies: Cookie[]): void {
+  const names = new Set(cookies.map(({ name }) => name));
+  const hasSessionId = names.has("SID") || names.has("__Secure-1PSID");
+  const hasApiSession =
+    names.has("SAPISID") ||
+    names.has("__Secure-1PAPISID") ||
+    names.has("__Secure-3PAPISID");
+  if (!names.has("LOGIN_INFO") || !hasSessionId || !hasApiSession)
+    throw new Error(
+      "Le compte YouTube actif n'a pas pu être confirmé. Sélectionnez le compte voulu, attendez le chargement complet de YouTube, puis réessayez.",
+    );
 }
 
 function toNetscape(cookie: Cookie): string {

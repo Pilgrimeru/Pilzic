@@ -86,13 +86,15 @@ bun start
 
 ### Authenticated YouTube session
 
-Run this command on an administrator workstation with Chrome/Chromium installed:
+Pilzic uses a dedicated browser profile instead of reading every cookie from your personal browser. Run:
 
 ```bash
 bun run youtube-login
 ```
 
-After signing in manually, the command writes `secrets/youtube-cookies.txt` in Netscape format. Never commit this file. In production set `YOUTUBE_COOKIES_PATH=/app/secrets/youtube-cookies.txt`; with Docker, mount it read-only:
+Choose the Google account reserved for the bot, confirm that it is active on YouTube, then press Enter in the terminal. Only a strict allowlist of YouTube/Google authentication cookies is exported to `secrets/youtube-cookies.txt`; browsing history and unrelated site cookies are never read. The isolated profile is retained so future renewals normally do not require a full sign-in.
+
+Never commit the cookie file. In production set `YOUTUBE_COOKIES_PATH=/app/secrets/youtube-cookies.txt`; with Docker, mount it read-only:
 
 ```bash
 docker run -d --name pilzic --restart=always \
