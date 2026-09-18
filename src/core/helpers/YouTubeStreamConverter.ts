@@ -243,8 +243,6 @@ export class YouTubeStreamConverter {
       : this.options.format;
     const args = [
       url,
-      "--js-runtimes",
-      "node",
       "--format",
       format,
       "--output",
@@ -252,6 +250,11 @@ export class YouTubeStreamConverter {
       "--no-playlist",
       "--no-warnings",
     ];
+    // JavaScript runtimes are only used by YouTube's extractor. Keeping this
+    // option out of SoundCloud calls also preserves compatibility with older
+    // bundled yt-dlp binaries that predate --js-runtimes.
+    if (this.options.source === "youtube")
+      args.push("--js-runtimes", "node");
     if (this.options.isLive) args.push("--no-live-from-start");
     if (this.options.source === "youtube" && config.YOUTUBE_COOKIES_PATH) {
       if (!existsSync(config.YOUTUBE_COOKIES_PATH))
