@@ -24,6 +24,9 @@ import { Queue } from "./Queue";
 import { Track } from "./Track";
 
 export class Player extends EventEmitter {
+  private static readonly FADE_OUT_DURATION_MS = 40;
+  private static readonly FADE_OUT_STEPS = 4;
+
   public readonly textChannel!: BaseGuildTextChannel;
   public readonly queue: Queue;
 
@@ -36,6 +39,7 @@ export class Player extends EventEmitter {
   private _stopped: boolean;
   private readonly queueRetries = new WeakMap<Track, number>();
   private handlingFailure = false;
+  private transitionId = 0;
 
   public constructor(options: PlayerOptions) {
     super();
@@ -66,9 +70,12 @@ export class Player extends EventEmitter {
       return this.stop();
     }
     if (this.audioPlayer.state.status === "playing") {
-      this.resource?.playStream?.destroy();
-      this.resource = undefined;
-      this.audioPlayer.stop(true);
+      const transitionId = ++this.transitionId;
+      const resource = this.resource;
+      if (!(await this.fadeOut(resource, transitionId))) return;
+      // Let @discordjs/voice append its silence padding instead of cutting an
+      // Opus frame in the middle, which produces an audible click.
+      this.audioPlayer.stop();
       return;
     }
 
@@ -80,7 +87,7 @@ export class Player extends EventEmitter {
 
   public async jumpTo(trackId: number): Promise<void> {
     if (this._stopped) return;
-    this.audioPlayer.pause(true);
+    if (!(await this.fadeAndPause())) return;
     void this.nowPlayingMsgManager.clear();
     this.emit("jump", trackId);
     const newCurrent = this.queue.currentTrack;
@@ -89,7 +96,7 @@ export class Player extends EventEmitter {
 
   public async previous(): Promise<void> {
     if (!this.queue.canBack()) return;
-    this.audioPlayer.pause(true);
+    if (!(await this.fadeAndPause())) return;
     void this.nowPlayingMsgManager.clear();
     this.emit("previous");
     const newCurrent = this.queue.currentTrack;
@@ -98,13 +105,13 @@ export class Player extends EventEmitter {
 
   public async seek(time: number): Promise<void> {
     void this.nowPlayingMsgManager.clear();
-    this.audioPlayer.pause(true);
+    if (!(await this.fadeAndPause())) return;
     const current = this.queue.currentTrack;
     return current ? this.process(current, time) : this.stop();
   }
 
   public async pause(): Promise<boolean> {
-    const result = this.audioPlayer.pause();
+    const result = await this.fadeAndPause();
     await this.nowPlayingMsgManager.update();
     return result;
   }
@@ -113,25 +120,31 @@ export class Player extends EventEmitter {
     return this.audioPlayer.unpause();
   }
 
-  public stop(): void {
+  public async stop(): Promise<void> {
     if (this._stopped) return;
     this._stopped = true;
+    const transitionId = ++this.transitionId;
+    const resource = this.resource;
     this.queue.clear();
     void this.nowPlayingMsgManager.clear();
-    this.resource?.playStream?.destroy();
-    this.resource = undefined;
-    this.audioPlayer.stop(true);
+
+    if (await this.fadeOut(resource, transitionId)) {
+      // A non-forced stop sends the resource's configured silence padding.
+      // The voice player owns and disposes the stream after reaching Idle.
+      this.audioPlayer.stop();
+      this.resource = undefined;
+    }
 
     setTimeout(() => {
       if (this._stopped) {
-        this.leave();
+        void this.leave();
       }
     }, config.STAY_TIME * 1000);
   }
 
-  public leave(): void {
+  public async leave(): Promise<void> {
+    await this.stop();
     bot.playerManager.removePlayer(this.textChannel.guildId);
-    this.stop();
     if (this.connection.state.status != VoiceConnectionStatus.Destroyed) {
       this.connection.destroy();
       this.connection.removeAllListeners();
@@ -140,6 +153,38 @@ export class Player extends EventEmitter {
       this.removeAllListeners();
       this.textChannel.send(i18n.__("player.leaveChannel")).then(autoDelete);
     }
+  }
+
+  private async fadeAndPause(): Promise<boolean> {
+    if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing) return false;
+    const transitionId = ++this.transitionId;
+    const resource = this.resource;
+    if (!(await this.fadeOut(resource, transitionId))) return false;
+
+    const paused = this.audioPlayer.pause(true);
+    // No audio is consumed while paused, so restoring now makes resume start at
+    // the user's configured volume without an audible jump.
+    resource?.volume?.setVolumeLogarithmic(this._volume / 100);
+    return paused;
+  }
+
+  private async fadeOut(
+    resource: AudioResource | undefined,
+    transitionId: number,
+  ): Promise<boolean> {
+    const volume = resource?.volume;
+    if (!volume) return transitionId === this.transitionId;
+    const startVolume = volume.volume;
+
+    for (let step = 1; step <= Player.FADE_OUT_STEPS; step++) {
+      await new Promise<void>((resolve) =>
+        setTimeout(resolve, Player.FADE_OUT_DURATION_MS / Player.FADE_OUT_STEPS),
+      );
+      if (transitionId !== this.transitionId || resource !== this.resource)
+        return false;
+      volume.setVolume(startVolume * (1 - step / Player.FADE_OUT_STEPS));
+    }
+    return true;
   }
 
   public get volume(): number {

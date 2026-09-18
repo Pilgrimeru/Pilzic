@@ -19,7 +19,7 @@ export default class StopCommand extends Command {
   async execute(commandTrigger: CommandTrigger) {
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
 
-    player.stop();
+    await player.stop();
 
     if (commandTrigger.type === "ButtonInteraction") {
       return await commandTrigger.send(i18n.__("stop.result")).then(autoDelete);
