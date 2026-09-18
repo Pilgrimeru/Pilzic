@@ -31,8 +31,11 @@ const config: Config = {
   CACHE_SIZE: parseEnvInt(process.env["CACHE_SIZE"], 0),
   AUTOCOMPLETE: process.env["AUTOCOMPLETE"] == "true",
   USERAGENT:
-    process.env["LOCALE"] ??
+    process.env["USERAGENT"] ??
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  YOUTUBE_COOKIES_PATH:
+    process.env["YOUTUBE_COOKIES_PATH"]?.trim() || undefined,
+  YOUTUBE_MAX_RETRIES: parseEnvInt(process.env["YOUTUBE_MAX_RETRIES"], 5),
   COLORS: {
     MAIN: parseEnvColor(process.env["MAIN_COLOR"], 0x69adc7),
     PAUSE: 0xc0c0c0,

@@ -3,6 +3,8 @@ dist/
 reboot.ts
 /.idea/
 scripts/
+secrets/
+*cookies.txt
 
 # Node
 node_modules/

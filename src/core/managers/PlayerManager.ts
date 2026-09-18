@@ -46,7 +46,7 @@ export class PlayerManager {
         connection = this.connectToVoiceChannel(voiceChannel);
       } catch (error) {
         console.error("Exception while joining voice channel:", error);
-        textChannel.send(i18n.__("errors.notChannel")).then(autoDelete)
+        textChannel.send(i18n.__("errors.notChannel")).then(autoDelete);
         return null;
       }
 
@@ -67,6 +67,7 @@ export class PlayerManager {
       channelId: voiceChannel.id,
       guildId: voiceChannel.guild.id,
       adapterCreator: voiceChannel.guild.voiceAdapterCreator as any,
+      selfDeaf: true,
     });
   }
 

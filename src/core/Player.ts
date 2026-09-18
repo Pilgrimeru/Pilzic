@@ -161,6 +161,7 @@ export class Player extends EventEmitter {
   private async process(track: Track, seek?: number): Promise<void> {
     const loadingMsg = this.textChannel.send(i18n.__("common.loading"));
     try {
+      await entersState(this.connection, VoiceConnectionStatus.Ready, 15_000);
       this.resource = await audioResourceFactory.createResource(track, seek);
       if (!this.resource.readable) throw new Error("Resource not readable.");
       this.resource.playbackDuration += (seek ?? 0) * 1000;

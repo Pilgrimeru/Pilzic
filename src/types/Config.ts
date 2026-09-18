@@ -9,6 +9,8 @@ export interface Config {
   AUTOCOMPLETE: boolean;
   CACHE_SIZE: number;
   USERAGENT: string;
+  YOUTUBE_COOKIES_PATH?: string;
+  YOUTUBE_MAX_RETRIES: number;
   COLORS: {
     MAIN: number;
     PAUSE: number;
