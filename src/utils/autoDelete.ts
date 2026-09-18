@@ -1,4 +1,4 @@
-import { config } from "config.js";
+import { config } from "config";
 import { InteractionResponse, Message } from "discord.js";
 
 export async function autoDelete(

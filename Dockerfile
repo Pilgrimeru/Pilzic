@@ -1,14 +1,14 @@
 ### Step 1: Use a lightweight image with Bun based on Debian ###
-FROM oven/bun:slim AS base
+FROM oven/bun:1.4.2-slim AS base
 
 # Set the working directory inside the container
 WORKDIR /app
 
 # Copy dependency files
-COPY package.json ./
+COPY package.json bun.lockb ./
 
-# Install dependencies with Bun (production only)
-RUN bun install --production
+# Install dependencies with Bun (production only, locked)
+RUN bun install --production --frozen-lockfile
 
 # Copy the rest of the code
 COPY . .

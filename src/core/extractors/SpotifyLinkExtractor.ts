@@ -1,4 +1,3 @@
-import { DataFinder } from "@core/helpers/DataFinder";
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import {
@@ -9,10 +8,12 @@ import {
 import { config } from "config";
 import fetch from "isomorphic-unfetch";
 import { sp_validate } from "play-dl";
+import { createRequire } from "node:module";
+import type { SpotifyUrlInfoModule } from "spotify-url-info";
 import { LinkExtractor } from "./abstract/LinkExtractor";
-// @ts-ignore
-import spotifyUrlInfo from "spotify-url-info";
 
+const require = createRequire(import.meta.url);
+const spotifyUrlInfo = require("spotify-url-info") as SpotifyUrlInfoModule;
 const { getPreview, getTracks } = spotifyUrlInfo(fetch);
 
 export class SpotifyLinkExtractor extends LinkExtractor {
@@ -42,6 +43,7 @@ export class SpotifyLinkExtractor extends LinkExtractor {
       if (!data.type) throw new NoDataError();
 
       const search = data.artist + " " + data.track;
+      const { DataFinder } = await import("@core/helpers/DataFinder");
       return DataFinder.searchTrackData(search);
     } catch (error: any) {
       if (error.message?.includes("parse")) {
@@ -64,6 +66,7 @@ export class SpotifyLinkExtractor extends LinkExtractor {
         headers: { "user-agent": config.USERAGENT },
       });
 
+      const { DataFinder } = await import("@core/helpers/DataFinder");
       const promiseTracksData: Promise<TrackData>[] = playlistTracks.map(
         (track: any) => {
           const search = track.artist + " " + track.name;

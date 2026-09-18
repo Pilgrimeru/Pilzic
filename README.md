@@ -69,8 +69,10 @@ docker run -d --name pilzic --restart=always -e TOKEN="your-discord-bot-token" p
 
 #### **Requirements**
 
-- [**Bun** (1.1.31+)](https://bun.sh/)
+- [**Bun** (1.4.2+)](https://bun.sh/)
 - **A Discord bot token**
+
+The current voice stack targets Node.js 22.12+ when run with Node. Pilzic is configured for Bun 1.4.2+.
 
 #### **Installation**
 
@@ -119,6 +121,7 @@ bun start
 - `/uptime (up)` - Show bot uptime.
 - `/help (h)` - List all commands.
 - `/invite` - Get the bot’s invite link.
+
 </details>
 
 ---

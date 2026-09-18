@@ -2,14 +2,20 @@ import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import axios, { type AxiosResponse } from "axios";
 import ffprobe from "ffprobe-static";
-import ffmpeg from "fluent-ffmpeg";
+import { spawn } from "node:child_process";
+import type { Readable } from "node:stream";
 import { LinkExtractor } from "./abstract/LinkExtractor";
-
-ffmpeg.setFfprobePath(ffprobe.path);
 
 type ExternalStreamInfo = {
   fileName: string;
   durationInMs: number;
+};
+
+type FfprobeData = {
+  format?: {
+    duration?: string;
+    bit_rate?: string;
+  };
 };
 
 export class ExternalLinkExtractor extends LinkExtractor {
@@ -43,7 +49,7 @@ export class ExternalLinkExtractor extends LinkExtractor {
   private async getExternalStreamInfo(
     url: string,
   ): Promise<ExternalStreamInfo> {
-    const response = await axios.get(url, { responseType: "stream" });
+    const response = await axios.get<Readable>(url, { responseType: "stream" });
     const headers = response.headers;
 
     const name = this.extractFileName(headers);
@@ -72,32 +78,87 @@ export class ExternalLinkExtractor extends LinkExtractor {
   }
 
   private async getStreamDuration(
-    streamResponse: AxiosResponse<any, any>,
+    streamResponse: AxiosResponse<Readable>,
   ): Promise<number> {
     const { data: audioStream, headers } = streamResponse;
 
-    const data: any = await new Promise((resolve, reject) => {
-      ffmpeg(audioStream).ffprobe((err, data) => {
-        if (err) {
-          reject(new Error(`FFmpeg error: ${err.message}`));
-        } else {
-          resolve(data);
-        }
-      });
-    });
+    const data = await this.probeStream(audioStream);
 
-    const duration = parseFloat(data.format.duration);
+    const duration = Number.parseFloat(data.format?.duration ?? "");
     if (!isNaN(duration)) {
       return duration * 1000; // Convert seconds to milliseconds
     }
 
-    const bitRate = parseInt(data.format.bit_rate);
-    const fileSize = parseInt(headers["content-length"]);
+    const bitRate = Number.parseInt(data.format?.bit_rate ?? "", 10);
+    const fileSize = Number.parseInt(
+      String(headers["content-length"] ?? ""),
+      10,
+    );
 
     if (!isNaN(bitRate) && !isNaN(fileSize)) {
       return (fileSize * 8 * 1000) / bitRate;
     }
 
     throw new Error("Could not determine the duration."); // Proper error handling
+  }
+
+  private probeStream(audioStream: Readable): Promise<FfprobeData> {
+    const probeProcess = spawn(
+      ffprobe.path,
+      ["-v", "error", "-print_format", "json", "-show_format", "-i", "pipe:0"],
+      { stdio: ["pipe", "pipe", "pipe"] },
+    );
+
+    return new Promise((resolve, reject) => {
+      let stdout = "";
+      let stderr = "";
+      let settled = false;
+
+      const fail = (error: Error): void => {
+        if (settled) return;
+        settled = true;
+        audioStream.destroy();
+        probeProcess.kill();
+        reject(error);
+      };
+
+      probeProcess.stdout?.setEncoding("utf8");
+      probeProcess.stdout?.on("data", (chunk: string) => {
+        stdout += chunk;
+      });
+      probeProcess.stderr?.setEncoding("utf8");
+      probeProcess.stderr?.on("data", (chunk: string) => {
+        stderr += chunk;
+      });
+      probeProcess.on("error", (error) => {
+        fail(new Error(`FFprobe failed: ${error.message}`));
+      });
+      probeProcess.on("close", (code) => {
+        if (settled) return;
+        if (code !== 0) {
+          fail(new Error(`FFprobe exited with code ${code}: ${stderr.trim()}`));
+          return;
+        }
+
+        try {
+          const result = JSON.parse(stdout) as FfprobeData;
+          settled = true;
+          resolve(result);
+        } catch (error) {
+          fail(
+            new Error(
+              `FFprobe returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
+            ),
+          );
+        }
+      });
+      probeProcess.stdin?.on("error", (error) => {
+        fail(new Error(`FFprobe input failed: ${error.message}`));
+      });
+      audioStream.on("error", (error) => {
+        fail(new Error(`Audio stream failed: ${error.message}`));
+      });
+      audioStream.pipe(probeProcess.stdin!);
+    });
   }
 }

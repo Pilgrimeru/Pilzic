@@ -1,9 +1,9 @@
-import { Playlist } from "@core/Playlist";
-import { Track } from "@core/Track";
 import { cacheManager } from "@core/managers/CacheManager";
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import type { User } from "discord.js";
+import type { Playlist } from "@core/Playlist";
+import type { Track } from "@core/Track";
 
 export abstract class Extractor {
   public readonly type: "track" | "playlist";
@@ -37,11 +37,13 @@ export abstract class Extractor {
 
   public async extractAndBuild(requester: User): Promise<Track | Playlist> {
     if (this.type === "track") {
+      const { Track: TrackClass } = await import("@core/Track");
       const data = await this.extract("track");
-      return Track.from(data, requester);
+      return TrackClass.from(data, requester);
     } else {
+      const { Playlist: PlaylistClass } = await import("@core/Playlist");
       const data = await this.extract("playlist");
-      return Playlist.from(data, requester);
+      return PlaylistClass.from(data, requester);
     }
   }
 }

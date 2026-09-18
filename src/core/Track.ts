@@ -3,7 +3,6 @@ import { formatTime } from "@utils/formatTime";
 import { User } from "discord.js";
 import { i18n } from "i18n.config";
 import { video_basic_info, yt_validate } from "play-dl";
-import { DataFinder } from "./helpers/DataFinder";
 
 export class Track {
   public readonly url!: string;
@@ -32,6 +31,7 @@ export class Track {
     if (this.related) return this.related;
     let url = this.url;
     if (yt_validate(url) !== "video") {
+      const { DataFinder } = await import("./helpers/DataFinder");
       const trackInfo = await DataFinder.searchTrackData(this.title);
       if (!trackInfo) return [];
       url = trackInfo.url;

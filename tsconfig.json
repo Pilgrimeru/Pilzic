@@ -23,16 +23,18 @@
     "noUnusedParameters": true,
     "noPropertyAccessFromIndexSignature": true,
 
-    // Alias configuration
-    "baseUrl": "./src",
+    // Alias configuration (TypeScript 7 no longer supports `baseUrl`)
     "paths": {
-      "@commands/*": ["commands/*"],
-      "@core/*": ["core/*"],
-      "@events/*": ["events/*"],
-      "@utils/*": ["utils/*"],
-      "@custom-types/*": ["types/*"],
-      "@locales/*": ["locales/*"],
-      "@errors/*": ["errors/*"]
+      "@commands/*": ["./src/commands/*"],
+      "@core/*": ["./src/core/*"],
+      "@events/*": ["./src/events/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@custom-types/*": ["./src/types/*"],
+      "@locales/*": ["./src/locales/*"],
+      "@errors/*": ["./src/errors/*"],
+      "config": ["./src/config.ts"],
+      "i18n.config": ["./src/i18n.config.ts"],
+      "index": ["./src/index.ts"]
     }
   }
 }

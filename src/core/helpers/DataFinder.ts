@@ -2,7 +2,6 @@ import { YouTubeSearchExtractor } from "@core/extractors/YoutubeSearchExtractor"
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import { InvalidURLError } from "@errors/ExtractionErrors";
-import { ExtractorFactory } from "./ExtractorFactory";
 
 export class DataFinder {
   public static readonly SearchExtractorClass = DataFinder.defineSearchSource();
@@ -51,12 +50,14 @@ export class DataFinder {
   public static async getDataFromLink(
     url: string,
   ): Promise<TrackData | PlaylistData> {
+    const { ExtractorFactory } = await import("./ExtractorFactory");
     const searchExtractor = await ExtractorFactory.createLinkExtractor(url);
     if (!searchExtractor) throw new InvalidURLError();
     return searchExtractor.extract();
   }
 
   public static async getTrackDataFromLink(url: string): Promise<TrackData> {
+    const { ExtractorFactory } = await import("./ExtractorFactory");
     const searchExtractor = await ExtractorFactory.createLinkExtractor(url);
     if (!searchExtractor || searchExtractor.type !== "track")
       throw new InvalidURLError();
@@ -66,6 +67,7 @@ export class DataFinder {
   public static async getPlaylistDataFromLink(
     url: string,
   ): Promise<PlaylistData> {
+    const { ExtractorFactory } = await import("./ExtractorFactory");
     const searchExtractor = await ExtractorFactory.createLinkExtractor(url);
     if (!searchExtractor || searchExtractor.type !== "playlist")
       throw new InvalidURLError();

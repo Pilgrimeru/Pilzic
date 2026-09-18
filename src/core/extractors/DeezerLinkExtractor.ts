@@ -1,4 +1,3 @@
-import { DataFinder } from "@core/helpers/DataFinder";
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import {
@@ -45,6 +44,7 @@ export class DeezerLinkExtractor extends LinkExtractor {
       }
 
       const search = data.artist.name + " " + data.title;
+      const { DataFinder } = await import("@core/helpers/DataFinder");
       return DataFinder.searchTrackData(search);
     } catch (error: any) {
       if (error.message?.includes("not a Deezer")) {
@@ -64,6 +64,7 @@ export class DeezerLinkExtractor extends LinkExtractor {
         throw new NoDataError();
       }
 
+      const { DataFinder } = await import("@core/helpers/DataFinder");
       const promiseTracksData: Promise<TrackData>[] = data.tracks.map(
         (track) => {
           const search = track.artist.name + " " + track.title;

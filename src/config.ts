@@ -1,7 +1,7 @@
 import type { Config } from "@custom-types/Config";
 import { config as dotenvConfig } from "dotenv";
 
-dotenvConfig({ path: "config.env" });
+dotenvConfig({ path: "config.env", quiet: true });
 
 function parseEnvInt(value: string | undefined, defaultValue: number): number {
   const parsedValue = parseInt(value ?? "", 10);

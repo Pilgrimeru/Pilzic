@@ -6,7 +6,6 @@ import { ExternalLinkExtractor } from "../extractors/ExternalLinkExtractor";
 import { SoundCloudLinkExtractor } from "../extractors/SoundCloudLinkExtractor";
 import { SpotifyLinkExtractor } from "../extractors/SpotifyLinkExtractor";
 import { YouTubeLinkExtractor } from "../extractors/YouTubeLinkExtractor";
-import { DataFinder } from "./DataFinder";
 
 export class ExtractorFactory {
   private static readonly linkExtractors = [
@@ -21,6 +20,7 @@ export class ExtractorFactory {
     query: string,
     defaultSearchType: "track" | "playlist" = "track",
   ): Promise<Extractor> {
+    const { DataFinder } = await import("./DataFinder");
     const url = query.split(" ")[0];
 
     const extractor = await ExtractorFactory.createLinkExtractor(url);
