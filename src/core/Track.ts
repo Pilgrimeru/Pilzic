@@ -1,6 +1,6 @@
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import { formatTime } from "@utils/formatTime";
-import { User } from "discord.js";
+import type { User } from "discord.js";
 import { i18n } from "i18n.config";
 import { video_basic_info, yt_validate } from "play-dl";
 

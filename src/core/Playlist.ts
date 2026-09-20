@@ -1,7 +1,7 @@
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import { config } from "config";
-import { User } from "discord.js";
+import type { User } from "discord.js";
 import { Track } from "./Track";
 
 export class Playlist {

@@ -1,7 +1,7 @@
 import { arrayMoveImmutable } from "array-move";
 import { config } from "config";
 import { EventEmitter } from "events";
-import { Player } from "./Player";
+import type { Player } from "./Player";
 import { Playlist } from "./Playlist";
 import { Track } from "./Track";
 import { DataFinder } from "./helpers/DataFinder";
