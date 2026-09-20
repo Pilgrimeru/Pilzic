@@ -50,6 +50,53 @@ describe("mapWithConcurrency", () => {
     ]);
   });
 
+  test.each([NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "normalise une concurrence non finie (%s)",
+    async (concurrency) => {
+      const visited: number[] = [];
+      const results = await mapWithConcurrency(
+        [1, 2],
+        concurrency,
+        async (value) => {
+          visited.push(value);
+          return value;
+        },
+      );
+
+      expect(visited).toEqual([1, 2]);
+      expect(results).toHaveLength(2);
+    },
+  );
+
+  test("arrondit la concurrence décimale sans dépasser la limite", async () => {
+    let active = 0;
+    let maximumActive = 0;
+
+    await mapWithConcurrency([1, 2, 3, 4], 2.9, async () => {
+      active++;
+      maximumActive = Math.max(maximumActive, active);
+      await Bun.sleep(2);
+      active--;
+    });
+
+    expect(maximumActive).toBe(2);
+  });
+
+  test("transmet au mapper la valeur et l'index exacts", async () => {
+    const calls: Array<[string, number]> = [];
+
+    await mapWithConcurrency(["a", "b", "c"], 2, async (value, index) => {
+      calls.push([value, index]);
+      return index;
+    });
+
+    expect(calls.sort((a, b) => a[1] - b[1])).toEqual([
+      ["a", 0],
+      ["b", 1],
+      ["c", 2],
+    ]);
+  });
+
   test("gère une entrée vide", async () => {
     expect(await mapWithConcurrency([], 4, async (value) => value)).toEqual([]);
   });

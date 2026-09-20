@@ -94,6 +94,7 @@ export class Queue extends EventEmitter {
   }
 
   public canNext(): boolean {
+    if (this._tracks.length === 0) return false;
     if (this.loop === "queue" || this.loop === "track") return true;
     return this._index !== this._tracks.length - 1;
   }
@@ -135,6 +136,10 @@ export class Queue extends EventEmitter {
     });
 
     this.player.on("jump", (trackId: number) => {
+      if (this._tracks.length === 0) {
+        this._index = 0;
+        return;
+      }
       if (trackId >= this._tracks.length) trackId = this._tracks.length - 1;
       else if (trackId < 0) trackId = 0;
       if (this._autoqueue) {
