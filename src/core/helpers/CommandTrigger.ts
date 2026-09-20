@@ -1,13 +1,15 @@
-import {
+import type {
   Attachment,
-  BaseInteraction,
-  ButtonInteraction,
   Collection,
-  CommandInteraction,
   Guild,
   GuildMember,
   InteractionCallbackResponse,
   Message,
+} from "discord.js";
+import {
+  BaseInteraction,
+  ButtonInteraction,
+  CommandInteraction,
   MessageComponentInteraction,
   type BaseMessageOptions,
   type GuildTextBasedChannel,
@@ -22,9 +24,7 @@ export class CommandTrigger {
   public readonly channel: GuildTextBasedChannel;
   public readonly isInteraction: boolean;
   private readonly interaction?:
-    | CommandInteraction
-    | MessageComponentInteraction
-    | ButtonInteraction;
+    CommandInteraction | MessageComponentInteraction | ButtonInteraction;
   private readonly message?: Message;
   private response?: Promise<Message>;
 
@@ -81,7 +81,7 @@ export class CommandTrigger {
       await this.response;
       await this.interaction.editReply(content);
     } else {
-      await (await this.response!).edit(content as BaseMessageOptions);
+      await (await this.response!).edit(content);
     }
     return this.response!;
   }

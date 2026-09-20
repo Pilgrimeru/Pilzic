@@ -1,4 +1,4 @@
-import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import type { CommandTrigger } from "@core/helpers/CommandTrigger";
 import { Command } from "@custom-types/Command";
 import { autoDelete } from "@utils/autoDelete";
 import { MessageFlags } from "discord.js";

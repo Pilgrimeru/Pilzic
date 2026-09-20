@@ -1,4 +1,4 @@
-import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import type { CommandTrigger } from "@core/helpers/CommandTrigger";
 import type {
   ApplicationCommandDataResolvable,
   ApplicationCommandOptionData,

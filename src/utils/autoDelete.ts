@@ -1,5 +1,5 @@
 import { config } from "config";
-import { InteractionResponse, Message } from "discord.js";
+import type { InteractionResponse, Message } from "discord.js";
 
 export async function autoDelete(
   msg: Message | InteractionResponse,

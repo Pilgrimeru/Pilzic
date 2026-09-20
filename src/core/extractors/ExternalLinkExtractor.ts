@@ -171,7 +171,7 @@ export class ExternalLinkExtractor extends LinkExtractor {
       audioStream.on("error", (error) => {
         fail(new Error(`Audio stream failed: ${error.message}`));
       });
-      audioStream.pipe(probeProcess.stdin!);
+      audioStream.pipe(probeProcess.stdin);
     });
   }
 }

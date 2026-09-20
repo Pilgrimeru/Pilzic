@@ -12,7 +12,7 @@ export async function mapWithConcurrency<T, R>(
       try {
         results[index] = {
           status: "fulfilled",
-          value: await mapper(values[index]!, index),
+          value: await mapper(values[index], index),
         };
       } catch (reason) {
         results[index] = { status: "rejected", reason };

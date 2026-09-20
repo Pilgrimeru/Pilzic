@@ -43,7 +43,7 @@ export class ExtractorFactory {
   ): Promise<LinkExtractor | null> {
     const cached = this.validationCache.get(url);
     if (cached) {
-      const LinkExtractorClass = this.linkExtractors[cached.extractorIndex]!;
+      const LinkExtractorClass = this.linkExtractors[cached.extractorIndex];
       return new LinkExtractorClass(url, cached.type);
     }
 

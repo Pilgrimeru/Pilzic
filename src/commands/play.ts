@@ -1,4 +1,4 @@
-import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import type { CommandTrigger } from "@core/helpers/CommandTrigger";
 import { Command, CommandConditions } from "@custom-types/Command";
 import { ExtractionError } from "@errors/ExtractionErrors";
 import { autoDelete } from "@utils/autoDelete";
@@ -9,12 +9,8 @@ import {
   parseArgsAndCheckForPlaylist,
 } from "@utils/MusicCommandUtils.ts";
 import { config } from "config";
-import {
-  ApplicationCommandOptionType,
-  AutocompleteInteraction,
-  BaseGuildTextChannel,
-  PermissionsBitField,
-} from "discord.js";
+import type { AutocompleteInteraction, BaseGuildTextChannel } from "discord.js";
+import { ApplicationCommandOptionType, PermissionsBitField } from "discord.js";
 import { i18n } from "i18n.config";
 import { bot } from "index";
 

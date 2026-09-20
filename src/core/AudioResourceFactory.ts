@@ -1,8 +1,5 @@
-import {
-  AudioResource,
-  createAudioResource,
-  StreamType,
-} from "@discordjs/voice";
+import type { AudioResource } from "@discordjs/voice";
+import { createAudioResource, StreamType } from "@discordjs/voice";
 import got from "got";
 import { yt_validate } from "play-dl";
 import type { Track } from "./Track";
@@ -88,7 +85,7 @@ export class AudioResourceFactory {
         inlineVolume: true,
       });
     } catch (error: any) {
-      throw new Error(`Error retrieving stream: ${error}`);
+      throw new Error(`Error retrieving stream: ${error}`, { cause: error });
     }
   }
 

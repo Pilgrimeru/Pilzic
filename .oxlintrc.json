@@ -1,0 +1,53 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "promise", "node"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "rules": {
+    // Dette existante à résorber progressivement. Toutes les autres règles des
+    // catégories correctness, suspicious et perf restent bloquantes.
+    "no-underscore-dangle": "off",
+    "no-await-in-loop": "off",
+    "no-shadow": "off",
+    "no-debugger": "error",
+    "no-warning-comments": ["error", { "terms": ["todo", "fixme", "hack"] }],
+    "typescript/consistent-type-imports": "error",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-floating-promises": "off",
+    "typescript/no-misused-promises": "off",
+    "typescript/no-unsafe-enum-comparison": "off",
+    "typescript/no-unsafe-type-assertion": "off",
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/prefer-nullish-coalescing": "off",
+    "typescript/prefer-optional-chain": "error",
+    "typescript/consistent-return": "off",
+    "typescript/no-extraneous-class": "off",
+    "typescript/no-non-null-asserted-optional-chain": "off",
+    "typescript/restrict-template-expressions": "off",
+    "typescript/unbound-method": "off",
+    "typescript/await-thenable": "off",
+    "import/no-named-as-default": "off",
+    "import/no-named-as-default-member": "off",
+    "promise/always-return": "off",
+    "promise/no-promise-in-callback": "off",
+    "unicorn/consistent-function-scoping": "off",
+    "unicorn/no-array-reverse": "off",
+    "unicorn/no-array-sort": "off",
+    "unicorn/no-new-array": "off",
+    "no-unused-expressions": "off",
+    "no-unused-vars": "off",
+    "no-useless-catch": "off"
+  },
+  "options": {
+    "typeAware": true,
+    "maxWarnings": 0
+  },
+  "ignorePatterns": ["dist/**", "node_modules/**", "cache/**"],
+  "env": {
+    "builtin": true,
+    "node": true
+  }
+}

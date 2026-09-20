@@ -1,4 +1,4 @@
-import { Event } from "@custom-types/Event";
+import type { Event } from "@custom-types/Event";
 import { config } from "config";
 import { Client, type ClientEvents, type ClientOptions } from "discord.js";
 import { readdirSync } from "fs";

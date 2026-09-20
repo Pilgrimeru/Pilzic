@@ -1,10 +1,12 @@
 import type { PlayerOptions } from "@custom-types/PlayerOptions";
-import {
+import type {
   AudioPlayer,
-  AudioPlayerStatus,
   AudioResource,
-  NoSubscriberBehavior,
   VoiceConnection,
+} from "@discordjs/voice";
+import {
+  AudioPlayerStatus,
+  NoSubscriberBehavior,
   VoiceConnectionStatus,
   createAudioPlayer,
   entersState,
@@ -12,16 +14,16 @@ import {
 import { autoDelete } from "@utils/autoDelete";
 import { formatTime } from "@utils/formatTime";
 import { config } from "config";
-import { BaseGuildTextChannel } from "discord.js";
+import type { BaseGuildTextChannel } from "discord.js";
 import { EventEmitter } from "events";
 import { i18n } from "i18n.config";
 import { bot } from "index";
 import { audioResourceFactory } from "./AudioResourceFactory";
 import { YouTubeStreamError } from "./helpers/YouTubeStreamConverter";
 import { NowPlayingMsgManager } from "./managers/NowPlayingMsgManager";
-import { Playlist } from "./Playlist";
+import type { Playlist } from "./Playlist";
 import { Queue } from "./Queue";
-import { Track } from "./Track";
+import type { Track } from "./Track";
 
 export class Player extends EventEmitter {
   private static readonly FADE_OUT_DURATION_MS = 40;

@@ -1,14 +1,17 @@
 import { CommandTrigger } from "@core/helpers/CommandTrigger";
-import { Command, CommandConditions } from "@custom-types/Command";
+import type { Command } from "@custom-types/Command";
+import { CommandConditions } from "@custom-types/Command";
 import { autoDelete } from "@utils/autoDelete";
-import {
+import type {
   AutocompleteInteraction,
   ButtonInteraction,
   ChatInputCommandInteraction,
   Client,
+  Message,
+} from "discord.js";
+import {
   Collection,
   GuildMember,
-  Message,
   PermissionsBitField,
   type ApplicationCommandDataResolvable,
   type GuildBasedChannel,

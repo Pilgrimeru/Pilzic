@@ -1,14 +1,13 @@
-import { CommandTrigger } from "@core/helpers/CommandTrigger";
-import { Track } from "@core/Track";
+import type { CommandTrigger } from "@core/helpers/CommandTrigger";
+import type { Track } from "@core/Track";
 import { Command, CommandConditions } from "@custom-types/Command";
 import { config } from "config";
+import type { Guild, Message } from "discord.js";
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  Guild,
-  Message,
 } from "discord.js";
 import { i18n } from "i18n.config";
 import { bot } from "index";

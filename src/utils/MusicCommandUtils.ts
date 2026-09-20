@@ -1,9 +1,9 @@
-import { CommandTrigger } from "@core/helpers/CommandTrigger.ts";
+import type { CommandTrigger } from "@core/helpers/CommandTrigger.ts";
 import { DataFinder } from "@core/helpers/DataFinder.ts";
 import { ExtractorFactory } from "@core/helpers/ExtractorFactory.ts";
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData.ts";
 import type { TrackData } from "@custom-types/extractor/TrackData.ts";
-import { AutocompleteInteraction } from "discord.js";
+import type { AutocompleteInteraction } from "discord.js";
 import YouTube from "youtube-sr";
 import { config } from "../config.ts";
 import { i18n } from "../i18n.config.ts";

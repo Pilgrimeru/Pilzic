@@ -5,7 +5,14 @@
   "main": "./src/index.ts",
   "scripts": {
     "start": "bun ./src/index.ts",
+    "test": "bun test",
+    "test:unit": "bun test tests/unit",
+    "test:watch": "bun test --watch",
+    "lint": "oxlint . --report-unused-disable-directives",
+    "lint:fix": "oxlint . --fix --report-unused-disable-directives",
     "format": "prettier --write .",
+    "format:check": "prettier --check \"src/**/*.{ts,json}\" \"tests/**/*.ts\" \"scripts/**/*.ts\" \"*.json\"",
+    "check": "bun run format:check && bun run lint && bun run typecheck && bun test",
     "typecheck": "tsc --noEmit",
     "youtube-login": "bun ./scripts/youtube-login.ts"
   },
@@ -34,11 +41,13 @@
     "youtube-sr": "^4.3.12"
   },
   "devDependencies": {
-    "ffmpeg-static": "^5.3.0",
-    "ffprobe-static": "^3.1.0",
     "@types/ffprobe-static": "^2.0.3",
     "@types/i18n": "^0.13.12",
     "bun-types": "^1.4.2",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
+    "oxlint": "^1.83.0",
+    "oxlint-tsgolint": "^7.0.2002",
     "prettier": "^3.9.8",
     "puppeteer-core": "^25.11.0",
     "typescript": "^7.0.2"

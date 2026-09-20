@@ -63,7 +63,7 @@ export class YouTubeSearchExtractor extends SearchExtractor {
     const trackInfo = await YouTube.searchOne(this.query, "video").catch(
       console.error,
     );
-    if (!trackInfo || !trackInfo.title) {
+    if (!trackInfo?.title) {
       throw new NothingFoundError();
     }
 

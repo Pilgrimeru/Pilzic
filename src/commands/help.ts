@@ -1,4 +1,4 @@
-import { CommandTrigger } from "@core/helpers/CommandTrigger";
+import type { CommandTrigger } from "@core/helpers/CommandTrigger";
 import { Command } from "@custom-types/Command";
 import { config } from "config";
 import {
@@ -46,7 +46,7 @@ export default class HelpCommand extends Command {
         const aliases = cmd.aliases ? `(${cmd.aliases})` : "";
         helpEmbed.addFields({
           name: `**${bot.prefix}${cmd.name} ${aliases}**`,
-          value: `${cmd.description}`,
+          value: cmd.description,
           inline: true,
         });
       });

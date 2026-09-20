@@ -1,6 +1,6 @@
 import { Event } from "@custom-types/Event";
 import { config } from "config";
-import { VoiceState } from "discord.js";
+import type { VoiceState } from "discord.js";
 import { bot } from "index";
 
 const guildTimers = new Map<string, ReturnType<typeof setTimeout>>();

@@ -1,12 +1,12 @@
-import { Player } from "@core/Player";
-import { Track } from "@core/Track";
+import type { Player } from "@core/Player";
+import type { Track } from "@core/Track";
 import { config } from "config";
+import type { Message } from "discord.js";
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  Message,
 } from "discord.js";
 import { i18n } from "i18n.config";
 

@@ -54,7 +54,10 @@ try {
     { waitUntil: "domcontentloaded" },
   );
 
-  const prompt = createInterface({ input: process.stdin, output: process.stdout });
+  const prompt = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   await prompt.question(
     "Quand le bon compte est affiché comme compte actif sur YouTube, appuyez sur Entrée ici… ",
   );
@@ -63,11 +66,13 @@ try {
   await page.goto("https://www.youtube.com/account", {
     waitUntil: "domcontentloaded",
   });
-  const cookies = (await page.cookies(
-    "https://www.youtube.com",
-    "https://accounts.google.com",
-    "https://www.google.com",
-  )).filter(isRequiredAuthenticationCookie);
+  const cookies = (
+    await page.cookies(
+      "https://www.youtube.com",
+      "https://accounts.google.com",
+      "https://www.google.com",
+    )
+  ).filter(isRequiredAuthenticationCookie);
 
   validateAuthenticationCookies(cookies);
 
@@ -120,7 +125,10 @@ async function openIsolatedBrowser(): Promise<{
   try {
     const browserURL = `http://127.0.0.1:${port}`;
     await waitForBrowser(browserURL, browserProcess, () => launchError);
-    const browser = await puppeteer.connect({ browserURL, defaultViewport: null });
+    const browser = await puppeteer.connect({
+      browserURL,
+      defaultViewport: null,
+    });
     return { browser, browserProcess };
   } catch (error) {
     if (!browserProcess.killed) browserProcess.kill();
@@ -177,8 +185,8 @@ function findBrowserExecutable(): string {
 
   const defaultPath = getWindowsDefaultBrowserPath();
   const candidates = [defaultPath, ...getPlatformBrowserCandidates()];
-  const executable = candidates.find(
-    (candidate): candidate is string => Boolean(candidate && existsSync(candidate)),
+  const executable = candidates.find((candidate): candidate is string =>
+    Boolean(candidate && existsSync(candidate)),
   );
   if (!executable)
     throw new Error(

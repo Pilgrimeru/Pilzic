@@ -1,13 +1,11 @@
 import { Player } from "@core/Player";
 import type { Playlist } from "@core/Playlist";
 import type { Track } from "@core/Track";
-import { joinVoiceChannel, VoiceConnection } from "@discordjs/voice";
+import type { VoiceConnection } from "@discordjs/voice";
+import { joinVoiceChannel } from "@discordjs/voice";
 import { autoDelete } from "@utils/autoDelete";
-import {
-  BaseGuildTextChannel,
-  Collection,
-  type VoiceBasedChannel,
-} from "discord.js";
+import type { BaseGuildTextChannel } from "discord.js";
+import { Collection, type VoiceBasedChannel } from "discord.js";
 import { i18n } from "i18n.config";
 
 export class PlayerManager {
@@ -66,7 +64,7 @@ export class PlayerManager {
     return joinVoiceChannel({
       channelId: voiceChannel.id,
       guildId: voiceChannel.guild.id,
-      adapterCreator: voiceChannel.guild.voiceAdapterCreator as any,
+      adapterCreator: voiceChannel.guild.voiceAdapterCreator,
       selfDeaf: true,
     });
   }

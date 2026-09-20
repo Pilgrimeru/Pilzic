@@ -59,8 +59,7 @@ export class DataFinder {
   public static async getTrackDataFromLink(url: string): Promise<TrackData> {
     const { ExtractorFactory } = await import("./ExtractorFactory");
     const searchExtractor = await ExtractorFactory.createLinkExtractor(url);
-    if (!searchExtractor || searchExtractor.type !== "track")
-      throw new InvalidURLError();
+    if (searchExtractor?.type !== "track") throw new InvalidURLError();
     return searchExtractor.extract("track");
   }
 
@@ -69,8 +68,7 @@ export class DataFinder {
   ): Promise<PlaylistData> {
     const { ExtractorFactory } = await import("./ExtractorFactory");
     const searchExtractor = await ExtractorFactory.createLinkExtractor(url);
-    if (!searchExtractor || searchExtractor.type !== "playlist")
-      throw new InvalidURLError();
+    if (searchExtractor?.type !== "playlist") throw new InvalidURLError();
     return searchExtractor.extract("playlist");
   }
 
