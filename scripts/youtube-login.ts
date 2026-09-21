@@ -14,16 +14,11 @@ const AUTH_COOKIE_NAMES = new Set([
   "LOGIN_INFO",
   "SAPISID",
   "SID",
-  "SIDCC",
   "SSID",
   "__Secure-1PAPISID",
   "__Secure-1PSID",
-  "__Secure-1PSIDCC",
-  "__Secure-1PSIDTS",
   "__Secure-3PAPISID",
   "__Secure-3PSID",
-  "__Secure-3PSIDCC",
-  "__Secure-3PSIDTS",
 ]);
 
 const secretsDirectory = path.resolve(process.cwd(), "secrets");
@@ -37,6 +32,12 @@ const profileDirectory = path.join(
 );
 
 mkdirSync(secretsDirectory, { recursive: true });
+
+if (browserKind === "firefox") {
+  console.warn(
+    "Attention : Google refuse souvent la connexion depuis Firefox lorsqu'il est piloté par Puppeteer. Installez Chrome, Brave ou Edge, ou définissez BROWSER_PATH vers leur exécutable.",
+  );
+}
 
 console.info(
   "Une fenêtre isolée va s'ouvrir. Elle ne lit pas les cookies ni le profil de votre navigateur personnel.",
@@ -66,13 +67,9 @@ try {
   await page.goto("https://www.youtube.com/account", {
     waitUntil: "domcontentloaded",
   });
-  const cookies = (
-    await page.cookies(
-      "https://www.youtube.com",
-      "https://accounts.google.com",
-      "https://www.google.com",
-    )
-  ).filter(isRequiredAuthenticationCookie);
+  const cookies = (await page.cookies("https://www.youtube.com")).filter(
+    isRequiredAuthenticationCookie,
+  );
 
   validateAuthenticationCookies(cookies);
 
@@ -184,7 +181,18 @@ function findBrowserExecutable(): string {
   }
 
   const defaultPath = getWindowsDefaultBrowserPath();
-  const candidates = [defaultPath, ...getPlatformBrowserCandidates()];
+  const platformCandidates = getPlatformBrowserCandidates();
+  // Google commonly rejects authentication in Firefox when Puppeteer launches
+  // it. Prefer a Chromium browser, which we launch as a regular process before
+  // attaching to its local debugging endpoint.
+  const candidates = [
+    ...platformCandidates.filter(isChromiumExecutable),
+    ...(defaultPath && isChromiumExecutable(defaultPath) ? [defaultPath] : []),
+    ...platformCandidates.filter(
+      (candidate) => !isChromiumExecutable(candidate),
+    ),
+    ...(defaultPath && !isChromiumExecutable(defaultPath) ? [defaultPath] : []),
+  ];
   const executable = candidates.find((candidate): candidate is string =>
     Boolean(candidate && existsSync(candidate)),
   );
@@ -193,6 +201,13 @@ function findBrowserExecutable(): string {
       "Aucun navigateur compatible trouvé. Définissez BROWSER_PATH vers Brave, Chrome, Edge, Chromium ou Firefox.",
     );
   return executable;
+}
+
+function isChromiumExecutable(candidate: string | undefined): boolean {
+  if (!candidate) return false;
+  return /(?:chrome|chromium|brave|msedge)(?:\.exe)?$/i.test(
+    path.basename(candidate),
+  );
 }
 
 function getWindowsDefaultBrowserPath(): string | undefined {
@@ -249,6 +264,16 @@ function getPlatformBrowserCandidates(): Array<string | undefined> {
           "Microsoft/Edge/Application/msedge.exe",
         ),
       process.env["PROGRAMFILES"] &&
+        path.join(
+          process.env["PROGRAMFILES"],
+          "Microsoft/Edge/Application/msedge.exe",
+        ),
+      process.env["LOCALAPPDATA"] &&
+        path.join(
+          process.env["LOCALAPPDATA"],
+          "Microsoft/Edge/Application/msedge.exe",
+        ),
+      process.env["PROGRAMFILES"] &&
         path.join(process.env["PROGRAMFILES"], "Mozilla Firefox/firefox.exe"),
     ];
   if (process.platform === "darwin")
@@ -270,13 +295,8 @@ function getPlatformBrowserCandidates(): Array<string | undefined> {
 
 function isRequiredAuthenticationCookie(cookie: Cookie): boolean {
   const domain = cookie.domain.toLowerCase();
-  const isGoogleOrYouTube =
-    domain === ".youtube.com" ||
-    domain === "youtube.com" ||
-    domain === ".google.com" ||
-    domain === "google.com" ||
-    domain === "accounts.google.com";
-  return isGoogleOrYouTube && AUTH_COOKIE_NAMES.has(cookie.name);
+  const isYouTube = domain === ".youtube.com" || domain === "youtube.com";
+  return isYouTube && AUTH_COOKIE_NAMES.has(cookie.name);
 }
 
 function validateAuthenticationCookies(cookies: Cookie[]): void {

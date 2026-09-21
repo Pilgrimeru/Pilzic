@@ -92,7 +92,7 @@ Pilzic uses a dedicated browser profile instead of reading every cookie from you
 bun run youtube-login
 ```
 
-Choose the Google account reserved for the bot, confirm that it is active on YouTube, then press Enter in the terminal. Only a strict allowlist of YouTube/Google authentication cookies is exported to `secrets/youtube-cookies.txt`; browsing history and unrelated site cookies are never read. The isolated profile is retained so future renewals normally do not require a full sign-in.
+Choose the Google account reserved for the bot, confirm that it is active on YouTube, then press Enter in the terminal. Only the minimal session-cookie allowlist scoped to `youtube.com` is exported to `secrets/youtube-cookies.txt`; Google-domain cookies, browsing history, and unrelated site cookies are never exported. The isolated profile is retained so future renewals normally do not require a full sign-in.
 
 Never commit the cookie file. In production set `YOUTUBE_COOKIES_PATH=/app/secrets/youtube-cookies.txt`; with Docker, mount it read-only:
 
