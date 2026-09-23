@@ -62,9 +62,8 @@ export class CommandTrigger {
           this.interaction.reply({ content, withResponse: true }),
         );
       } else {
-        content.withResponse = true;
         this.response = this.getResponseFromCallback(
-          this.interaction.reply(content as { withResponse: true }),
+          this.interaction.reply({ ...content, withResponse: true }),
         );
       }
     } else if (this.message) {
@@ -79,17 +78,22 @@ export class CommandTrigger {
   ): Promise<Message> {
     if (this.interaction) {
       await this.response;
-      await this.interaction.editReply(content);
+      const edited = await this.interaction.editReply(content);
+      this.response = Promise.resolve(edited);
+      return edited;
     } else {
-      await (await this.response!).edit(content);
+      const original = await this.response;
+      if (!original) throw new Error("No response to edit");
+      const edited = await original.edit(content);
+      this.response = Promise.resolve(edited);
+      return edited;
     }
-    return this.response!;
   }
 
   public async deferUpdate(): Promise<void> {
     if (this.interaction) {
       if (this.interaction instanceof MessageComponentInteraction) {
-        void this.interaction.deferUpdate();
+        await this.interaction.deferUpdate();
       } else {
         await this.loadingReply().then((rep: Message) =>
           rep.delete().catch(() => null),
@@ -144,14 +148,14 @@ export class CommandTrigger {
     return this.response!;
   }
 
-  public send(content: string | BaseMessageOptions): Promise<Message> {
+  public async send(content: string | BaseMessageOptions): Promise<Message> {
     if (
       this.interaction &&
       this.interaction instanceof MessageComponentInteraction &&
       !this.interaction.replied &&
       !this.interaction.deferred
     ) {
-      this.interaction.deferUpdate().catch(() => null);
+      await this.interaction.deferUpdate();
     }
     return this.channel.send(content);
   }
@@ -179,6 +183,8 @@ export class CommandTrigger {
   private async getResponseFromCallback(
     callbackResponse: Promise<InteractionCallbackResponse>,
   ): Promise<Message> {
-    return (await callbackResponse).resource?.message!;
+    const message = (await callbackResponse).resource?.message;
+    if (!message) throw new Error("Interaction returned no message");
+    return message;
   }
 }

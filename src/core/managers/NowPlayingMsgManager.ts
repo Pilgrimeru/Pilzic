@@ -15,6 +15,8 @@ export class NowPlayingMsgManager {
   private track: Track | undefined;
   private readonly player: Player;
   private state: "play" | "pause";
+  private revision = 0;
+  private updateTask: Promise<void> = Promise.resolve();
 
   constructor(player: Player) {
     this.player = player;
@@ -22,46 +24,71 @@ export class NowPlayingMsgManager {
   }
 
   public async send(track: Track): Promise<void> {
-    if (this.msg) await this.clear();
+    const revision = ++this.revision;
+    const previous = this.msg;
+    this.msg = undefined;
+    if (previous) {
+      await this.updateTask;
+      await this.retire(previous);
+    }
+    if (revision !== this.revision) return;
     this.track = track;
+    this.state = this.getPlayerState();
 
     const embed = this.buildPlayingEmbed(track, "▶");
-    this.msg = await this.player.textChannel.send({
+    const sent = await this.player.textChannel.send({
       embeds: [embed],
       components: [this.buildButtons()],
     });
+    if (revision !== this.revision) {
+      await sent.edit({ components: [] }).catch(() => undefined);
+      return;
+    }
+    this.msg = sent;
   }
 
   public async update(): Promise<void> {
-    if (!this.msg || !this.msg.editable || !this.track) return;
-
+    const message = this.msg;
+    const track = this.track;
+    if (!message || !message.editable || !track) return;
     const currentState = this.getPlayerState();
     if (this.state === currentState) return;
-
     this.state = currentState;
-
-    const embed = this.buildPlayingEmbed(
-      this.track,
-      currentState === "pause" ? "❚❚" : "▶",
-    );
-    await this.msg.edit({
-      embeds: [embed],
-      components: [this.buildButtons()],
+    const task = this.updateTask.then(async () => {
+      if (this.msg !== message) return;
+      const embed = this.buildPlayingEmbed(
+        track,
+        currentState === "pause" ? "❚❚" : "▶",
+      );
+      await message.edit({
+        embeds: [embed],
+        components: [this.buildButtons()],
+      });
     });
+    this.updateTask = task.catch(console.error);
+    return task;
   }
 
   public async clear(): Promise<void> {
-    if (!this.msg) return;
+    this.revision++;
+    const message = this.msg;
+    this.msg = undefined;
+    this.track = undefined;
+    if (message) {
+      await this.updateTask;
+      await this.retire(message);
+    }
+  }
+
+  private async retire(message: Message): Promise<void> {
     try {
       if (config.AUTO_DELETE) {
-        await this.msg.delete().catch(() => null);
+        await message.delete().catch(() => null);
       } else {
-        await this.msg.edit({ components: [] });
+        await message.edit({ components: [] });
       }
     } catch (error) {
       console.error(error);
-    } finally {
-      this.msg = undefined;
     }
   }
 

@@ -140,6 +140,16 @@ describe("Queue", () => {
     expect(queue.index).toBe(1);
   });
 
+  test("répète la piste courante en boucle de piste", () => {
+    const { player, queue } = makeQueue();
+    const first = makeTrack(1);
+    queue.enqueue(first);
+    queue.enqueue(makeTrack(2));
+    queue.loop = "track";
+    player.emit("skip");
+    expect(queue.currentTrack).toBe(first);
+  });
+
   test("respecte les capacités de navigation selon la position et la boucle", () => {
     const { player, queue } = makeQueue();
     queue.enqueue(makeTrack(1));
@@ -244,5 +254,51 @@ describe("Queue", () => {
     expect(queue.index).toBe(0);
     expect(queue.loop as string).toBe("disabled");
     expect(queue.currentTrack).toBeUndefined();
+  });
+
+  test("borne la file même après des ajouts simultanés de pistes", () => {
+    const previous = config.MAX_QUEUE_SIZE;
+    config.MAX_QUEUE_SIZE = 2;
+    try {
+      const { queue } = makeQueue();
+      queue.enqueue(makeTrack(1));
+      queue.enqueue(makeTrack(2));
+      expect(queue.enqueue(makeTrack(3))).toBeFalse();
+      expect(queue.tracks).toHaveLength(2);
+    } finally {
+      config.MAX_QUEUE_SIZE = previous;
+    }
+  });
+
+  test("refuse une playlist entière si elle dépasse la place disponible", () => {
+    const previous = config.MAX_QUEUE_SIZE;
+    config.MAX_QUEUE_SIZE = 2;
+    try {
+      const { queue } = makeQueue();
+      queue.enqueue(makeTrack(1));
+      const playlist = Playlist.from(
+        {
+          title: "Liste",
+          url: "https://example.test/list",
+          duration: 2000,
+          tracks: [makeTrack(2).data, makeTrack(3).data],
+        },
+        requester,
+      );
+      expect(queue.insert(playlist)).toBeFalse();
+      expect(queue.tracks).toHaveLength(1);
+    } finally {
+      config.MAX_QUEUE_SIZE = previous;
+    }
+  });
+
+  test("conserve la piste courante après la suppression de son historique", () => {
+    const { player, queue } = makeQueue();
+    const tracks = [makeTrack(1), makeTrack(2), makeTrack(3)];
+    tracks.forEach((item) => queue.enqueue(item));
+    player.emit("jump", 2);
+    queue.remove(0);
+    expect(queue.index).toBe(1);
+    expect(queue.currentTrack).toBe(tracks[2]);
   });
 });

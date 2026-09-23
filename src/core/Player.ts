@@ -16,10 +16,12 @@ import { formatTime } from "@utils/formatTime";
 import { config } from "config";
 import type { BaseGuildTextChannel } from "discord.js";
 import { EventEmitter } from "events";
+import { randomUUID } from "node:crypto";
 import { i18n } from "i18n.config";
-import { bot } from "index";
 import { audioResourceFactory } from "./AudioResourceFactory";
-import { YouTubeStreamError } from "./helpers/YouTubeStreamConverter";
+import { classifyAudioFailure } from "./helpers/AudioFailure";
+import { coreMetrics } from "./helpers/CoreMetrics";
+import { observe } from "./helpers/observe";
 import { NowPlayingMsgManager } from "./managers/NowPlayingMsgManager";
 import type { Playlist } from "./Playlist";
 import { Queue } from "./Queue";
@@ -42,7 +44,11 @@ export class Player extends EventEmitter {
   private readonly queueRetries = new WeakMap<Track, number>();
   private handlingFailure = false;
   private transitionId = 0;
+  private transitionController: AbortController | undefined;
+  private preloadController: AbortController | undefined;
+  private pendingStartup: { jobId: string; startedAt: number } | undefined;
   private leaveTimer: ReturnType<typeof setTimeout> | undefined;
+  private readonly onLeave?: (guildId: string) => void;
 
   public constructor(options: PlayerOptions) {
     super();
@@ -69,20 +75,24 @@ export class Player extends EventEmitter {
   public async skip(): Promise<void> {
     if (this._stopped) return;
     if (!this.queue.canNext()) {
-      this.textChannel.send(i18n.__("player.queueEnded")).then(autoDelete);
+      observe(
+        this.textChannel.send(i18n.__("player.queueEnded")).then(autoDelete),
+        "queue ended message",
+      );
       return this.stop();
     }
     if (this.audioPlayer.state.status === "playing") {
       const transitionId = ++this.transitionId;
       const resource = this.resource;
       if (!(await this.fadeOut(resource, transitionId))) return;
+      this.cancelAudioJobs();
       // Let @discordjs/voice append its silence padding instead of cutting an
       // Opus frame in the middle, which produces an audible click.
       this.audioPlayer.stop();
       return;
     }
 
-    void this.nowPlayingMsgManager.clear();
+    observe(this.nowPlayingMsgManager.clear(), "now playing clear");
     this.emit("skip");
     const newCurrent = this.queue.currentTrack;
     newCurrent ? await this.process(newCurrent) : this.stop();
@@ -90,8 +100,8 @@ export class Player extends EventEmitter {
 
   public async jumpTo(trackId: number): Promise<void> {
     if (this._stopped) return;
-    if (!(await this.fadeAndPause())) return;
-    void this.nowPlayingMsgManager.clear();
+    if (!(await this.prepareNavigation())) return;
+    observe(this.nowPlayingMsgManager.clear(), "now playing clear");
     this.emit("jump", trackId);
     const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
@@ -99,16 +109,17 @@ export class Player extends EventEmitter {
 
   public async previous(): Promise<void> {
     if (!this.queue.canBack()) return;
-    if (!(await this.fadeAndPause())) return;
-    void this.nowPlayingMsgManager.clear();
+    if (!(await this.prepareNavigation())) return;
+    observe(this.nowPlayingMsgManager.clear(), "now playing clear");
     this.emit("previous");
     const newCurrent = this.queue.currentTrack;
     return newCurrent ? this.process(newCurrent) : this.stop();
   }
 
   public async seek(time: number): Promise<void> {
-    void this.nowPlayingMsgManager.clear();
-    if (!(await this.fadeAndPause())) return;
+    if (this._stopped) return;
+    observe(this.nowPlayingMsgManager.clear(), "now playing clear");
+    if (!(await this.prepareNavigation())) return;
     const current = this.queue.currentTrack;
     return current ? this.process(current, time) : this.stop();
   }
@@ -120,6 +131,18 @@ export class Player extends EventEmitter {
   }
 
   public resume(): boolean {
+    if (
+      this.audioPlayer.state.status === AudioPlayerStatus.Paused &&
+      this.resource &&
+      !this.resource.volume &&
+      this._volume !== 100
+    ) {
+      observe(
+        this.seek(Math.max(0, this.playbackDuration / 1000)),
+        "resume with adjusted volume",
+      );
+      return true;
+    }
     return this.audioPlayer.unpause();
   }
 
@@ -127,9 +150,10 @@ export class Player extends EventEmitter {
     if (this._stopped) return;
     this._stopped = true;
     const transitionId = ++this.transitionId;
+    this.cancelAudioJobs();
     const resource = this.resource;
     this.queue.clear();
-    void this.nowPlayingMsgManager.clear();
+    observe(this.nowPlayingMsgManager.clear(), "now playing clear");
 
     if (await this.fadeOut(resource, transitionId)) {
       // A non-forced stop sends the resource's configured silence padding.
@@ -143,7 +167,7 @@ export class Player extends EventEmitter {
     this.leaveTimer = setTimeout(() => {
       this.leaveTimer = undefined;
       if (this._stopped) {
-        void this.leave();
+        observe(this.leave(), "leave voice channel");
       }
     }, config.STAY_TIME * 1000);
     this.leaveTimer.unref?.();
@@ -153,14 +177,17 @@ export class Player extends EventEmitter {
     this.cancelLeaveTimer();
     await this.stop();
     this.cancelLeaveTimer();
-    bot.playerManager.removePlayer(this.textChannel.guildId);
+    this.onLeave?.(this.textChannel.guildId);
     if (this.connection.state.status != VoiceConnectionStatus.Destroyed) {
       this.connection.destroy();
       this.connection.removeAllListeners();
       this.audioPlayer.removeAllListeners();
       this.queue.removeAllListeners();
       this.removeAllListeners();
-      this.textChannel.send(i18n.__("player.leaveChannel")).then(autoDelete);
+      observe(
+        this.textChannel.send(i18n.__("player.leaveChannel")).then(autoDelete),
+        "leave channel message",
+      );
     }
   }
 
@@ -176,6 +203,15 @@ export class Player extends EventEmitter {
     // the user's configured volume without an audible jump.
     resource?.volume?.setVolumeLogarithmic(this._volume / 100);
     return paused;
+  }
+
+  private async prepareNavigation(): Promise<boolean> {
+    if (this.audioPlayer.state.status === AudioPlayerStatus.Playing)
+      return this.fadeAndPause();
+    ++this.transitionId;
+    this.cancelAudioJobs();
+    this.audioPlayer.stop();
+    return true;
   }
 
   private async fadeOut(
@@ -207,7 +243,18 @@ export class Player extends EventEmitter {
   public set volume(v: number) {
     if (v >= 0 && v <= 100) {
       this._volume = v;
-      this.resource?.volume?.setVolumeLogarithmic(this._volume / 100);
+      if (this.resource?.volume) {
+        this.resource.volume.setVolumeLogarithmic(this._volume / 100);
+      } else if (
+        this.resource &&
+        v !== 100 &&
+        this.audioPlayer.state.status === AudioPlayerStatus.Playing
+      ) {
+        observe(
+          this.seek(Math.max(0, this.playbackDuration / 1000)),
+          "adjust volume on direct stream",
+        );
+      }
     }
   }
 
@@ -221,19 +268,24 @@ export class Player extends EventEmitter {
 
   private async process(track: Track, seek?: number): Promise<void> {
     const processId = ++this.transitionId;
-    const loadingMsg = this.textChannel.send(i18n.__("common.loading"));
+    this.cancelAudioJobs();
+    const controller = new AbortController();
+    this.transitionController = controller;
+    const jobId = randomUUID();
+    this.pendingStartup = { jobId, startedAt: performance.now() };
     try {
-      const [connectionResult, resourceResult] = await Promise.allSettled([
-        entersState(this.connection, VoiceConnectionStatus.Ready, 15_000),
-        audioResourceFactory.createResource(track, seek),
-      ]);
-      if (connectionResult.status === "rejected") {
-        if (resourceResult.status === "fulfilled")
-          resourceResult.value.playStream.destroy();
-        throw connectionResult.reason;
-      }
-      if (resourceResult.status === "rejected") throw resourceResult.reason;
-      const resource = resourceResult.value;
+      await entersState(
+        this.connection,
+        VoiceConnectionStatus.Ready,
+        AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]),
+      );
+      if (controller.signal.aborted || processId !== this.transitionId) return;
+      const resource = await audioResourceFactory.createResource(
+        track,
+        seek,
+        controller.signal,
+        this._volume,
+      );
       if (processId !== this.transitionId || this._stopped) {
         resource.playStream.destroy();
         return;
@@ -243,14 +295,24 @@ export class Player extends EventEmitter {
       resource.volume?.setVolumeLogarithmic(this._volume / 100);
       this.resource = resource;
       this.audioPlayer.play(resource);
-      await this.nowPlayingMsgManager.send(track);
+      // The transition controller only owns startup work. Once the resource
+      // belongs to the audio player, aborting this controller on the next
+      // transition would tear down the currently playing stream and surface
+      // as a spurious "Premature close" error.
+      if (this.transitionController === controller) {
+        this.transitionController = undefined;
+      }
+      await this.nowPlayingMsgManager.send(track).catch(console.error);
     } catch (error) {
       if (processId !== this.transitionId || this._stopped) return;
+      this.pendingStartup = undefined;
+      coreMetrics.recordFailure(this.textChannel.guildId, jobId, error);
       console.error(error);
-      this.textChannel.send(i18n.__("player.error")).then(autoDelete);
+      observe(
+        this.textChannel.send(i18n.__("player.error")).then(autoDelete),
+        "player error message",
+      );
       await this.handlePlaybackFailure(error);
-    } finally {
-      (await loadingMsg).delete().catch(() => null);
     }
   }
 
@@ -262,7 +324,8 @@ export class Player extends EventEmitter {
           (disconnection.reason == 0 && disconnection.closeCode == 4014) ||
           disconnection.reason == 3
         ) {
-          return this.stop();
+          observe(this.stop(), "voice disconnected");
+          return;
         }
         try {
           this.connection.configureNetworking();
@@ -280,7 +343,7 @@ export class Player extends EventEmitter {
           ]);
         } catch (error) {
           console.error(error);
-          this.stop();
+          observe(this.stop(), "voice reconnect failed");
         }
       },
     );
@@ -291,12 +354,12 @@ export class Player extends EventEmitter {
       if (this.handlingFailure) return;
       const completed = this.queue.currentTrack;
       if (completed) this.queueRetries.delete(completed);
-      void this.skip();
+      observe(this.skip(), "skip idle player");
     });
 
     this.audioPlayer.on(AudioPlayerStatus.AutoPaused, async () => {
       try {
-        void this.nowPlayingMsgManager.update();
+        observe(this.nowPlayingMsgManager.update(), "now playing update");
         if (!this._stopped) {
           this.connection.configureNetworking();
         }
@@ -305,21 +368,46 @@ export class Player extends EventEmitter {
         await entersState(this.audioPlayer, AudioPlayerStatus.Playing, 5_000);
       } catch (error) {
         console.error(error);
-        await this.skip();
+        observe(this.skip(), "skip after auto pause");
       }
     });
 
     this.audioPlayer.on(AudioPlayerStatus.Playing, async () => {
-      void this.nowPlayingMsgManager.update();
+      if (this.pendingStartup) {
+        coreMetrics.recordStartup(
+          this.textChannel.guildId,
+          this.pendingStartup.jobId,
+          performance.now() - this.pendingStartup.startedAt,
+        );
+        this.pendingStartup = undefined;
+      }
+      observe(this.nowPlayingMsgManager.update(), "now playing update");
+      this.preloadController?.abort();
+      const controller = new AbortController();
+      this.preloadController = controller;
       for (const track of this.queue.upcoming(config.AUDIO_PRELOAD_COUNT)) {
-        void audioResourceFactory.preload(track);
+        void audioResourceFactory
+          .preload(track, controller.signal)
+          .catch(console.error);
       }
     });
 
     this.audioPlayer.on("error", (error) => {
+      if (error.resource !== this.resource) return;
+      if (this.pendingStartup) {
+        coreMetrics.recordFailure(
+          this.textChannel.guildId,
+          this.pendingStartup.jobId,
+          error,
+        );
+        this.pendingStartup = undefined;
+      }
       console.error(error);
-      this.textChannel.send(i18n.__("player.error")).then(autoDelete);
-      void this.handlePlaybackFailure(error);
+      observe(
+        this.textChannel.send(i18n.__("player.error")).then(autoDelete),
+        "player error message",
+      );
+      observe(this.handlePlaybackFailure(error), "playback failure");
     });
   }
 
@@ -328,25 +416,16 @@ export class Player extends EventEmitter {
     this.handlingFailure = true;
     try {
       const current = this.queue.currentTrack;
-      const message = error instanceof Error ? error.message : String(error);
-      if (
-        error instanceof YouTubeStreamError &&
-        error.code === "YOUTUBE_AUTH_REQUIRED"
-      ) {
+      const failure = classifyAudioFailure(error);
+      if (failure.kind === "auth") {
         console.error(
           "[YouTube] Queue stopped: run `bun run youtube-login` locally and replace the cookie file.",
         );
         return this.stop();
       }
-      const transient =
-        (error instanceof YouTubeStreamError &&
-          error.code === "YOUTUBE_TRANSIENT") ||
-        /econnreset|socket hang up|timed out|premature|broken pipe|http error 50[0234]/i.test(
-          message,
-        );
-      if (current && transient) {
+      if (current && failure.retryable) {
         const retries = this.queueRetries.get(current) ?? 0;
-        if (retries < 2) {
+        if (retries < 1) {
           this.queueRetries.set(current, retries + 1);
           const next = this.queue.deferCurrent();
           if (next) {
@@ -365,12 +444,12 @@ export class Player extends EventEmitter {
   private setupQueueListeners(): void {
     this.queue.on("trackAdded", (track: Track) => {
       this.cancelLeaveTimer();
-      this.sendTrackAddedMessage(track);
       if (this._stopped) {
         this._stopped = false;
         const current = this.queue.currentTrack;
         return current ? this.process(current) : this.stop();
       }
+      this.sendTrackAddedMessage(track);
     });
 
     this.queue.on("playlistAdded", (playlist: Playlist) => {
@@ -390,6 +469,19 @@ export class Player extends EventEmitter {
     this.leaveTimer = undefined;
   }
 
+  private cancelAudioJobs(): void {
+    if (this.pendingStartup) {
+      coreMetrics.recordCancellation();
+      this.pendingStartup = undefined;
+    }
+    this.transitionController?.abort(
+      new Error("Playback transition superseded"),
+    );
+    this.transitionController = undefined;
+    this.preloadController?.abort(new Error("Preload window changed"));
+    this.preloadController = undefined;
+  }
+
   private sendTrackAddedMessage(track: Track): void {
     const embed = {
       description: i18n.__mf("player.trackAdded", {
@@ -398,7 +490,10 @@ export class Player extends EventEmitter {
       }),
       color: config.COLORS.MAIN,
     };
-    this.textChannel.send({ embeds: [embed] }).then(autoDelete);
+    observe(
+      this.textChannel.send({ embeds: [embed] }).then(autoDelete),
+      "track added message",
+    );
   }
 
   private sendPlaylistAddedMessage(playlist: Playlist): void {
@@ -411,6 +506,9 @@ export class Player extends EventEmitter {
       }),
       color: config.COLORS.MAIN,
     };
-    this.textChannel.send({ embeds: [embed] }).then(autoDelete);
+    observe(
+      this.textChannel.send({ embeds: [embed] }).then(autoDelete),
+      "playlist added message",
+    );
   }
 }

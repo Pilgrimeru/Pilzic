@@ -12,6 +12,7 @@ export class Queue extends EventEmitter {
   private _index: number;
   private _autoqueue: boolean;
   private autoAddPromise: Promise<void> | undefined;
+  private generation = 0;
   private readonly player: Player;
   private _tracks: Track[] = [];
 
@@ -24,7 +25,13 @@ export class Queue extends EventEmitter {
     this.setupPlayerListeners();
   }
 
-  public enqueue(item: Track | Playlist): void {
+  public enqueue(item: Track | Playlist): boolean {
+    const available = Math.max(0, config.MAX_QUEUE_SIZE - this._tracks.length);
+    if (
+      !available ||
+      (item instanceof Playlist && item.tracks.length > available)
+    )
+      return false;
     if (item instanceof Playlist) {
       this._tracks = this._tracks.concat(item.tracks);
       this.emit("playlistAdded", item);
@@ -32,9 +39,16 @@ export class Queue extends EventEmitter {
       this._tracks.push(item);
       this.emit("trackAdded", item);
     }
+    return true;
   }
 
-  public insert(item: Track | Playlist): void {
+  public insert(item: Track | Playlist): boolean {
+    const available = Math.max(0, config.MAX_QUEUE_SIZE - this._tracks.length);
+    if (
+      !available ||
+      (item instanceof Playlist && item.tracks.length > available)
+    )
+      return false;
     if (item instanceof Playlist) {
       this._tracks.splice(this.index + 1, 0, ...item.tracks);
       this.emit("playlistAdded", item);
@@ -42,9 +56,11 @@ export class Queue extends EventEmitter {
       this._tracks.splice(this.index + 1, 0, item);
       this.emit("trackAdded", item);
     }
+    return true;
   }
 
   public clear(): void {
+    this.generation++;
     this._index = 0;
     this._tracks.length = 0;
     this.loop = "disabled";
@@ -71,18 +87,30 @@ export class Queue extends EventEmitter {
 
   public remove(...idsToRemove: number[]): Track[] {
     const removed: Track[] = [];
+    const ids = new Set(
+      idsToRemove.filter((id) => Number.isInteger(id) && id >= 0),
+    );
+    const removedBefore = [...ids].filter(
+      (id) => id < this._index && id < this._tracks.length,
+    ).length;
     this._tracks = this._tracks.filter((track, trackIndex) => {
-      if (idsToRemove.includes(trackIndex)) {
+      if (ids.has(trackIndex)) {
         removed.push(track);
         return false;
       }
       return true;
     });
+    this._index = Math.max(
+      0,
+      Math.min(this._index - removedBefore, this._tracks.length - 1),
+    );
+    if (removed.length) this.generation++;
     return removed;
   }
 
   public async toggleAutoqueue(): Promise<boolean> {
     this._autoqueue = !this._autoqueue;
+    this.generation++;
     if (this._autoqueue) {
       await this.scheduleAutoAdd();
     }
@@ -124,6 +152,8 @@ export class Queue extends EventEmitter {
 
   private setupPlayerListeners(): void {
     this.player.on("skip", () => {
+      this.generation++;
+      if (this.loop === "track") return;
       if (this._index !== this._tracks.length - 1) {
         this._index += 1;
         this.pruneHistory();
@@ -136,19 +166,19 @@ export class Queue extends EventEmitter {
     });
 
     this.player.on("jump", (trackId: number) => {
+      this.generation++;
       if (this._tracks.length === 0) {
         this._index = 0;
         return;
       }
       if (trackId >= this._tracks.length) trackId = this._tracks.length - 1;
       else if (trackId < 0) trackId = 0;
-      if (this._autoqueue) {
-        void this.scheduleAutoAdd();
-      }
       this._index = trackId;
+      if (this._autoqueue) void this.scheduleAutoAdd();
     });
 
     this.player.on("previous", () => {
+      this.generation++;
       if (this._index <= 0 && this.loop === "queue") {
         this._index = this._tracks.length - 1;
       } else if (this._index > 0) {
@@ -167,9 +197,16 @@ export class Queue extends EventEmitter {
 
   private scheduleAutoAdd(): Promise<void> {
     if (!this.autoAddPromise) {
-      this.autoAddPromise = this.autoAddNextTrack().finally(() => {
-        this.autoAddPromise = undefined;
-      });
+      const generation = this.generation;
+      this.autoAddPromise = this.autoAddNextTrack()
+        .catch(console.error)
+        .finally(() => {
+          this.autoAddPromise = undefined;
+          if (this._autoqueue && this.generation !== generation)
+            queueMicrotask(() => {
+              void this.scheduleAutoAdd();
+            });
+        });
     }
     return this.autoAddPromise;
   }
@@ -180,7 +217,9 @@ export class Queue extends EventEmitter {
     if (remainingTracks > 2) return;
     const current = this._tracks[this._index];
     if (!current) return;
-    const botUser = this.player.textChannel.guild.members.me?.user!;
+    const generation = this.generation;
+    const botUser = this.player.textChannel.guild.members.me?.user;
+    if (!botUser) return;
 
     let related_videos = await current.getRelated();
     related_videos = related_videos.filter(
@@ -191,7 +230,14 @@ export class Queue extends EventEmitter {
     const trackData = await DataFinder.getTrackDataFromLink(
       related_videos[0],
     ).catch(console.error);
-    if (!trackData || !this._autoqueue) return;
+    if (
+      !trackData ||
+      !this._autoqueue ||
+      generation !== this.generation ||
+      this.currentTrack !== current ||
+      this._tracks.length >= config.MAX_QUEUE_SIZE
+    )
+      return;
 
     const relatedTrack = Track.from(trackData, botUser);
     this._tracks.push(relatedTrack);

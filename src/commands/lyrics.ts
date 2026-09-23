@@ -35,13 +35,13 @@ export default class LyricsCommand extends Command {
     const title =
       args.length === 0 ? player.queue.currentTrack!.title : args.join(" ");
 
-    void commandTrigger.loadingReply();
+    await commandTrigger.loadingReply();
 
     try {
       const lyrics: string = await lyricsFinder(title, "");
 
       if (!lyrics) {
-        commandTrigger
+        return commandTrigger
           .editReply(i18n.__mf("lyrics.lyricsNotFound", { title: title }))
           .then(autoDelete);
       }

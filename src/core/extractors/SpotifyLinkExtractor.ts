@@ -7,12 +7,12 @@ import {
   ServiceUnavailableError,
 } from "@errors/ExtractionErrors";
 import { config } from "config";
-import { mapWithConcurrency } from "@utils/mapWithConcurrency";
 import fetch from "isomorphic-unfetch";
 import { sp_validate } from "play-dl";
 import { createRequire } from "node:module";
 import type { SpotifyUrlInfoModule } from "spotify-url-info";
 import { LinkExtractor } from "./abstract/LinkExtractor";
+import { DataFinder } from "@core/helpers/DataFinder";
 
 const require = createRequire(import.meta.url);
 const spotifyUrlInfo = require("spotify-url-info") as SpotifyUrlInfoModule;
@@ -45,11 +45,10 @@ export class SpotifyLinkExtractor extends LinkExtractor {
       if (!data.type) throw new NoDataError();
 
       const search = data.artist + " " + data.track;
-      const { DataFinder } = await import("@core/helpers/DataFinder");
       return DataFinder.searchTrackData(search);
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof ExtractionError) throw error;
-      if (error.message?.includes("parse")) {
+      if (error instanceof Error && error.message.includes("parse")) {
         throw new InvalidURLError();
       } else {
         throw new ServiceUnavailableError();
@@ -69,22 +68,26 @@ export class SpotifyLinkExtractor extends LinkExtractor {
         headers: { "user-agent": config.USERAGENT },
       });
 
-      const { DataFinder } = await import("@core/helpers/DataFinder");
-      const limitedTracks = playlistTracks.slice(0, config.MAX_PLAYLIST_SIZE);
-      const results = await mapWithConcurrency(
-        limitedTracks,
-        4,
-        (track: any) => {
-          const search = track.artist + " " + track.name;
-          return DataFinder.searchTrackData(search);
-        },
+      const limitedTracks = playlistTracks.slice(
+        0,
+        Math.min(config.MAX_PLAYLIST_SIZE, 50),
       );
-      const tracks = results.flatMap((result) =>
-        result.status === "fulfilled" ? [result.value] : [],
-      );
+      const tracks: TrackData[] = limitedTracks.flatMap((track) => {
+        const id = /^spotify:track:([a-zA-Z0-9]+)$/.exec(track.uri)?.[1];
+        return id && track.name && track.artist
+          ? [
+              {
+                url: `https://open.spotify.com/track/${id}`,
+                title: `${track.artist} ${track.name}`,
+                duration: track.duration ?? -1,
+                thumbnail: playlist.image ?? null,
+              },
+            ]
+          : [];
+      });
       if (!tracks.length) throw new NoDataError();
       const duration = tracks.reduce(
-        (total, track) => total + track.duration,
+        (total, track) => total + Math.max(0, track.duration),
         0,
       );
 
@@ -94,9 +97,9 @@ export class SpotifyLinkExtractor extends LinkExtractor {
         tracks: tracks,
         duration,
       };
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof ExtractionError) throw error;
-      if (error.message?.includes("parse")) {
+      if (error instanceof Error && error.message.includes("parse")) {
         throw new InvalidURLError();
       } else {
         throw new ServiceUnavailableError();

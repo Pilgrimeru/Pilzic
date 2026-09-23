@@ -5,8 +5,22 @@ FROM oven/bun:1.4.2-slim AS base
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ffmpeg ca-certificates && \
+    apt-get install -y --no-install-recommends ffmpeg ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
+
+# Include the verified yt-dlp release in the image so playback has no download on first use.
+ARG TARGETARCH
+RUN mkdir -p /app/scripts && \
+    case "$TARGETARCH" in \
+      amd64) asset=yt-dlp_linux; checksum=58162f9bfdc27458ea47bfcb311cf47028f17d8154a8bf7d689861d46399230a ;; \
+      arm64) asset=yt-dlp_linux_aarch64; checksum=b16e4dab368a816cd05d477d698a605a6ae87ccee1c8ffd38fa21d7254141fcc ;; \
+      *) exit 1 ;; \
+    esac && \
+    curl --fail --location --silent --show-error \
+      "https://github.com/yt-dlp/yt-dlp/releases/download/2026.08.19/$asset" \
+      --output "/app/scripts/$asset" && \
+    echo "$checksum  /app/scripts/$asset" | sha256sum -c - && \
+    chmod 755 "/app/scripts/$asset"
 
 # Copy dependency files
 COPY package.json bun.lockb ./

@@ -1,6 +1,8 @@
 import type { CommandTrigger } from "@core/helpers/CommandTrigger.ts";
 import { DataFinder } from "@core/helpers/DataFinder.ts";
 import { ExtractorFactory } from "@core/helpers/ExtractorFactory.ts";
+import { Playlist } from "@core/Playlist.ts";
+import { Track } from "@core/Track.ts";
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData.ts";
 import type { TrackData } from "@custom-types/extractor/TrackData.ts";
 import type { AutocompleteInteraction } from "discord.js";
@@ -62,7 +64,10 @@ export async function extractAudioItem(
       .catch(() => null);
   }
 
-  return extractor.extractAndBuild(commandTrigger.member.user);
+  const requester = commandTrigger.member.user;
+  if (extractor.type === "playlist")
+    return Playlist.from(await extractor.extract("playlist"), requester);
+  return Track.from(await extractor.extract("track"), requester);
 }
 
 export async function processSearchAutocomplete(

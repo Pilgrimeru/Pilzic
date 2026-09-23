@@ -1,11 +1,8 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import { Extractor } from "@core/extractors/abstract/Extractor";
-import { Playlist } from "@core/Playlist";
-import { Track } from "@core/Track";
 import { cacheManager } from "@core/managers/CacheManager";
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
-import type { User } from "discord.js";
 
 const trackData = (url: string): TrackData => ({
   url,
@@ -80,9 +77,10 @@ describe("Extractor", () => {
     ]);
 
     expect(extractor.calls).toBe(1);
-    expect(first).toBe(data);
-    expect(second).toBe(data);
-    expect(third).toBe(data);
+    expect(first).toEqual(data);
+    expect(second).toEqual(data);
+    expect(third).toEqual(data);
+    expect(first).not.toBe(second);
   });
 
   test("supprime une extraction échouée de la table des requêtes en cours", async () => {
@@ -98,7 +96,7 @@ describe("Extractor", () => {
     await expect(extractor.extract("track")).rejects.toThrow(
       "premier appel en échec",
     );
-    await expect(extractor.extract("track")).resolves.toBe(expected);
+    await expect(extractor.extract("track")).resolves.toEqual(expected);
     expect(extractor.calls).toBe(2);
   });
 
@@ -128,29 +126,13 @@ describe("Extractor", () => {
     const first = await extractor.extract("track");
     const second = await extractor.extract("track");
 
-    expect(first).toBe(data);
-    expect(second).toBe(data);
+    expect(first).toEqual(data);
+    expect(second).toEqual(data);
+    expect(second).not.toBe(data);
     expect(extractor.calls).toBe(1);
   });
 
-  test("construit une Track avec le demandeur fourni", async () => {
-    const requester = { id: "track-requester" } as User;
-    const data = trackData("https://example.test/build-track");
-    const extractor = new ControlledExtractor(
-      `unit:build-track:${crypto.randomUUID()}`,
-      async () => data,
-    );
-
-    const result = await extractor.extractAndBuild(requester);
-
-    expect(result).toBeInstanceOf(Track);
-    if (!(result instanceof Track)) throw new Error("Track attendue");
-    expect(result.data).toEqual(data);
-    expect(result.requester).toBe(requester);
-  });
-
-  test("construit une Playlist avec ses pistes et leur demandeur", async () => {
-    const requester = { id: "playlist-requester" } as User;
+  test("extrait une PlaylistData sans construire le domaine", async () => {
     const data: PlaylistData = {
       title: "Liste",
       url: "https://example.test/list",
@@ -162,12 +144,9 @@ describe("Extractor", () => {
       data,
     );
 
-    const result = await extractor.extractAndBuild(requester);
+    const result = await extractor.extract("playlist");
 
-    expect(result).toBeInstanceOf(Playlist);
-    if (!(result instanceof Playlist)) throw new Error("Playlist attendue");
-    expect(result.tracks).toHaveLength(1);
-    expect(result.tracks[0]?.requester).toBe(requester);
+    expect(result).toEqual(data);
     expect(extractor.calls).toBe(1);
   });
 });

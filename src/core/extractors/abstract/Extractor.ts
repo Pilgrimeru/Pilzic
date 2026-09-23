@@ -1,9 +1,7 @@
 import { cacheManager } from "@core/managers/CacheManager";
+import { coreMetrics } from "@core/helpers/CoreMetrics";
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
-import type { User } from "discord.js";
-import type { Playlist } from "@core/Playlist";
-import type { Track } from "@core/Track";
 
 export abstract class Extractor {
   private static readonly pending = new Map<
@@ -30,30 +28,30 @@ export abstract class Extractor {
     const cached = cacheManager.get(cacheKey);
     if (cached) return cached;
     const pending = Extractor.pending.get(cacheKey);
-    if (pending) return pending;
+    if (pending) return pending.then((data) => structuredClone(data));
 
-    const extraction = this.fetchData()
+    let timer: ReturnType<typeof setTimeout>;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error("Metadata extraction timed out")),
+        45_000,
+      );
+    });
+    const startedAt = performance.now();
+    const extraction = Promise.race([this.fetchData(), timeout])
       .then((data) => {
         cacheManager.set(cacheKey, data);
         return data;
       })
-      .finally(() => Extractor.pending.delete(cacheKey));
+      .finally(() => {
+        coreMetrics.recordPhase("metadata", performance.now() - startedAt);
+        clearTimeout(timer);
+        Extractor.pending.delete(cacheKey);
+      });
     Extractor.pending.set(cacheKey, extraction);
-    return extraction;
+    return extraction.then((data) => structuredClone(data));
   }
 
   protected abstract getCacheKey(): string;
   protected abstract fetchData(): Promise<TrackData | PlaylistData>;
-
-  public async extractAndBuild(requester: User): Promise<Track | Playlist> {
-    if (this.type === "track") {
-      const { Track: TrackClass } = await import("@core/Track");
-      const data = await this.extract("track");
-      return TrackClass.from(data, requester);
-    } else {
-      const { Playlist: PlaylistClass } = await import("@core/Playlist");
-      const data = await this.extract("playlist");
-      return PlaylistClass.from(data, requester);
-    }
-  }
 }

@@ -7,9 +7,9 @@ import {
   ServiceUnavailableError,
 } from "@errors/ExtractionErrors";
 import { config } from "config";
-import { mapWithConcurrency } from "@utils/mapWithConcurrency";
 import { deezer, DeezerTrack, dz_validate } from "play-dl";
 import { LinkExtractor } from "./abstract/LinkExtractor";
+import { DataFinder } from "@core/helpers/DataFinder";
 
 export class DeezerLinkExtractor extends LinkExtractor {
   private static readonly DZ_LINK =
@@ -51,12 +51,12 @@ export class DeezerLinkExtractor extends LinkExtractor {
       }
 
       const search = data.artist.name + " " + data.title;
-      const { DataFinder } = await import("@core/helpers/DataFinder");
       return DataFinder.searchTrackData(search);
-    } catch (error: any) {
-      if (error.message?.includes("not a Deezer")) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("not a Deezer")) {
         throw new InvalidURLError();
-      } else if (error.message?.includes("API Error")) {
+      } else if (message.includes("API Error")) {
         throw new ServiceUnavailableError();
       }
       throw error;
@@ -71,14 +71,21 @@ export class DeezerLinkExtractor extends LinkExtractor {
         throw new NoDataError();
       }
 
-      const { DataFinder } = await import("@core/helpers/DataFinder");
-      const sourceTracks = data.tracks.slice(0, config.MAX_PLAYLIST_SIZE);
-      const results = await mapWithConcurrency(sourceTracks, 4, (track) => {
-        const search = track.artist.name + " " + track.title;
-        return DataFinder.searchTrackData(search);
-      });
-      const tracks = results.flatMap((result) =>
-        result.status === "fulfilled" ? [result.value] : [],
+      const sourceTracks = data.tracks.slice(
+        0,
+        Math.min(config.MAX_PLAYLIST_SIZE, 50),
+      );
+      const tracks: TrackData[] = sourceTracks.flatMap((track) =>
+        track.url && track.title
+          ? [
+              {
+                url: track.url,
+                title: `${track.artist.name} ${track.title}`,
+                duration: track.durationInSec * 1000,
+                thumbnail: null,
+              },
+            ]
+          : [],
       );
       if (!tracks.length) throw new NoDataError();
       const duration = tracks.reduce(
@@ -87,11 +94,12 @@ export class DeezerLinkExtractor extends LinkExtractor {
       );
 
       return { title: data.title, url: data.url, tracks, duration };
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof ExtractionError) throw error;
-      if (error.message?.includes("not a Deezer")) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("not a Deezer")) {
         throw new InvalidURLError();
-      } else if (error.message?.includes("API Error")) {
+      } else if (message.includes("API Error")) {
         throw new ServiceUnavailableError();
       }
       throw error;

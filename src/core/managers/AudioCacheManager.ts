@@ -1,30 +1,26 @@
 import { config } from "config";
-import { createHash } from "node:crypto";
-import {
-  createReadStream,
-  createWriteStream,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  renameSync,
-  statSync,
-  unlinkSync,
-} from "node:fs";
-import { utimes } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { createReadStream, createWriteStream, type Stats } from "node:fs";
+import { mkdir, readdir, rename, rm, stat, utimes } from "node:fs/promises";
 import path from "node:path";
-import { PassThrough, type Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import type { Readable } from "node:stream";
+import { normalizeUrl } from "../helpers/normalizeInput";
 
 const MIN_CACHE_BYTES = 1_024;
 
 class AudioCacheManager {
   private readonly directory = path.resolve(process.cwd(), "cache", "audio");
+  private readonly ready = mkdir(this.directory, { recursive: true });
   private readonly pending = new Map<string, Promise<string | null>>();
   private activePreloads = 0;
   private readonly preloadQueue: Array<() => void> = [];
   private cleanupTimer: ReturnType<typeof setTimeout> | undefined;
+  private readonly touchedAt = new Map<string, number>();
+  private hits = 0;
+  private misses = 0;
 
   constructor() {
-    mkdirSync(this.directory, { recursive: true });
     if (this.enabled) this.scheduleCleanup();
   }
 
@@ -32,65 +28,63 @@ class AudioCacheManager {
     return config.AUDIO_CACHE_MAX_FILES > 0 && config.AUDIO_CACHE_MAX_MB > 0;
   }
 
-  public get(url: string): string | null {
+  public async get(url: string): Promise<string | null> {
     if (!this.enabled) return null;
+    await this.ready;
     const target = this.pathFor(url);
     try {
-      const stat = statSync(target);
-      if (stat.size < MIN_CACHE_BYTES) {
-        unlinkSync(target);
+      const info = await stat(target);
+      if (info.size < MIN_CACHE_BYTES) {
+        this.misses++;
+        await rm(target, { force: true });
         return null;
       }
-      const now = new Date();
-      void utimes(target, now, now).catch(() => undefined);
+      this.hits++;
+      const now = Date.now();
+      if (now - (this.touchedAt.get(target) ?? 0) > 60_000) {
+        if (
+          this.touchedAt.size > Math.max(100, config.AUDIO_CACHE_MAX_FILES * 2)
+        )
+          this.touchedAt.clear();
+        this.touchedAt.set(target, now);
+        void utimes(target, new Date(now), new Date(now)).catch(
+          () => undefined,
+        );
+      }
       return target;
     } catch {
+      this.misses++;
       return null;
     }
   }
 
-  public open(url: string): Readable | null {
-    const target = this.get(url);
-    return target ? createReadStream(target) : null;
+  public snapshot(): {
+    hits: number;
+    misses: number;
+    pending: number;
+    activePreloads: number;
+  } {
+    return {
+      hits: this.hits,
+      misses: this.misses,
+      pending: this.pending.size,
+      activePreloads: this.activePreloads,
+    };
   }
 
-  public tee(url: string, source: Readable): Readable {
-    const playback = new PassThrough();
-    const cacheBranch = new PassThrough();
-    const temporary = `${this.pathFor(url)}.${process.pid}.${Date.now()}.tmp`;
-    source.pipe(playback);
-    source.pipe(cacheBranch);
-    const writer = createWriteStream(temporary);
-    cacheBranch.pipe(writer);
-    writer.once("finish", () => {
-      try {
-        if (statSync(temporary).size >= MIN_CACHE_BYTES)
-          renameSync(temporary, this.pathFor(url));
-        else unlinkSync(temporary);
-        this.scheduleCleanup();
-      } catch (error) {
-        console.warn("[AudioCache] Could not commit cache entry:", error);
-      }
-    });
-    writer.once("error", () => this.safeUnlink(temporary));
-    source.once("error", () => this.safeUnlink(temporary));
-    source.once("close", () => {
-      if (!source.readableEnded) this.safeUnlink(temporary);
-    });
-    playback.once("close", () => {
-      if (!source.readableEnded) source.destroy();
-    });
-    return playback;
+  public async open(url: string): Promise<Readable | null> {
+    const target = await this.get(url);
+    return target ? createReadStream(target) : null;
   }
 
   public preload(
     url: string,
     producer: () => Promise<Readable>,
+    signal?: AbortSignal,
   ): Promise<string | null> {
-    if (!this.enabled) return Promise.resolve(null);
-    const cached = this.get(url);
-    if (cached) return Promise.resolve(cached);
-    const existing = this.pending.get(url);
+    if (!this.enabled || signal?.aborted) return Promise.resolve(null);
+    const key = this.keyFor(url);
+    const existing = this.pending.get(key);
     if (existing) return existing;
     const maxQueued = Math.max(
       config.AUDIO_PRELOAD_CONCURRENCY * 4,
@@ -98,38 +92,49 @@ class AudioCacheManager {
     );
     if (this.preloadQueue.length >= maxQueued) return Promise.resolve(null);
     const task = new Promise<string | null>((resolve) => {
-      this.preloadQueue.push(
-        () => void this.runPreload(url, producer).then(resolve),
-      );
+      this.preloadQueue.push(() => {
+        void this.runPreload(url, producer, signal).then(resolve);
+      });
       this.drain();
-    }).finally(() => this.pending.delete(url));
-    this.pending.set(url, task);
+    }).finally(() => this.pending.delete(key));
+    this.pending.set(key, task);
     return task;
   }
 
   private async runPreload(
     url: string,
     producer: () => Promise<Readable>,
+    signal?: AbortSignal,
   ): Promise<string | null> {
     this.activePreloads++;
-    const temporary = `${this.pathFor(url)}.${process.pid}.${Date.now()}.tmp`;
+    const temporary = `${this.pathFor(url)}.${process.pid}.${randomUUID()}.tmp`;
     try {
+      await this.ready;
+      if (signal?.aborted) return null;
+      const cached = await this.get(url);
+      if (cached) return cached;
       const source = await producer();
-      await new Promise<void>((resolve, reject) => {
-        const writer = createWriteStream(temporary);
-        source.pipe(writer).once("finish", resolve).once("error", reject);
-        source.once("error", reject);
-      });
-      if (statSync(temporary).size < MIN_CACHE_BYTES)
-        throw new Error("Preloaded stream is too small");
-      renameSync(temporary, this.pathFor(url));
+      const writer = createWriteStream(temporary);
+      const abort = () => {
+        source.destroy(signal?.reason);
+        writer.destroy(signal?.reason);
+      };
+      signal?.addEventListener("abort", abort, { once: true });
+      try {
+        if (signal?.aborted) abort();
+        await pipeline(source, writer);
+      } finally {
+        signal?.removeEventListener("abort", abort);
+      }
+      if ((await stat(temporary)).size < MIN_CACHE_BYTES) return null;
+      await rename(temporary, this.pathFor(url));
       this.scheduleCleanup();
       return this.pathFor(url);
     } catch (error) {
-      this.safeUnlink(temporary);
-      console.warn(`[AudioCache] Preload failed for ${url}:`, error);
+      if (!signal?.aborted) console.warn("[AudioCache] Preload failed:", error);
       return null;
     } finally {
+      await rm(temporary, { force: true }).catch(() => undefined);
       this.activePreloads--;
       this.drain();
     }
@@ -143,23 +148,42 @@ class AudioCacheManager {
       this.preloadQueue.shift()?.();
   }
 
-  private cleanup(): void {
-    const files = readdirSync(this.directory)
-      .filter((name) => name.endsWith(".opus"))
-      .map((name) => ({
-        path: path.join(this.directory, name),
-        stat: statSync(path.join(this.directory, name)),
-      }))
-      .sort((a, b) => a.stat.atimeMs - b.stat.atimeMs);
-    let bytes = files.reduce((sum, file) => sum + file.stat.size, 0);
+  private async cleanup(): Promise<void> {
+    await this.ready;
+    const allNames = await readdir(this.directory);
+    for (const name of allNames.filter((entry) => entry.endsWith(".tmp"))) {
+      const temporary = path.join(this.directory, name);
+      try {
+        if (Date.now() - (await stat(temporary)).mtimeMs > 60 * 60 * 1000)
+          await rm(temporary, { force: true });
+      } catch {
+        /* Another job may have removed it. */
+      }
+    }
+    const names = allNames.filter((name) => name.endsWith(".opus"));
+    const files = (
+      await Promise.all(
+        names.map(async (name) => {
+          const filePath = path.join(this.directory, name);
+          try {
+            return { path: filePath, info: await stat(filePath) };
+          } catch {
+            return null;
+          }
+        }),
+      )
+    )
+      .filter((file): file is { path: string; info: Stats } => file !== null)
+      .sort((a, b) => a.info.atimeMs - b.info.atimeMs);
+    let bytes = files.reduce((sum, file) => sum + file.info.size, 0);
     while (
       files.length > config.AUDIO_CACHE_MAX_FILES ||
       bytes > config.AUDIO_CACHE_MAX_MB * 1024 * 1024
     ) {
       const oldest = files.shift();
       if (!oldest) break;
-      bytes -= oldest.stat.size;
-      this.safeUnlink(oldest.path);
+      bytes -= oldest.info.size;
+      await rm(oldest.path, { force: true }).catch(() => undefined);
     }
   }
 
@@ -167,22 +191,33 @@ class AudioCacheManager {
     if (this.cleanupTimer) return;
     this.cleanupTimer = setTimeout(() => {
       this.cleanupTimer = undefined;
-      this.cleanup();
+      void this.cleanup().catch((error) =>
+        console.warn("[AudioCache] Cleanup failed:", error),
+      );
     }, 250);
     this.cleanupTimer.unref?.();
+  }
+
+  private keyFor(url: string): string {
+    try {
+      const parsed = new URL(url);
+      const id =
+        parsed.hostname === "youtu.be"
+          ? parsed.pathname.slice(1)
+          : parsed.searchParams.get("v");
+      if (id && /(?:youtube\.com|youtu\.be)$/.test(parsed.hostname))
+        return `youtube:${id}`;
+      return normalizeUrl(url);
+    } catch {
+      return url;
+    }
   }
 
   private pathFor(url: string): string {
     return path.join(
       this.directory,
-      `${createHash("md5").update(url).digest("hex")}.opus`,
+      `${createHash("sha256").update(this.keyFor(url)).digest("hex")}.opus`,
     );
-  }
-  private safeUnlink(target: string): void {
-    if (existsSync(target))
-      try {
-        unlinkSync(target);
-      } catch {}
   }
 }
 

@@ -16,7 +16,13 @@ export interface Config {
   AUDIO_CACHE_MAX_MB: number;
   AUDIO_PRELOAD_COUNT: number;
   AUDIO_PRELOAD_CONCURRENCY: number;
+  AUDIO_JOB_CONCURRENCY: number;
+  SEARCH_CONCURRENCY: number;
+  OPUS_BITRATE_KBPS: number;
+  OPUS_COMPRESSION_LEVEL: number;
+  CORE_METRICS_INTERVAL_SECONDS: number;
   QUEUE_HISTORY_SIZE: number;
+  MAX_QUEUE_SIZE: number;
   COLORS: {
     MAIN: number;
     PAUSE: number;

@@ -7,6 +7,7 @@ import { autoDelete } from "@utils/autoDelete";
 import type { BaseGuildTextChannel } from "discord.js";
 import { Collection, type VoiceBasedChannel } from "discord.js";
 import { i18n } from "i18n.config";
+import { observe } from "../helpers/observe";
 
 export class PlayerManager {
   private readonly players: Collection<string, Player> = new Collection();
@@ -15,20 +16,20 @@ export class PlayerManager {
     item: Track | Playlist,
     textChannel: BaseGuildTextChannel,
     voiceChannel: VoiceBasedChannel,
-  ): void {
+  ): boolean | null {
     const player = this.getOrCreatePlayer(textChannel, voiceChannel);
-    if (!player) return;
-    player.queue.enqueue(item);
+    if (!player) return null;
+    return player.queue.enqueue(item);
   }
 
   public insert(
     item: Track | Playlist,
     textChannel: BaseGuildTextChannel,
     voiceChannel: VoiceBasedChannel,
-  ): void {
+  ): boolean | null {
     const player = this.getOrCreatePlayer(textChannel, voiceChannel);
-    if (!player) return;
-    player.queue.insert(item);
+    if (!player) return null;
+    return player.queue.insert(item);
   }
 
   private getOrCreatePlayer(
@@ -44,13 +45,17 @@ export class PlayerManager {
         connection = this.connectToVoiceChannel(voiceChannel);
       } catch (error) {
         console.error("Exception while joining voice channel:", error);
-        textChannel.send(i18n.__("errors.notChannel")).then(autoDelete);
+        observe(
+          textChannel.send(i18n.__("errors.notChannel")).then(autoDelete),
+          "voice connection error message",
+        );
         return null;
       }
 
       player = new Player({
         textChannel,
         connection,
+        onLeave: (guildId) => this.removePlayer(guildId),
       });
       this.players.set(textChannel.guildId, player);
     }

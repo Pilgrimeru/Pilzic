@@ -1,6 +1,7 @@
-import { spawn } from "node:child_process";
 import { config } from "config";
-import { YouTubeStreamConverter } from "./YouTubeStreamConverter";
+import { setTimeout as sleep } from "node:timers/promises";
+import { runYtDlpJson } from "./YtDlpJson";
+import { coreMetrics } from "./CoreMetrics";
 
 export interface SoundCloudInfo {
   title?: string;
@@ -9,6 +10,7 @@ export interface SoundCloudInfo {
   duration?: number;
   thumbnail?: string;
   entries?: SoundCloudInfo[];
+  formats?: Array<{ ext?: string; acodec?: string }>;
 }
 
 const RETRYABLE =
@@ -17,12 +19,23 @@ const RETRYABLE =
 export async function getSoundCloudInfo(
   url: string,
   playlistEnd = config.MAX_PLAYLIST_SIZE,
+  signal?: AbortSignal,
 ): Promise<SoundCloudInfo> {
-  await YouTubeStreamConverter.ensureYtDlpExists();
   let lastError: Error | undefined;
   for (let attempt = 0; attempt <= config.SOUNDCLOUD_MAX_RETRIES; attempt++) {
+    if (signal?.aborted) throw signal.reason;
     try {
-      return await runYtDlp(url, playlistEnd);
+      return await runYtDlpJson<SoundCloudInfo>(
+        [
+          url,
+          "--dump-single-json",
+          "--skip-download",
+          "--no-warnings",
+          "--playlist-end",
+          String(playlistEnd),
+        ],
+        signal,
+      );
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       if (
@@ -30,69 +43,11 @@ export async function getSoundCloudInfo(
         attempt === config.SOUNDCLOUD_MAX_RETRIES
       )
         throw lastError;
-      const delay = Math.min(1_000 * 2 ** attempt, 10_000);
-      console.warn(
-        `[SoundCloud] metadata failure; retry ${attempt + 1}/${config.SOUNDCLOUD_MAX_RETRIES} in ${delay}ms`,
-      );
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      coreMetrics.recordRetry();
+      const delay =
+        Math.min(1_000 * 2 ** attempt, 10_000) * (0.75 + Math.random() * 0.5);
+      await sleep(delay, undefined, { signal });
     }
   }
-  throw lastError ?? new Error("Unable to retrieve SoundCloud metadata.");
-}
-
-function runYtDlp(url: string, playlistEnd: number): Promise<SoundCloudInfo> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(
-      YouTubeStreamConverter.getYtDlpPath(),
-      [
-        url,
-        "--dump-single-json",
-        "--skip-download",
-        "--no-warnings",
-        "--playlist-end",
-        String(playlistEnd),
-      ],
-      { stdio: ["ignore", "pipe", "pipe"], windowsHide: true },
-    );
-    let stdout = "";
-    let stderr = "";
-    let settled = false;
-    const fail = (error: Error) => {
-      if (settled) return;
-      settled = true;
-      reject(error);
-    };
-    child.stdout.on("data", (chunk) => {
-      stdout += chunk.toString();
-      if (stdout.length > 32 * 1024 * 1024) {
-        child.kill("SIGKILL");
-        fail(new Error("SoundCloud metadata response is too large."));
-      }
-    });
-    child.stderr.on("data", (chunk) => {
-      stderr = (stderr + chunk.toString()).slice(-16_384);
-    });
-    child.once("error", (error) => fail(error));
-    child.once("close", (code) => {
-      if (settled) return;
-      if (code !== 0) {
-        fail(
-          new Error(
-            `yt-dlp exited with code ${code}${stderr ? `: ${stderr.trim()}` : ""}`,
-          ),
-        );
-        return;
-      }
-      try {
-        settled = true;
-        resolve(JSON.parse(stdout) as SoundCloudInfo);
-      } catch (error) {
-        fail(
-          new Error("yt-dlp returned invalid SoundCloud metadata.", {
-            cause: error,
-          }),
-        );
-      }
-    });
-  });
+  throw lastError ?? new Error("Unable to retrieve SoundCloud metadata");
 }

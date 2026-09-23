@@ -1,4 +1,5 @@
 import { Event } from "@custom-types/Event";
+import { observe } from "@core/helpers/observe";
 import { bot } from "index";
 
 export default new Event("interactionCreate", async (interaction) => {
@@ -7,6 +8,9 @@ export default new Event("interactionCreate", async (interaction) => {
     interaction.isButton() ||
     interaction.isAutocomplete()
   ) {
-    void bot.commandManager.handleInteraction(interaction);
+    observe(
+      bot.commandManager.handleInteraction(interaction),
+      "interaction handler",
+    );
   }
 });

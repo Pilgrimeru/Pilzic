@@ -78,11 +78,16 @@ export default class PlayCommand extends Command {
       const { channel } = guildMember.voice;
       if (!channel) return;
 
-      bot.playerManager.enqueue(
+      const accepted = bot.playerManager.enqueue(
         item,
         commandTrigger.channel as BaseGuildTextChannel,
         channel,
       );
+
+      if (accepted === false)
+        return await commandTrigger
+          .editReply(i18n.__("errors.queueFull"))
+          .then(autoDelete);
 
       await commandTrigger.deleteReply();
     } catch (error) {

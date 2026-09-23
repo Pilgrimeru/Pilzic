@@ -1,7 +1,7 @@
 import type { Event } from "@custom-types/Event";
 import { config } from "config";
 import { Client, type ClientEvents, type ClientOptions } from "discord.js";
-import { readdirSync } from "fs";
+import { readdir } from "node:fs/promises";
 import { join } from "path";
 import { CommandManager } from "./managers/CommandManager";
 import { PlayerManager } from "./managers/PlayerManager";
@@ -15,7 +15,7 @@ export class Bot extends Client {
     super(options);
     this.prefix = config.PREFIX;
     this.playerManager = new PlayerManager();
-    this.commandManager = new CommandManager();
+    this.commandManager = new CommandManager(this);
 
     this.on("warn", (info) => console.log("client warn : ", info));
     this.on("error", (e) => console.error("client : ", e));
@@ -35,7 +35,7 @@ export class Bot extends Client {
 
   private async loadEvents(): Promise<void> {
     const eventFolder = join(__dirname, "../events");
-    const eventFiles = readdirSync(eventFolder).filter(
+    const eventFiles = (await readdir(eventFolder)).filter(
       (file) => !file.endsWith(".map"),
     );
     const events = await Promise.all(

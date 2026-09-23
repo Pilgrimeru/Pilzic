@@ -1,6 +1,7 @@
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import { Extractor } from "./Extractor";
+import { normalizeUrl } from "../../helpers/normalizeInput";
 
 export abstract class LinkExtractor extends Extractor {
   protected readonly url: string;
@@ -17,7 +18,7 @@ export abstract class LinkExtractor extends Extractor {
   }
 
   protected getCacheKey(): string {
-    return `${this.type}:link:${this.url}`;
+    return `${this.type}:link:${normalizeUrl(this.url)}`;
   }
 
   protected async fetchData(): Promise<TrackData | PlaylistData> {

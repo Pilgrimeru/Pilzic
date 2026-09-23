@@ -1,14 +1,25 @@
 import { YouTubeSearchExtractor } from "@core/extractors/YoutubeSearchExtractor";
+import type { SearchExtractor } from "@core/extractors/abstract/SearchExtractor";
 import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import { InvalidURLError } from "@errors/ExtractionErrors";
+import { ExtractorFactory } from "./ExtractorFactory";
+
+type SearchProvider = {
+  new (query: string, type: "track" | "playlist"): SearchExtractor;
+  validate(query: string): Promise<boolean>;
+};
 
 export class DataFinder {
-  public static readonly SearchExtractorClass = DataFinder.defineSearchSource();
+  public static SearchExtractorClass: SearchProvider = YouTubeSearchExtractor;
+
+  public static setSearchProvider(provider: SearchProvider): void {
+    this.SearchExtractorClass = provider;
+  }
 
   public static async searchTrackData(query: string): Promise<TrackData> {
     const searchExtractor = new DataFinder.SearchExtractorClass(query, "track");
-    return searchExtractor.searchTrack();
+    return searchExtractor.extract("track");
   }
 
   public static async searchPlaylistData(
@@ -50,14 +61,12 @@ export class DataFinder {
   public static async getDataFromLink(
     url: string,
   ): Promise<TrackData | PlaylistData> {
-    const { ExtractorFactory } = await import("./ExtractorFactory");
     const searchExtractor = await ExtractorFactory.createLinkExtractor(url);
     if (!searchExtractor) throw new InvalidURLError();
     return searchExtractor.extract();
   }
 
   public static async getTrackDataFromLink(url: string): Promise<TrackData> {
-    const { ExtractorFactory } = await import("./ExtractorFactory");
     const searchExtractor = await ExtractorFactory.createLinkExtractor(url);
     if (searchExtractor?.type !== "track") throw new InvalidURLError();
     return searchExtractor.extract("track");
@@ -66,14 +75,8 @@ export class DataFinder {
   public static async getPlaylistDataFromLink(
     url: string,
   ): Promise<PlaylistData> {
-    const { ExtractorFactory } = await import("./ExtractorFactory");
     const searchExtractor = await ExtractorFactory.createLinkExtractor(url);
     if (searchExtractor?.type !== "playlist") throw new InvalidURLError();
     return searchExtractor.extract("playlist");
-  }
-
-  private static defineSearchSource() {
-    // only one search source so return YouTube
-    return YouTubeSearchExtractor;
   }
 }

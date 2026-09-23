@@ -176,6 +176,7 @@
   },
   "errors": {
     "notQueue": "The queue is empty.",
+    "queueFull": "The queue is full. Remove tracks before adding more.",
     "notChannel": "You must first join a voice channel!",
     "command": "An error occurred while executing this command.",
     "notInSameChannel": "You need to be in the same channel as me.",

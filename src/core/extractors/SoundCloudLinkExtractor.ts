@@ -24,8 +24,23 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
     url: string,
   ): Promise<"track" | "playlist" | false> {
     if (!this.SO_LINK.test(url)) return false;
-    const pending = getSoundCloudInfo(url, 1);
+    const parsed = new URL(url);
+    if (!/snd\.sc$/i.test(parsed.hostname)) {
+      if (/\/sets\//i.test(parsed.pathname)) return "playlist";
+      const segments = parsed.pathname.split("/").filter(Boolean);
+      if (
+        segments.length === 2 &&
+        !/^(?:likes|albums|tracks|reposts)$/i.test(segments[1])
+      )
+        return "track";
+    }
+    const pending = this.validationData.get(url) ?? getSoundCloudInfo(url);
     this.validationData.set(url, pending);
+    const expiry = setTimeout(() => {
+      if (this.validationData.get(url) === pending)
+        this.validationData.delete(url);
+    }, 5 * 60_000);
+    expiry.unref?.();
     try {
       const data = await pending;
       return data.entries ? "playlist" : "track";
@@ -55,8 +70,7 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
 
   protected async extractPlaylist(): Promise<PlaylistData> {
     try {
-      SoundCloudLinkExtractor.validationData.delete(this.url);
-      const data = await getSoundCloudInfo(this.url);
+      const data = await this.takeValidationDataForPlaylist();
       const tracks = (data.entries ?? [])
         .slice(0, config.MAX_PLAYLIST_SIZE)
         .map(SoundCloudLinkExtractor.toTrackData)
@@ -73,14 +87,31 @@ export class SoundCloudLinkExtractor extends LinkExtractor {
     }
   }
 
+  private takeValidationDataForPlaylist(): Promise<SoundCloudInfo> {
+    const pending = SoundCloudLinkExtractor.validationData.get(this.url);
+    SoundCloudLinkExtractor.validationData.delete(this.url);
+    return pending ?? getSoundCloudInfo(this.url);
+  }
+
   private static toTrackData(data: SoundCloudInfo | null): TrackData | null {
     const url = data?.webpage_url ?? data?.original_url;
     if (!data?.title || !url) return null;
+    const compatible = data.formats?.find(
+      (format) =>
+        format.acodec === "opus" &&
+        (format.ext === "webm" || format.ext === "ogg"),
+    );
     return {
       url,
       title: data.title,
       duration: Math.round((data.duration ?? 0) * 1000),
       thumbnail: data.thumbnail ?? null,
+      audioFormat:
+        compatible?.ext === "webm"
+          ? "webm-opus"
+          : compatible?.ext === "ogg"
+            ? "ogg-opus"
+            : undefined,
     };
   }
 

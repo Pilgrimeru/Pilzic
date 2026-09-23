@@ -1,21 +1,22 @@
 import { spawn, type ChildProcess } from "node:child_process";
-import { createWriteStream, existsSync, mkdirSync } from "node:fs";
-import { chmod } from "node:fs/promises";
-import path from "node:path";
+import { existsSync } from "node:fs";
 import process from "node:process";
 import { PassThrough, type Readable } from "node:stream";
-import { pipeline } from "node:stream/promises";
 import { URL } from "node:url";
+import { setTimeout as sleep } from "node:timers/promises";
 import { createRequire } from "node:module";
 import { config } from "config";
-import got from "got";
+import { audioJobScheduler } from "./AudioJobScheduler";
+import { coreMetrics } from "./CoreMetrics";
+import { ensureYtDlpExists, getYtDlpPath } from "./YtDlpBinary";
 
 const require = createRequire(import.meta.url);
 const ffmpegPath = (() => {
+  if (process.env["FFMPEG_PATH"]) return process.env["FFMPEG_PATH"];
   try {
     return require("ffmpeg-static") as string;
   } catch {
-    return process.env["FFMPEG_PATH"] || "ffmpeg";
+    return "ffmpeg";
   }
 })();
 
@@ -26,6 +27,8 @@ export interface StreamConverterOptions {
   seek?: number;
   isLive?: boolean;
   source?: "youtube" | "soundcloud";
+  signal?: AbortSignal;
+  priority?: number;
 }
 export type YouTubeErrorCode =
   | "YOUTUBE_AUTH_REQUIRED"
@@ -62,8 +65,9 @@ function classify(value: string): YouTubeErrorCode {
 }
 
 export class YouTubeStreamConverter {
-  private static readonly YTDLP_PATH = this.getYtDlpPath();
-  private readonly options: Required<StreamConverterOptions>;
+  private readonly options: Required<Omit<StreamConverterOptions, "signal">> & {
+    signal?: AbortSignal;
+  };
   constructor(options: StreamConverterOptions = {}) {
     this.options = {
       format: options.format ?? "bestaudio/best",
@@ -72,6 +76,8 @@ export class YouTubeStreamConverter {
       seek: options.seek ?? 0,
       isLive: options.isLive ?? false,
       source: options.source ?? "youtube",
+      signal: options.signal,
+      priority: options.priority ?? 1,
     };
   }
 
@@ -85,52 +91,117 @@ export class YouTubeStreamConverter {
         ? config.SOUNDCLOUD_MAX_RETRIES
         : config.YOUTUBE_MAX_RETRIES;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      if (this.options.signal?.aborted) throw this.options.signal.reason;
+      const release = await audioJobScheduler.acquire(
+        this.options.priority,
+        this.options.signal,
+      );
       try {
-        return this.transcode(await this.spawnValidated(url), url);
+        const stream = this.transcode(await this.spawnValidated(url), url);
+        stream.once("close", release);
+        if (stream.destroyed) release();
+        return stream;
       } catch (error) {
+        release();
+        if (this.options.signal?.aborted) throw this.options.signal.reason;
         last =
           error instanceof YouTubeStreamError
             ? error
             : new YouTubeStreamError(String(error));
         if (last.code !== "YOUTUBE_TRANSIENT" || attempt === maxRetries)
           throw last;
-        const delay = Math.min(1_000 * 2 ** attempt, 10_000);
+        coreMetrics.recordRetry();
+        const delay =
+          Math.min(1_000 * 2 ** attempt, 10_000) * (0.75 + Math.random() * 0.5);
         console.warn(
           `[${this.label}] transient failure; retry ${attempt + 1}/${maxRetries} in ${delay}ms`,
         );
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await sleep(delay, undefined, { signal: this.options.signal });
       }
     }
     throw last ?? new YouTubeStreamError("YouTube extraction failed.");
   }
 
-  public transcodeFile(file: string, seek = 0): Readable {
-    return this.transcode(file, file, seek);
+  public async transcodeFile(file: string, seek = 0): Promise<Readable> {
+    const release = await audioJobScheduler.acquire(
+      this.options.priority,
+      this.options.signal,
+    );
+    try {
+      const stream = this.transcode(file, file, seek);
+      stream.once("close", release);
+      if (stream.destroyed) release();
+      return stream;
+    } catch (error) {
+      release();
+      throw error;
+    }
+  }
+
+  public async getDirectOpusStream(
+    url: string,
+    container: "webm" | "ogg" = "webm",
+  ): Promise<Readable> {
+    await YouTubeStreamConverter.ensureYtDlpExists();
+    const release = await audioJobScheduler.acquire(
+      this.options.priority,
+      this.options.signal,
+    );
+    try {
+      const direct = new YouTubeStreamConverter({
+        ...this.options,
+        format: `bestaudio[ext=${container}][acodec=opus]`,
+      });
+      const stream = await direct.spawnValidated(url);
+      stream.once("close", release);
+      if (stream.destroyed) release();
+      return stream;
+    } catch (error) {
+      release();
+      throw error;
+    }
   }
 
   private spawnValidated(url: string): Promise<Readable> {
     return new Promise((resolve, reject) => {
       let stderr = "",
         settled = false;
-      const child = spawn(
-        YouTubeStreamConverter.YTDLP_PATH,
-        this.buildArgs(url),
-        { stdio: ["ignore", "pipe", "pipe"], windowsHide: true },
+      const child = spawn(getYtDlpPath(), this.buildArgs(url), {
+        stdio: ["ignore", "pipe", "pipe"],
+        windowsHide: true,
+      });
+      const abort = () => {
+        child.stdout.destroy();
+        child.kill("SIGKILL");
+        fail("Audio job cancelled");
+      };
+      this.options.signal?.addEventListener("abort", abort, { once: true });
+      child.stdout.once("close", () => {
+        if (!child.killed) child.kill("SIGKILL");
+      });
+      child.once("close", () =>
+        this.options.signal?.removeEventListener("abort", abort),
       );
-      const timer = setTimeout(() => {
-        succeed();
-      }, 500);
+      const timer = setTimeout(
+        () => fail("yt-dlp did not produce audio in time"),
+        15_000,
+      );
       const succeed = () => {
         if (settled) return;
+        const firstByte = child.stdout.read(1) as Buffer | null;
+        if (!firstByte?.length) return;
+        child.stdout.unshift(firstByte);
         settled = true;
         clearTimeout(timer);
-        this.logLateFailure(child, url, () => stderr);
+        child.stdout.off("readable", succeed);
+        this.logLateFailure(child, () => stderr);
         resolve(child.stdout);
       };
       const fail = (message: string, cause?: Error) => {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        child.stdout.off("readable", succeed);
         child.kill("SIGKILL");
         let code = classify(stderr || message);
         if (
@@ -150,24 +221,25 @@ export class YouTubeStreamConverter {
           ),
         );
       };
+      if (this.options.signal?.aborted) {
+        abort();
+        return;
+      }
       child.stderr.on("data", (chunk) => {
-        stderr = (stderr + chunk.toString()).slice(-16_384);
+        stderr = (stderr + chunk.toString()).slice(-4_096);
         if (classify(stderr) !== "YOUTUBE_EXTRACTION_FAILED")
           fail("yt-dlp rejected the source");
       });
-      child.stdout.once("readable", succeed);
+      child.stdout.on("readable", succeed);
       child.once("error", (error) => fail("Unable to start yt-dlp", error));
       child.once("close", (code) => {
-        if (!settled && code !== 0) fail(`yt-dlp exited with code ${code}`);
+        if (!settled)
+          fail(`yt-dlp exited before producing audio (code ${code})`);
       });
     });
   }
 
-  private logLateFailure(
-    child: ChildProcess,
-    url: string,
-    stderr: () => string,
-  ): void {
+  private logLateFailure(child: ChildProcess, stderr: () => string): void {
     child.once("close", (code) => {
       const details = stderr().trim();
       // Windows may report a deliberately closed stdout pipe as either
@@ -176,7 +248,7 @@ export class YouTubeStreamConverter {
         /errno (?:22|32)|broken pipe|invalid argument/i.test(details);
       if (code !== 0 && code !== null && !consumerClosedPipe)
         console.error(
-          `[${this.label}] yt-dlp failed during playback (${url}, code ${code}): ${details}`,
+          `[${this.label}] yt-dlp failed during playback (code ${code}): ${details.replace(/https?:\/\/\S+/gi, "[url]")}`,
         );
     });
   }
@@ -204,9 +276,9 @@ export class YouTubeStreamConverter {
       "-acodec",
       "libopus",
       "-b:a",
-      "96k",
+      `${Math.max(32, Math.min(config.OPUS_BITRATE_KBPS, 192))}k`,
       "-compression_level",
-      "5",
+      String(Math.min(config.OPUS_COMPRESSION_LEVEL, 10)),
       "-f",
       "opus",
       "pipe:1",
@@ -216,9 +288,12 @@ export class YouTubeStreamConverter {
       windowsHide: true,
     });
     const output = new PassThrough();
+    const abort = () => output.destroy(this.options.signal?.reason);
+    this.options.signal?.addEventListener("abort", abort, { once: true });
+    if (this.options.signal?.aborted) abort();
     let stderr = "";
     ffmpeg.stderr.on("data", (chunk) => {
-      stderr = (stderr + chunk.toString()).slice(-16_384);
+      stderr = (stderr + chunk.toString()).slice(-4_096);
     });
     ffmpeg.once("error", (error) => output.destroy(error));
     ffmpeg.stdin.on("error", (error: NodeJS.ErrnoException) => {
@@ -244,6 +319,7 @@ export class YouTubeStreamConverter {
     }
     ffmpeg.stdout.pipe(output);
     output.once("close", () => {
+      this.options.signal?.removeEventListener("abort", abort);
       ffmpeg.stdout.unpipe(output);
       if (typeof source !== "string") {
         source.unpipe(ffmpeg.stdin);
@@ -303,39 +379,10 @@ export class YouTubeStreamConverter {
   }
 
   public static getYtDlpPath(): string {
-    const suffix =
-      process.platform === "win32"
-        ? ".exe"
-        : process.platform === "darwin"
-          ? "_macos"
-          : process.arch === "arm64"
-            ? "_linux_aarch64"
-            : process.arch === "arm"
-              ? "_linux_armv7l"
-              : "_linux";
-    return path.resolve(process.cwd(), "scripts", `yt-dlp${suffix}`);
+    return getYtDlpPath();
   }
   public static async ensureYtDlpExists(): Promise<void> {
-    if (existsSync(this.YTDLP_PATH)) return;
-    mkdirSync(path.dirname(this.YTDLP_PATH), { recursive: true });
-    const release = await got(
-      "https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest",
-    ).json<{ assets: Array<{ name: string; browser_download_url: string }> }>();
-    const asset = release.assets.find(
-      ({ name }) => name === path.basename(this.YTDLP_PATH),
-    );
-    if (!asset)
-      throw new YouTubeStreamError(
-        `No yt-dlp binary for ${process.platform}/${process.arch}.`,
-      );
-    await pipeline(
-      got.stream(asset.browser_download_url, {
-        timeout: { request: 30_000 },
-        retry: { limit: 2 },
-      }),
-      createWriteStream(this.YTDLP_PATH),
-    );
-    if (process.platform !== "win32") await chmod(this.YTDLP_PATH, 0o755);
+    return ensureYtDlpExists();
   }
 }
 
@@ -345,9 +392,13 @@ export async function getYouTubeStream(
 ): Promise<Readable> {
   return new YouTubeStreamConverter(options).getYouTubeStream(url);
 }
-export async function getSoundCloudStream(url: string): Promise<Readable> {
-  return new YouTubeStreamConverter({ source: "soundcloud" }).getYouTubeStream(
-    url,
-  );
+export async function getSoundCloudStream(
+  url: string,
+  options: StreamConverterOptions = {},
+): Promise<Readable> {
+  return new YouTubeStreamConverter({
+    ...options,
+    source: "soundcloud",
+  }).getYouTubeStream(url);
 }
 export default YouTubeStreamConverter;

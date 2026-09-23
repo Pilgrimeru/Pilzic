@@ -35,8 +35,8 @@ const config: Config = {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   YOUTUBE_COOKIES_PATH:
     process.env["YOUTUBE_COOKIES_PATH"]?.trim() || undefined,
-  YOUTUBE_MAX_RETRIES: parseEnvInt(process.env["YOUTUBE_MAX_RETRIES"], 5),
-  SOUNDCLOUD_MAX_RETRIES: parseEnvInt(process.env["SOUNDCLOUD_MAX_RETRIES"], 5),
+  YOUTUBE_MAX_RETRIES: parseEnvInt(process.env["YOUTUBE_MAX_RETRIES"], 1),
+  SOUNDCLOUD_MAX_RETRIES: parseEnvInt(process.env["SOUNDCLOUD_MAX_RETRIES"], 1),
   AUDIO_CACHE_MAX_FILES: parseEnvInt(process.env["AUDIO_CACHE_MAX_FILES"], 50),
   AUDIO_CACHE_MAX_MB: parseEnvInt(process.env["AUDIO_CACHE_MAX_MB"], 500),
   AUDIO_PRELOAD_COUNT: parseEnvInt(process.env["AUDIO_PRELOAD_COUNT"], 5),
@@ -44,7 +44,16 @@ const config: Config = {
     process.env["AUDIO_PRELOAD_CONCURRENCY"],
     2,
   ),
+  AUDIO_JOB_CONCURRENCY: parseEnvInt(process.env["AUDIO_JOB_CONCURRENCY"], 4),
+  SEARCH_CONCURRENCY: parseEnvInt(process.env["SEARCH_CONCURRENCY"], 4),
+  OPUS_BITRATE_KBPS: parseEnvInt(process.env["OPUS_BITRATE_KBPS"], 96),
+  OPUS_COMPRESSION_LEVEL: parseEnvInt(process.env["OPUS_COMPRESSION_LEVEL"], 5),
+  CORE_METRICS_INTERVAL_SECONDS: parseEnvInt(
+    process.env["CORE_METRICS_INTERVAL_SECONDS"],
+    60,
+  ),
   QUEUE_HISTORY_SIZE: parseEnvInt(process.env["QUEUE_HISTORY_SIZE"], 50),
+  MAX_QUEUE_SIZE: parseEnvInt(process.env["MAX_QUEUE_SIZE"], 500),
   COLORS: {
     MAIN: parseEnvColor(process.env["MAIN_COLOR"], 0x69adc7),
     PAUSE: 0xc0c0c0,

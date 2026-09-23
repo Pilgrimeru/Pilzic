@@ -12,6 +12,7 @@ import { config } from "config";
 import type { BaseGuildTextChannel } from "discord.js";
 import type { PlayerOptions } from "@custom-types/PlayerOptions";
 import type { Player as PlayerType } from "@core/Player";
+import type { AudioResourceFactory } from "@core/AudioResourceFactory";
 
 const audioPlayers: FakeAudioPlayer[] = [];
 const removePlayer = mock(() => undefined);
@@ -51,13 +52,11 @@ mock.module("@discordjs/voice", () => ({
   StreamType: { Arbitrary: "arbitrary", OggOpus: "ogg/opus" },
 }));
 
-mock.module("index", () => ({
-  bot: { playerManager: { removePlayer } },
-}));
-
 let PlayerClass: typeof PlayerType;
+let audioResourceFactory: AudioResourceFactory;
 
 beforeAll(async () => {
+  ({ audioResourceFactory } = await import("@core/AudioResourceFactory"));
   ({ Player: PlayerClass } = await import("@core/Player"));
 });
 
@@ -101,6 +100,7 @@ const makePlayer = () => {
   const player = new PlayerClass({
     textChannel,
     connection,
+    onLeave: removePlayer,
   } as unknown as PlayerOptions);
 
   return {
@@ -200,5 +200,75 @@ describe("Player", () => {
     expect(audioPlayer.eventNames()).toEqual([]);
     expect(player.queue.eventNames()).toEqual([]);
     expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  test("annule le chargement audio lors d'un arrêt", async () => {
+    const { audioPlayer, player } = makePlayer();
+    markRunning(player);
+    const original = audioResourceFactory.createResource;
+    let signal: AbortSignal | undefined;
+    audioResourceFactory.createResource = mock(
+      async (_track, _seek, receivedSignal) => {
+        signal = receivedSignal;
+        return new Promise<never>((_, reject) => {
+          receivedSignal?.addEventListener(
+            "abort",
+            () => reject(new Error("cancelled")),
+            { once: true },
+          );
+        });
+      },
+    ) as typeof original;
+    try {
+      const loading = (
+        player as unknown as { process: (track: unknown) => Promise<void> }
+      ).process({
+        url: "https://youtube.com/watch?v=test",
+        duration: 1000,
+        title: "Test",
+        formatedTime: () => "00:01",
+      });
+      await Bun.sleep(0);
+      await player.stop();
+      await loading;
+      expect(signal?.aborted).toBeTrue();
+      expect(audioPlayer.play).not.toHaveBeenCalled();
+    } finally {
+      audioResourceFactory.createResource = original;
+    }
+  });
+
+  test("ne réannule pas le flux après son transfert au lecteur", async () => {
+    const { player } = makePlayer();
+    markRunning(player);
+    const original = audioResourceFactory.createResource;
+    let signal: AbortSignal | undefined;
+    audioResourceFactory.createResource = mock(
+      async (_track, _seek, receivedSignal) => {
+        signal = receivedSignal;
+        return {
+          playStream: { destroy: mock(() => undefined) },
+          readable: true,
+          playbackDuration: 0,
+          volume: undefined,
+        } as never;
+      },
+    ) as typeof original;
+    try {
+      await (
+        player as unknown as { process: (track: unknown) => Promise<void> }
+      ).process({
+        url: "https://youtube.com/watch?v=test",
+        duration: 1000,
+        title: "Test",
+        formatedTime: () => "00:01",
+      });
+
+      await player.stop();
+
+      expect(signal?.aborted).toBeFalse();
+    } finally {
+      audioResourceFactory.createResource = original;
+    }
   });
 });

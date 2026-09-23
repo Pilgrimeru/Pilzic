@@ -4,4 +4,5 @@ export interface TrackData {
   duration: number;
   thumbnail: string | null;
   related?: string[];
+  audioFormat?: "webm-opus" | "ogg-opus";
 }

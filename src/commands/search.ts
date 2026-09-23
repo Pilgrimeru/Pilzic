@@ -54,7 +54,7 @@ export default class SearchCommand extends Command {
 
     const search = newArgs.join(" ");
 
-    void commandTrigger.loadingReply();
+    await commandTrigger.loadingReply();
     let results: PlaylistData[] | TrackData[];
     try {
       if (searchForPlaylist) {
@@ -75,7 +75,7 @@ export default class SearchCommand extends Command {
 
     if (options.length === 0)
       return await commandTrigger
-        .reply(i18n.__("errors.nothingFound"))
+        .editReply(i18n.__("errors.nothingFound"))
         .then(autoDelete);
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(

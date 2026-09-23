@@ -15,7 +15,7 @@ export abstract class SearchExtractor extends Extractor {
   }
 
   protected getCacheKey(): string {
-    return `${this.type}:search:${this.query}`;
+    return `${this.type}:search:v2:${this.query.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ")}`;
   }
 
   protected async fetchData(): Promise<TrackData | PlaylistData> {

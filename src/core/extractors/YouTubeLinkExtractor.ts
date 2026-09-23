@@ -62,16 +62,17 @@ export class YouTubeLinkExtractor extends LinkExtractor {
         thumbnail: trackInfo.video_details.thumbnails[0].url,
         related: trackInfo.related_videos,
       };
-    } catch (error: any) {
-      if (error.message?.includes("confirm your age")) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("confirm your age")) {
         throw new AgeRestrictedError();
       }
-      if (error.message?.includes("not a bot")) {
+      if (message.includes("not a bot")) {
         throw new ServiceUnavailableError();
       }
       if (
-        error.message?.includes("Private video") ||
-        error.message?.includes("Video unavailable")
+        message.includes("Private video") ||
+        message.includes("Video unavailable")
       ) {
         throw new InvalidURLError();
       }

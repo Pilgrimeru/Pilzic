@@ -175,6 +175,7 @@
   },
   "errors": {
     "notQueue": "La file d'attente est vide.",
+    "queueFull": "La file d'attente est pleine. Retirez des pistes avant d'en ajouter.",
     "notChannel": "Vous devez d'abord rejoindre un salon vocal !",
     "command": "Une erreur s'est produite lors de l'exécution de cette commande.",
     "notInSameChannel": "Vous devez être dans le même salon que moi.",

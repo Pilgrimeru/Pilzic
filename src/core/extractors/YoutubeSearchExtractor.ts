@@ -4,10 +4,13 @@ import { NothingFoundError } from "@errors/ExtractionErrors";
 import YouTube, { type Video } from "youtube-sr";
 import { SearchExtractor } from "./abstract/SearchExtractor";
 import { YouTubeLinkExtractor } from "./YouTubeLinkExtractor";
+import { withSearchSlot } from "../helpers/SearchScheduler";
 
 export class YouTubeSearchExtractor extends SearchExtractor {
   public async searchMultipleTracks(limit: number): Promise<TrackData[]> {
-    const results = await YouTube.search(this.query, { limit, type: "video" });
+    const results = await withSearchSlot(() =>
+      YouTube.search(this.query, { limit: Math.min(limit, 50), type: "video" }),
+    );
 
     const trackPromises = results.map((video) =>
       this.formatYoutubeVideoToTrackData(video).catch(() => undefined),
@@ -22,10 +25,12 @@ export class YouTubeSearchExtractor extends SearchExtractor {
     limit: number,
     fetch: boolean = false,
   ): Promise<PlaylistData[]> {
-    const results = await YouTube.search(this.query, {
-      limit,
-      type: "playlist",
-    });
+    const results = await withSearchSlot(() =>
+      YouTube.search(this.query, {
+        limit: Math.min(limit, 50),
+        type: "playlist",
+      }),
+    );
 
     const playlistPromises = results.map(async (playlist) => {
       try {
@@ -60,9 +65,9 @@ export class YouTubeSearchExtractor extends SearchExtractor {
   }
 
   public async searchTrack(): Promise<TrackData> {
-    const trackInfo = await YouTube.searchOne(this.query, "video").catch(
-      console.error,
-    );
+    const trackInfo = await withSearchSlot(() =>
+      YouTube.searchOne(this.query, "video"),
+    ).catch(console.error);
     if (!trackInfo?.title) {
       throw new NothingFoundError();
     }
@@ -71,7 +76,9 @@ export class YouTubeSearchExtractor extends SearchExtractor {
   }
 
   public async searchPlaylist(fetch: boolean = false): Promise<PlaylistData> {
-    const result = await YouTube.searchOne(this.query, "playlist");
+    const result = await withSearchSlot(() =>
+      YouTube.searchOne(this.query, "playlist"),
+    );
     if (!result?.url || !result?.title) {
       throw new NothingFoundError();
     }
@@ -86,11 +93,12 @@ export class YouTubeSearchExtractor extends SearchExtractor {
   private async formatYoutubeVideoToTrackData(
     video: Video,
   ): Promise<TrackData> {
+    if (!video.url || !video.title) throw new NothingFoundError();
     return {
       url: video.url,
-      title: video.title!,
+      title: video.title,
       duration: video.duration,
-      thumbnail: video.thumbnail?.url!,
+      thumbnail: video.thumbnail?.url ?? null,
     };
   }
 }

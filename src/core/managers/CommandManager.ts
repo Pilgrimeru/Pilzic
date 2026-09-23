@@ -16,18 +16,21 @@ import {
   type ApplicationCommandDataResolvable,
   type GuildBasedChannel,
 } from "discord.js";
-import { readdirSync } from "fs";
+import { readdir } from "node:fs/promises";
 import { i18n } from "i18n.config";
-import { bot } from "index";
+import type { Bot } from "../Bot";
+import { observe } from "../helpers/observe";
 import { join } from "path";
 
 export class CommandManager {
   public commands = new Collection<string, Command>();
   private readonly commandLookup = new Map<string, Command>();
 
+  constructor(private readonly bot: Bot) {}
+
   public async loadCommands(): Promise<void> {
     const commandFolder = join(__dirname, "../../commands");
-    const commandFiles = readdirSync(commandFolder).filter(
+    const commandFiles = (await readdir(commandFolder)).filter(
       (file) => !file.endsWith(".map"),
     );
 
@@ -75,8 +78,20 @@ export class CommandManager {
     try {
       await command.execute(commandTrigger, args);
     } catch (error) {
-      await commandTrigger.reply(i18n.__("errors.command")).then(autoDelete);
       console.error(`Error executing command ${commandName}:`, error);
+      // The command may already have acknowledged the interaction. followUp
+      // selects an initial reply when it has not, and a webhook follow-up
+      // otherwise. A stale Discord token (10062/10015) must never terminate
+      // the bot while attempting to report the original command failure.
+      await commandTrigger
+        .followUp(i18n.__("errors.command"))
+        .then(autoDelete)
+        .catch((replyError) =>
+          console.error(
+            `Unable to report command ${commandName} error:`,
+            replyError,
+          ),
+        );
     }
   }
 
@@ -88,7 +103,11 @@ export class CommandManager {
 
     if (interaction.isAutocomplete()) {
       const command = this.commands.get(interaction.commandName);
-      command?.autocomplete(interaction);
+      if (command)
+        observe(
+          Promise.resolve(command.autocomplete(interaction)),
+          "command autocomplete",
+        );
       return;
     }
 
@@ -124,14 +143,14 @@ export class CommandManager {
   public async handleMessage(message: Message): Promise<void> {
     if (message.author.bot || !message.guild) return;
 
-    const prefix = bot.prefix;
+    const prefix = this.bot.prefix;
     let args: string[] = [];
 
     if (message.content.startsWith(prefix)) {
       args = message.content.slice(prefix.length).trim().split(/\s+/);
     } else if (
-      message.content.startsWith(`<@!${bot.user?.id}>`) ||
-      message.content.startsWith(`<@${bot.user?.id}>`)
+      message.content.startsWith(`<@!${this.bot.user?.id}>`) ||
+      message.content.startsWith(`<@${this.bot.user?.id}>`)
     ) {
       args = message.content
         .replace(/<@!?(\d+)>/, "")
@@ -168,7 +187,10 @@ export class CommandManager {
       for (const condition of command.conditions) {
         const result = this.evaluateCondition(condition, member);
         if (result !== "passed") {
-          commandTrigger.reply(result).then(autoDelete);
+          observe(
+            commandTrigger.reply(result).then(autoDelete),
+            "command condition reply",
+          );
           return false;
         }
       }
@@ -177,9 +199,12 @@ export class CommandManager {
     if (command.permissions) {
       const missing = member.permissions.missing(command.permissions);
       if (missing.length) {
-        commandTrigger
-          .reply(`Missing permissions: ${missing.join(", ")}`)
-          .then(autoDelete);
+        observe(
+          commandTrigger
+            .reply(`Missing permissions: ${missing.join(", ")}`)
+            .then(autoDelete),
+          "permissions reply",
+        );
         return false;
       }
     }
@@ -199,7 +224,7 @@ export class CommandManager {
         }
         break;
       case CommandConditions.QUEUE_EXISTS: {
-        const player = bot.playerManager.getPlayer(member.guild.id);
+        const player = this.bot.playerManager.getPlayer(member.guild.id);
         if (!player?.queue.currentTrack) {
           return i18n.__("errors.notQueue");
         }
@@ -222,7 +247,7 @@ export class CommandManager {
         if (
           voiceChannel &&
           !voiceChannel
-            .permissionsFor(bot.user!)
+            .permissionsFor(this.bot.user!)
             ?.has(PermissionsBitField.Flags.Speak)
         ) {
           return i18n.__("errors.missingPermissionSpeak");

@@ -1,113 +1,60 @@
 import type { AudioResource } from "@discordjs/voice";
-import { createAudioResource, StreamType } from "@discordjs/voice";
-import got from "got";
-import { yt_validate } from "play-dl";
+import { createAudioResource } from "@discordjs/voice";
 import type { Track } from "./Track";
-import {
-  getYouTubeStream,
-  getSoundCloudStream,
-  YouTubeStreamConverter,
-} from "./helpers/YouTubeStreamConverter";
-import { audioCacheManager } from "./managers/AudioCacheManager";
+import type { SourceAdapter } from "./sources/SourceAdapter";
+import { YouTubeSourceAdapter } from "./sources/YouTubeSourceAdapter";
+import { SoundCloudSourceAdapter } from "./sources/SoundCloudSourceAdapter";
+import { CatalogSourceAdapter } from "./sources/CatalogSourceAdapter";
+import { ExternalSourceAdapter } from "./sources/ExternalSourceAdapter";
+import { coreMetrics } from "./helpers/CoreMetrics";
+
+function defaultSources(): SourceAdapter[] {
+  const youtube = new YouTubeSourceAdapter();
+  return [
+    new SoundCloudSourceAdapter(),
+    youtube,
+    new CatalogSourceAdapter(youtube),
+    new ExternalSourceAdapter(),
+  ];
+}
 
 export class AudioResourceFactory {
+  constructor(private readonly sources: SourceAdapter[] = defaultSources()) {}
+
   public async createResource(
     track: Track,
     seek?: number,
+    signal?: AbortSignal,
+    volume = 100,
   ): Promise<AudioResource<Track>> {
-    if (this.isSoundCloudUrl(track.url)) {
-      return this.getSoundCloudResource(track);
-    } else if (yt_validate(track.url) === "video") {
-      return this.getYouTubeResource(track, seek);
-    } else {
-      return this.getExternalResource(track);
-    }
-  }
-
-  private async getSoundCloudResource(
-    track: Track,
-  ): Promise<AudioResource<Track>> {
-    const stream = await getSoundCloudStream(track.url);
-    if (!stream) {
-      throw new Error("Unable to retrieve SoundCloud stream.");
-    }
-
-    return createAudioResource(stream, {
-      metadata: track,
-      inputType: StreamType.OggOpus,
-      inlineVolume: true,
+    const adapter = this.sources.find((source) => source.canHandle(track));
+    if (!adapter) throw new Error("No audio source available");
+    const startedAt = performance.now();
+    const source = await adapter.open(track, seek, signal).finally(() => {
+      coreMetrics.recordPhase("source_open", performance.now() - startedAt);
     });
-  }
-
-  private async getYouTubeResource(
-    track: Track,
-    seek?: number,
-  ): Promise<AudioResource<Track>> {
-    const cached = audioCacheManager.get(track.url);
-    const freshStream = cached
-      ? null
-      : await getYouTubeStream(track.url, {
-          seek,
-          isLive: track.duration === 0,
-        });
-    const stream = cached
-      ? seek
-        ? new YouTubeStreamConverter().transcodeFile(cached, seek)
-        : audioCacheManager.open(track.url)
-      : !seek && track.duration !== 0 && audioCacheManager.enabled
-        ? audioCacheManager.tee(track.url, freshStream!)
-        : freshStream;
-
-    if (!stream) {
-      throw new Error("Unable to retrieve YouTube stream.");
+    if (signal?.aborted) {
+      source.close();
+      throw signal.reason;
     }
-    return createAudioResource(stream, {
-      metadata: track,
-      // YouTubeStreamConverter always emits an Ogg container containing Opus
-      // at 48 kHz, including seeks and live streams. Declaring it explicitly
-      // avoids an unnecessary second FFmpeg pass in prism-media.
-      inputType: StreamType.OggOpus,
-      inlineVolume: true,
-    });
-  }
-
-  private async getExternalResource(
-    track: Track,
-  ): Promise<AudioResource<Track>> {
     try {
-      const response = got.stream(track.url, {
-        timeout: { lookup: 5_000, connect: 5_000, response: 15_000 },
-        retry: { limit: 2 },
-      });
-      return createAudioResource(response, {
+      const resource = createAudioResource(source.stream, {
         metadata: track,
-        inputType: StreamType.Arbitrary,
-        inlineVolume: true,
+        inputType: source.inputType,
+        inlineVolume: volume !== 100 || !source.format.seekable,
       });
-    } catch (error: any) {
-      throw new Error(`Error retrieving stream: ${error}`, { cause: error });
+      resource.playStream.once("close", () => source.close());
+      return resource;
+    } catch (error) {
+      source.close();
+      throw error;
     }
   }
 
-  public preload(track: Track): Promise<string | null> {
-    if (track.duration === 0 || yt_validate(track.url) !== "video") {
-      return Promise.resolve(null);
-    }
-    return audioCacheManager.preload(track.url, () =>
-      getYouTubeStream(track.url),
-    );
-  }
-
-  private isSoundCloudUrl(value: string): boolean {
-    try {
-      return /^(?:(?:www|m|on|api)\.)?soundcloud\.com$|^(?:www\.)?snd\.sc$/.test(
-        new URL(value).hostname.toLowerCase(),
-      );
-    } catch {
-      return false;
-    }
+  public preload(track: Track, signal?: AbortSignal): Promise<string | null> {
+    const adapter = this.sources.find((source) => source.canHandle(track));
+    return adapter?.preload?.(track, signal) ?? Promise.resolve(null);
   }
 }
 
-const audioResourceFactory = new AudioResourceFactory();
-export { audioResourceFactory };
+export const audioResourceFactory = new AudioResourceFactory();

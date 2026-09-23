@@ -18,7 +18,7 @@ export default class AutoplayCommand extends Command {
 
   async execute(commandTrigger: CommandTrigger) {
     const player = bot.playerManager.getPlayer(commandTrigger.guild.id)!;
-    void commandTrigger.loadingReply();
+    await commandTrigger.loadingReply();
     const autoqueueStatus = await player.queue.toggleAutoqueue();
 
     const mode = autoqueueStatus

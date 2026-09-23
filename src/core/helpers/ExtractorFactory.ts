@@ -7,6 +7,8 @@ import { ExternalLinkExtractor } from "../extractors/ExternalLinkExtractor";
 import { SoundCloudLinkExtractor } from "../extractors/SoundCloudLinkExtractor";
 import { SpotifyLinkExtractor } from "../extractors/SpotifyLinkExtractor";
 import { YouTubeLinkExtractor } from "../extractors/YouTubeLinkExtractor";
+import { normalizeUrl } from "./normalizeInput";
+import { DataFinder } from "./DataFinder";
 
 export class ExtractorFactory {
   private static readonly linkExtractors = [
@@ -25,7 +27,6 @@ export class ExtractorFactory {
     query: string,
     defaultSearchType: "track" | "playlist" = "track",
   ): Promise<Extractor> {
-    const { DataFinder } = await import("./DataFinder");
     const url = query.split(" ")[0];
 
     const extractor = await ExtractorFactory.createLinkExtractor(url);
@@ -41,7 +42,8 @@ export class ExtractorFactory {
   public static async createLinkExtractor(
     url: string,
   ): Promise<LinkExtractor | null> {
-    const cached = this.validationCache.get(url);
+    const key = normalizeUrl(url);
+    const cached = this.validationCache.get(key);
     if (cached) {
       const LinkExtractorClass = this.linkExtractors[cached.extractorIndex];
       return new LinkExtractorClass(url, cached.type);
@@ -53,7 +55,7 @@ export class ExtractorFactory {
     ] of this.linkExtractors.entries()) {
       const type = await LinkExtractorClass.validate(url);
       if (type) {
-        this.validationCache.set(url, { extractorIndex, type });
+        this.validationCache.set(key, { extractorIndex, type });
         return new LinkExtractorClass(url, type);
       }
     }

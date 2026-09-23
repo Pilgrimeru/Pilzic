@@ -19,10 +19,7 @@ export class Playlist {
     );
   }
 
-  public static async from(
-    playlistData: PlaylistData,
-    requester: User,
-  ): Promise<Playlist> {
+  public static from(playlistData: PlaylistData, requester: User): Playlist {
     return new Playlist(playlistData, requester);
   }
 
