@@ -32,6 +32,9 @@ readonly NEW_IMAGE="$IMAGE_NAME:$REVISION"
 echo "Construction de l'image Docker $NEW_IMAGE..."
 docker build --pull --tag "$NEW_IMAGE" .
 
+echo "Vérification de config.env avec Docker..."
+docker run --rm --env-file config.env --entrypoint /bin/true "$NEW_IMAGE"
+
 old_image=""
 if docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
   old_image="$(docker container inspect --format '{{.Image}}' "$CONTAINER_NAME")"

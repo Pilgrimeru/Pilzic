@@ -63,6 +63,10 @@ docker build -t pilzic .
 docker run -d --name pilzic --restart=always -e TOKEN="your-discord-bot-token" pilzic
 ```
 
+When using `--env-file config.env` or `update_and_restart.sh`, keep each setting in
+`NAME=value` form. Put comments on separate lines; Docker does not strip inline
+comments or quotes from values.
+
 🎉 **Your bot is now up and running!**
 
 ### **🛠️ Option 2: Manual Installation**
