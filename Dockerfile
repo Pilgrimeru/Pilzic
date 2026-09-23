@@ -5,7 +5,7 @@ FROM oven/bun:1.4.2-slim AS base
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ffmpeg ca-certificates curl && \
+    apt-get install -y --no-install-recommends adduser ffmpeg ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Include the verified yt-dlp release in the image so playback has no download on first use.
