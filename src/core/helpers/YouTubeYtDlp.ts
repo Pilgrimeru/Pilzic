@@ -33,7 +33,7 @@ export async function getYouTubePlaylistInfo(
     "--playlist-end",
     String(config.MAX_PLAYLIST_SIZE),
     "--js-runtimes",
-    "node",
+    `bun:${process.execPath}`,
   ];
   if (config.YOUTUBE_COOKIES_PATH) {
     if (!existsSync(config.YOUTUBE_COOKIES_PATH))

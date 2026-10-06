@@ -9,6 +9,7 @@ import { config } from "config";
 import { audioJobScheduler } from "./AudioJobScheduler";
 import { coreMetrics } from "./CoreMetrics";
 import { ensureYtDlpExists, getYtDlpPath } from "./YtDlpBinary";
+import { spawnYtDlp } from "./YtDlpProcess";
 
 const require = createRequire(import.meta.url);
 const ffmpegPath = (() => {
@@ -166,10 +167,7 @@ export class YouTubeStreamConverter {
     return new Promise((resolve, reject) => {
       let stderr = "",
         settled = false;
-      const child = spawn(getYtDlpPath(), this.buildArgs(url), {
-        stdio: ["ignore", "pipe", "pipe"],
-        windowsHide: true,
-      });
+      const child = spawnYtDlp(this.buildArgs(url));
       const abort = () => {
         child.stdout.destroy();
         child.kill("SIGKILL");
@@ -347,7 +345,8 @@ export class YouTubeStreamConverter {
     // JavaScript runtimes are only used by YouTube's extractor. Keeping this
     // option out of SoundCloud calls also preserves compatibility with older
     // bundled yt-dlp binaries that predate --js-runtimes.
-    if (this.options.source === "youtube") args.push("--js-runtimes", "node");
+    if (this.options.source === "youtube")
+      args.push("--js-runtimes", `bun:${process.execPath}`);
     if (this.options.isLive) args.push("--no-live-from-start");
     if (this.options.source === "youtube" && config.YOUTUBE_COOKIES_PATH) {
       if (!existsSync(config.YOUTUBE_COOKIES_PATH))

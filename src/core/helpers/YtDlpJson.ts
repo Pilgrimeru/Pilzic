@@ -1,6 +1,6 @@
-import { spawn } from "node:child_process";
 import { audioJobScheduler } from "./AudioJobScheduler";
-import { ensureYtDlpExists, getYtDlpPath } from "./YtDlpBinary";
+import { ensureYtDlpExists } from "./YtDlpBinary";
+import { spawnYtDlp } from "./YtDlpProcess";
 
 export async function runYtDlpJson<T>(
   args: string[],
@@ -10,10 +10,7 @@ export async function runYtDlpJson<T>(
   const release = await audioJobScheduler.acquire(1, signal);
   try {
     return await new Promise<T>((resolve, reject) => {
-      const child = spawn(getYtDlpPath(), args, {
-        stdio: ["ignore", "pipe", "pipe"],
-        windowsHide: true,
-      });
+      const child = spawnYtDlp(args);
       let stdout = "";
       let stderr = "";
       let settled = false;
