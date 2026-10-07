@@ -2,6 +2,7 @@ import type { PlaylistData } from "@custom-types/extractor/PlaylistData";
 import type { TrackData } from "@custom-types/extractor/TrackData";
 import {
   getYouTubePlaylistInfo,
+  getYouTubeVideoInfo,
   type YouTubePlaylistEntry,
 } from "@core/helpers/YouTubeYtDlp";
 import {
@@ -49,7 +50,22 @@ export class YouTubeLinkExtractor extends LinkExtractor {
 
   protected async extractTrack(): Promise<TrackData> {
     try {
-      const trackInfo = await video_basic_info(this.url, { htmldata: false });
+      const trackInfo = await video_basic_info(this.url, {
+        htmldata: false,
+      }).catch(async () => {
+        const video = await getYouTubeVideoInfo(this.url);
+        if (!video.id || !video.title) throw new NothingFoundError();
+        return {
+          video_details: {
+            title: video.title,
+            url: `https://www.youtube.com/watch?v=${video.id}`,
+            durationInSec: video.duration ?? 0,
+            thumbnails: video.thumbnails ?? [{ url: video.thumbnail }],
+          },
+          // Leave related videos unresolved so autoplay can fetch them later.
+          related_videos: undefined,
+        };
+      });
 
       if (!trackInfo.video_details.title || !trackInfo.video_details.url) {
         throw new NothingFoundError();
@@ -59,20 +75,25 @@ export class YouTubeLinkExtractor extends LinkExtractor {
         url: trackInfo.video_details.url,
         title: trackInfo.video_details.title,
         duration: trackInfo.video_details.durationInSec * 1000,
-        thumbnail: trackInfo.video_details.thumbnails[0].url,
+        thumbnail: trackInfo.video_details.thumbnails.at(-1)?.url ?? null,
         related: trackInfo.related_videos,
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      if (message.includes("confirm your age")) {
+      const message = (
+        error instanceof Error ? error.message : String(error)
+      ).toLowerCase();
+      if (
+        message.includes("confirm your age") ||
+        message.includes("age-restricted")
+      ) {
         throw new AgeRestrictedError();
       }
       if (message.includes("not a bot")) {
         throw new ServiceUnavailableError();
       }
       if (
-        message.includes("Private video") ||
-        message.includes("Video unavailable")
+        message.includes("private video") ||
+        message.includes("video unavailable")
       ) {
         throw new InvalidURLError();
       }
@@ -81,11 +102,7 @@ export class YouTubeLinkExtractor extends LinkExtractor {
   }
 
   protected async extractPlaylist(): Promise<PlaylistData> {
-    const listId = new URL(this.url).searchParams.get("list");
-    const playlistUrl = listId
-      ? `https://www.youtube.com/playlist?list=${encodeURIComponent(listId)}`
-      : this.url;
-    const playlist = await getYouTubePlaylistInfo(playlistUrl);
+    const playlist = await getYouTubePlaylistInfo(this.url);
 
     const playlistTracks = await YouTubeLinkExtractor.buildTracksData(
       playlist.entries ?? [],
